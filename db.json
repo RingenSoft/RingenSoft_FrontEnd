@@ -1,0 +1,27 @@
+{
+  "embarcaciones": [
+    { "id": "EMB-001", "nombre": "Tasa Z-1", "capacidad": 300, "estado": "EN_RUTA", "progreso": 45, "destino": "Banco #42", "eta": "14:30 hrs" },
+    { "id": "EMB-002", "nombre": "Diamante B", "capacidad": 450, "estado": "CARGANDO", "progreso": 95, "destino": "Puerto Chimbote", "eta": "10:00 hrs" },
+    { "id": "EMB-003", "nombre": "Exalmar II", "capacidad": 280, "estado": "EN_PUERTO", "progreso": 0, "destino": "Sin Asignar", "eta": "--:--" }
+  ],
+  "puertos": [
+    { "id": "P1", "nombre": "Chimbote", "x": 20, "y": 30 },
+    { "id": "P2", "nombre": "Callao", "x": 40, "y": 50 },
+    { "id": "P3", "nombre": "Pisco", "x": 60, "y": 80 }
+  ],
+  "bancos": [
+    { "id": "B1", "toneladas": 120, "x": 25, "y": 25 },
+    { "id": "B2", "toneladas": 80, "x": 30, "y": 35 },
+    { "id": "B3", "toneladas": 200, "x": 45, "y": 45 },
+    { "id": "B4", "toneladas": 150, "x": 50, "y": 60 },
+    { "id": "B5", "toneladas": 90, "x": 65, "y": 75 },
+    { "id": "B6", "toneladas": 300, "x": 15, "y": 40 }
+  ],
+  "kpis": {
+    "flota_activa": "12 / 15",
+    "operatividad": "80%",
+    "pesca_dia": "850 TM",
+    "ahorro": "14.5%",
+    "alertas": 2
+  }
+}

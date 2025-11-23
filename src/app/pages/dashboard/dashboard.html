@@ -1,0 +1,148 @@
+<div class="h-screen flex overflow-hidden bg-gray-100 font-sans">
+
+  <!-- Sidebar Global -->
+  <app-sidebar></app-sidebar>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col overflow-y-auto relative">
+    <!-- Header -->
+    <header class="bg-white shadow-sm p-6 flex justify-between items-center sticky top-0 z-30">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Tablero de Control</h1>
+        <p class="text-sm text-slate-500">Resumen operativo en tiempo real</p>
+      </div>
+
+      <div class="flex items-center space-x-4">
+        <!-- Alerta dinámica -->
+        <div *ngIf="kpis.alertas > 0" class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold animate-pulse border border-red-100">
+          <i class="fas fa-exclamation-circle mr-1"></i> {{ kpis.alertas }} Alertas
+        </div>
+
+        <div class="flex items-center">
+          <div class="text-right mr-3 hidden md:block">
+            <div class="text-sm font-bold text-slate-700">Operador</div>
+            <div class="text-[10px] text-slate-400 uppercase">Logística</div>
+          </div>
+          <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
+            OP
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Body -->
+    <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+
+      <!-- KPI Cards (Datos Dinámicos del Backend) -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <!-- Card 1 -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Flota Activa</div>
+            <div class="text-2xl font-bold text-slate-800">{{ kpis.flota_activa }}</div>
+          </div>
+          <div class="mt-3 text-green-600 text-xs font-bold flex items-center">
+            <i class="fas fa-arrow-up mr-1"></i> {{ kpis.operatividad }} Operativo
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Pesca del Día</div>
+            <div class="text-2xl font-bold text-slate-800">{{ kpis.pesca_dia }}</div>
+          </div>
+          <div class="mt-3 text-blue-600 text-xs font-bold">
+            Meta: 1200 TM
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Ahorro Combustible</div>
+            <div class="text-2xl font-bold text-slate-800">{{ kpis.ahorro }}</div>
+          </div>
+          <div class="mt-3 text-purple-600 text-xs font-bold">
+            vs. Rutas manuales
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Estado Sistema</div>
+            <div class="text-2xl font-bold text-slate-800">Online</div>
+          </div>
+          <div class="mt-3 text-emerald-600 text-xs font-bold flex items-center">
+            <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span> Conectado
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Principal: Mapa y Lista -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[400px]">
+
+        <!-- Mapa Miniatura (Visualización en Vivo) -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+          <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-white z-10">
+            <h3 class="font-bold text-slate-700 flex items-center">
+              <i class="fas fa-globe-americas text-blue-500 mr-2"></i> Vista Satelital (En Vivo)
+            </h3>
+            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded">Actualizado hace 1 min</span>
+          </div>
+
+          <!-- Contenedor Mapa Mini -->
+          <div class="flex-1 relative bg-slate-200 flex justify-center items-center overflow-hidden">
+            <!--
+               Usamos el mismo aspect ratio y lógica de imagen que en el Mapa Completo
+               para mantener consistencia visual.
+            -->
+            <div id="dashboard-map-area"
+                 class="relative h-[90%] aspect-[0.69] bg-white shadow-lg rounded border border-white"
+                 [style.backgroundImage]="'url(' + mapaUrl + ')'"
+                 style="background-size: 100% 100%; background-position: center; background-repeat: no-repeat;">
+              <!-- Puntos inyectados dinámicamente por dashboard.component.ts -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de Flota (Resumen en tiempo real) -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+          <div class="p-4 border-b border-slate-50 bg-white">
+            <h3 class="font-bold text-slate-700">Actividad Reciente</h3>
+          </div>
+
+          <div class="flex-1 overflow-y-auto p-2 space-y-2 bg-slate-50/50">
+            <!-- Item Dinámico (Bucle ngFor sobre barcos reales) -->
+            <div *ngFor="let barco of listaEmbarcaciones" class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-blue-300 transition group cursor-pointer">
+              <div class="flex justify-between items-center mb-1">
+                <span class="font-bold text-sm text-slate-700 group-hover:text-blue-600">{{ barco.nombre }}</span>
+                <span [ngClass]="{
+                        'bg-green-100 text-green-700': barco.estado === 'EN_RUTA',
+                        'bg-slate-100 text-slate-600': barco.estado === 'EN_PUERTO',
+                        'bg-yellow-100 text-yellow-700': barco.estado === 'MANTENIMIENTO'
+                    }" class="text-[10px] px-2 py-0.5 rounded font-bold uppercase">{{ barco.estado }}</span>
+              </div>
+              <div class="flex justify-between items-center text-xs text-slate-500">
+                <span><i class="fas fa-box mr-1 text-slate-400"></i> {{ barco.capacidad_bodega }} TM</span>
+                <span *ngIf="barco.estado === 'EN_RUTA'"><i class="fas fa-clock mr-1 text-blue-400"></i> {{ barco.eta }}</span>
+              </div>
+            </div>
+
+            <!-- Estado Vacío (Si no hay barcos registrados) -->
+            <div *ngIf="listaEmbarcaciones.length === 0" class="text-center py-8 text-slate-400 text-sm">
+              <i class="fas fa-ship text-2xl mb-2 opacity-30"></i>
+              <p>No hay actividad reciente.</p>
+            </div>
+          </div>
+
+          <div class="p-3 border-t bg-white text-center">
+            <a routerLink="/flota" class="text-blue-600 text-xs font-bold hover:underline">Ver toda la flota</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>

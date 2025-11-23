@@ -1,0 +1,53 @@
+<div class="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700 font-sans">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition hover:scale-[1.01] duration-300">
+    <!-- Logo y Título -->
+    <div class="flex justify-center mb-6">
+      <div class="bg-blue-100 p-4 rounded-full">
+        <i class="fas fa-fish text-4xl text-blue-600"></i>
+      </div>
+    </div>
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Ringensoft</h2>
+    <p class="text-center text-gray-500 mb-6 text-sm">Optimización de Rutas de Acopio</p>
+
+    <!-- Mensaje de Error -->
+    <div *ngIf="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-xs font-bold text-center animate-pulse">
+      {{ errorMsg }}
+    </div>
+
+    <!-- Formulario -->
+    <form (ngSubmit)="ingresar()">
+      <div class="mb-4">
+        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">ID Flota / Usuario</label>
+        <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <i class="fas fa-user"></i>
+                    </span>
+          <input [(ngModel)]="usuario" name="usuario" class="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" type="text" placeholder="Usuario" required>
+        </div>
+      </div>
+      <div class="mb-6">
+        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">Contraseña</label>
+        <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                        <i class="fas fa-lock"></i>
+                    </span>
+          <input [(ngModel)]="password" name="password" class="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" type="password" placeholder="•••••••" required>
+        </div>
+      </div>
+      <button [disabled]="cargando" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center" type="submit">
+        <span *ngIf="!cargando">Ingresar al Sistema</span>
+        <span *ngIf="cargando"><i class="fas fa-spinner fa-spin mr-2"></i> Validando...</span>
+      </button>
+    </form>
+
+    <!-- Footer: Enlace a Registro (NUEVO) -->
+    <div class="text-center mt-6 border-t border-gray-100 pt-4">
+      <p class="text-xs text-gray-500 mb-1">¿Nuevo en Ringensoft?</p>
+      <a routerLink="/registro" class="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer">
+        Crea tu cuenta aquí
+      </a>
+    </div>
+
+    <p class="text-center text-[10px] text-gray-400 mt-6">&copy; 2025 Ringensoft Analytics</p>
+  </div>
+</div>

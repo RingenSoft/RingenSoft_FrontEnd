@@ -1,0 +1,68 @@
+<div class="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700 font-sans">
+  <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all hover:scale-[1.01] duration-300">
+
+    <!-- Header -->
+    <div class="flex justify-center mb-6">
+      <div class="bg-blue-50 p-4 rounded-full shadow-inner">
+        <i class="fas fa-user-plus text-3xl text-blue-600"></i>
+      </div>
+    </div>
+    <h2 class="text-2xl font-bold text-center text-gray-800 mb-1">Crear Cuenta</h2>
+    <p class="text-center text-gray-500 mb-6 text-xs">Únete a Ringensoft</p>
+
+    <!-- Mensajes -->
+    <div *ngIf="mensaje" [ngClass]="error ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'"
+         class="mb-4 p-3 rounded-lg text-xs font-bold text-center border animate-pulse">
+      {{ mensaje }}
+    </div>
+
+    <form (ngSubmit)="registrar()">
+      <!-- Nombre Completo -->
+      <div class="mb-4">
+        <label class="block text-gray-600 text-xs font-bold mb-1 uppercase">Nombre Completo</label>
+        <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-id-card"></i>
+                    </span>
+          <input [(ngModel)]="nombre" name="nombre" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm" type="text" placeholder="Juan Pérez" required>
+        </div>
+      </div>
+
+      <!-- Usuario -->
+      <div class="mb-4">
+        <label class="block text-gray-600 text-xs font-bold mb-1 uppercase">Usuario / ID Flota</label>
+        <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-user"></i>
+                    </span>
+          <input [(ngModel)]="usuario" name="usuario" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm" type="text" placeholder="juan.perez" required>
+        </div>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="mb-6">
+        <label class="block text-gray-600 text-xs font-bold mb-1 uppercase">Contraseña</label>
+        <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                        <i class="fas fa-lock"></i>
+                    </span>
+          <input [(ngModel)]="password" name="password" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm" type="password" placeholder="••••••••" required>
+        </div>
+      </div>
+
+      <!-- Botón -->
+      <button [disabled]="cargando" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center" type="submit">
+        <span *ngIf="!cargando">Registrarse</span>
+        <span *ngIf="cargando"><i class="fas fa-spinner fa-spin mr-2"></i> Creando...</span>
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 border-t border-gray-100 pt-4">
+      <p class="text-xs text-gray-500">¿Ya tienes cuenta?</p>
+      <a routerLink="/login" class="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors">
+        Inicia Sesión aquí
+      </a>
+    </div>
+  </div>
+</div>

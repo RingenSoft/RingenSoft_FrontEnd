@@ -1,0 +1,124 @@
+<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+  <!-- Sidebar de Navegación -->
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 flex flex-col relative">
+
+    <!-- Panel de Control Flotante (Superior Izquierda) -->
+    <div class="absolute top-4 left-4 z-50 bg-white/95 backdrop-blur-sm p-5 rounded-xl shadow-2xl border border-slate-200 w-80 transition-all hover:shadow-xl">
+      <h2 class="font-bold text-slate-800 text-lg mb-4 flex items-center border-b pb-3 border-slate-100">
+        <i class="fas fa-compass text-blue-600 mr-2"></i> Planificador VRP
+      </h2>
+
+      <!-- PASO 1: Selección de Embarcación -->
+      <div class="mb-4">
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">1. Seleccionar Embarcación</label>
+        <div class="relative">
+          <select [(ngModel)]="barcoSeleccionadoId" (change)="onBarcoChange()"
+                  class="w-full appearance-none bg-slate-50 border border-slate-300 text-slate-700 py-2 px-3 rounded-lg leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium text-sm">
+            <option value="" disabled selected>-- Elegir nave --</option>
+            <option *ngFor="let b of listaBarcos" [value]="b.id_embarcacion">{{ b.nombre }}</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-700">
+            <i class="fas fa-chevron-down text-xs"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 2: Parámetros Editables (Se muestra al seleccionar barco) -->
+      <div *ngIf="barcoSeleccionadoId" class="space-y-4 mb-6 animate-[fadeIn_0.3s_ease-out]">
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Input Capacidad -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Capacidad (TM)</label>
+            <input type="number" [(ngModel)]="formDatos.capacidad"
+                   class="w-full bg-white border border-slate-200 rounded p-1.5 text-sm font-bold text-slate-700 focus:border-blue-500 outline-none text-center">
+          </div>
+          <!-- Input Velocidad -->
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Velocidad (kn)</label>
+            <input type="number" [(ngModel)]="formDatos.velocidad"
+                   class="w-full bg-white border border-slate-200 rounded p-1.5 text-sm font-bold text-slate-700 focus:border-blue-500 outline-none text-center">
+          </div>
+        </div>
+
+        <!-- Slider Combustible -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Combustible Inicial</label>
+          <input type="range" [(ngModel)]="formDatos.combustible" min="10" max="100" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+          <div class="flex justify-between text-xs font-bold text-slate-600 mt-1">
+            <span class="text-red-400">E</span>
+            <span [class.text-red-500]="formDatos.combustible < 30" [class.text-green-600]="formDatos.combustible > 70">{{ formDatos.combustible }}%</span>
+            <span class="text-green-600">F</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 3: Botón de Acción -->
+      <button (click)="calcularRutaPersonalizada()"
+              [disabled]="cargandoRuta || !barcoSeleccionadoId"
+              class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center group transform hover:-translate-y-0.5">
+                <span *ngIf="!cargandoRuta" class="flex items-center">
+                    <i class="fas fa-route mr-2 group-hover:scale-110 transition-transform"></i> Generar Ruta Óptima
+                </span>
+        <span *ngIf="cargandoRuta" class="flex items-center">
+                    <i class="fas fa-spinner fa-spin mr-2"></i> Calculando...
+                </span>
+      </button>
+
+      <!-- RESULTADOS (Se muestran tras calcular) -->
+      <div *ngIf="datosRuta" class="mt-5 pt-4 border-t border-dashed border-slate-200 animate-[fadeInUp_0.4s_ease-out]">
+        <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 relative overflow-hidden">
+          <!-- Efecto decorativo de fondo -->
+          <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-400 rounded-full blur-2xl opacity-20 -mr-8 -mt-8"></div>
+
+          <h3 class="text-xs font-bold text-emerald-800 uppercase mb-2 flex items-center">
+            <i class="fas fa-check-circle mr-1.5"></i> Plan Aprobado
+          </h3>
+          <div class="space-y-1.5">
+            <div class="flex justify-between text-sm text-emerald-900 border-b border-emerald-100 pb-1">
+              <span>Distancia Total:</span>
+              <span class="font-mono font-bold">{{ datosRuta.distancia_total_km }} km</span>
+            </div>
+            <div class="flex justify-between text-sm text-emerald-900 border-b border-emerald-100 pb-1">
+              <span>Carga Estimada:</span>
+              <span class="font-mono font-bold">{{ datosRuta.carga_total_tm }} TM</span>
+            </div>
+            <div class="flex justify-between text-sm text-emerald-900">
+              <span>Duración Est.:</span>
+              <span class="font-mono font-bold">{{ datosRuta.tiempo_estimado_horas }} h</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEYENDA SIMPLE (Abajo Derecha) -->
+    <div class="absolute bottom-6 right-6 z-30 bg-white/80 backdrop-blur px-3 py-2 rounded-lg shadow-sm border border-slate-200 text-[10px] text-slate-600 flex gap-4 pointer-events-none">
+      <div class="flex items-center"><span class="w-2 h-2 bg-blue-600 rounded-sm mr-1.5 border border-white ring-1 ring-slate-200"></span> Puertos</div>
+      <div class="flex items-center"><span class="w-2 h-2 bg-red-500 rounded-full mr-1.5 ring-1 ring-red-200"></span> Bancos</div>
+      <div class="flex items-center"><span class="w-4 h-0.5 bg-emerald-500 mr-1.5 border-dashed border-t border-emerald-300"></span> Ruta</div>
+    </div>
+
+    <!-- ÁREA DEL MAPA -->
+    <div class="w-full h-full bg-[#a5bfdd] flex justify-center items-center overflow-hidden relative cursor-grab active:cursor-grabbing">
+      <!--
+          CONTENEDOR PRINCIPAL DEL MAPA
+          Si la imagen no carga, el bg-slate-300 asegurará que veas el rectángulo.
+      -->
+      <div id="full-map-area"
+           class="relative h-[95vh] aspect-[0.69] bg-slate-300 shadow-2xl rounded border-4 border-white overflow-hidden"
+           [style.backgroundImage]="'url(' + mapaUrl + ')'"
+           style="background-size: 100% 100%; background-position: center; background-repeat: no-repeat;">
+
+        <!-- Los nodos (divs de puertos/bancos) y rutas (svg) se inyectan aquí dinámicamente desde mapa.component.ts -->
+
+      </div>
+
+      <!-- Créditos del Mapa -->
+      <div class="absolute bottom-2 right-2 text-[10px] text-slate-600 bg-white/60 px-2 py-1 rounded pointer-events-none backdrop-blur-sm">
+        Mapa Base: Proyección Equirectangular
+      </div>
+    </div>
+  </main>
+</div>
