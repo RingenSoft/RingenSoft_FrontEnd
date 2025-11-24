@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // <--- Necesario para el formulario [(ngModel)]
+import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import {SidebarComponent} from '../../components/sidebar/sidebar';
+import { SidebarComponent } from '../../components/sidebar/sidebar';
 
 @Component({
   selector: 'app-mapa',
@@ -13,153 +13,140 @@ import {SidebarComponent} from '../../components/sidebar/sidebar';
 })
 export class MapaComponent implements OnInit {
 
-  // --- Configuración del Mapa ---
   cargandoRuta: boolean = false;
   datosRuta: any = null;
+  mapaUrl = '/assets/mapa.jpg';
 
-  // URL ACTUALIZADA Y PROBADA (Mapa de Relieve del Perú - Proyección Equirectangular)
-  // Este mapa coincide con la calibración GPS que pusimos en el backend.
-  mapaUrl='assets/mapa.jpg';
-
-  // --- Datos para el Formulario ---
   listaBarcos: any[] = [];
+  listaPuertos: any[] = [];
   barcoSeleccionadoId: string = '';
 
-  // Modelo de datos del formulario (Valores editables por el usuario)
   formDatos = {
-    capacidad: 0,    // TM
-    combustible: 100, // %
-    velocidad: 12    // Nudos
+    capacidad: 0,
+    combustible: 100,
+    velocidad: 12,
+    material: '-',
+    tripulacion: 0,
+    puertoSalida: 'CHIMBOTE' // Solo Salida
   };
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    // Al iniciar, cargamos los puntos base (puertos/bancos) y la lista para el dropdown
     this.cargarMapaBase();
     this.cargarListaBarcos();
   }
 
   cargarListaBarcos() {
-    this.api.getEmbarcaciones().subscribe(data => {
-      this.listaBarcos = data;
+    this.api.getEmbarcaciones().subscribe({
+      next: (data) => {
+        this.listaBarcos = data;
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  // Evento: Cuando el usuario selecciona un barco del dropdown
   onBarcoChange() {
     const barco = this.listaBarcos.find(b => b.id_embarcacion === this.barcoSeleccionadoId);
     if (barco) {
-      // Rellenamos el formulario con los datos base de esa nave
       this.formDatos.capacidad = barco.capacidad_bodega;
-      // Si la velocidad promedio viene nula, asumimos 12 nudos
       this.formDatos.velocidad = barco.velocidad_promedio || 12;
-      this.formDatos.combustible = 100; // Asumimos tanque lleno por defecto
+      this.formDatos.material = barco.material || 'ACERO';
+      this.formDatos.tripulacion = barco.tripulacion || 10;
+      this.formDatos.combustible = 100;
+      this.cdr.detectChanges();
     }
   }
 
   cargarMapaBase() {
     this.api.getDatosMapa().subscribe({
       next: ({ puertos, bancos }) => {
-        // Filtramos puntos con coordenadas inválidas (0,0) para evitar ruido en el mapa
+        this.listaPuertos = puertos;
         const bancosValidos = bancos.filter((b: any) => b.x > 0 && b.y > 0);
-
-        // Usamos setTimeout para asegurar que el HTML del mapa ya existe antes de dibujar
-        setTimeout(() => this.dibujarNodosBase(puertos, bancosValidos), 100);
+        setTimeout(() => {
+          this.dibujarNodosBase(puertos, bancosValidos);
+          this.cdr.detectChanges();
+        }, 100);
       },
       error: (err) => console.error("Error cargando mapa:", err)
     });
   }
 
-  // Dibuja los puntos estáticos (Puertos y Bancos) en el contenedor del mapa
   dibujarNodosBase(puertos: any[], bancos: any[]) {
     const mapArea = document.getElementById('full-map-area');
     if (!mapArea) return;
-
-    // Limpiamos puntos anteriores (clase .nodo-punto) para no duplicar
-    const nodosViejos = mapArea.querySelectorAll('.nodo-punto');
-    nodosViejos.forEach(n => n.remove());
-
+    mapArea.querySelectorAll('.nodo-punto').forEach(n => n.remove());
     const fragment = document.createDocumentFragment();
 
-    // 1. Dibujar Bancos (Puntos rojos pequeños)
     bancos.forEach((b: any) => {
       const el = document.createElement('div');
-      el.className = `nodo-punto absolute w-1.5 h-1.5 bg-red-500/60 rounded-full hover:bg-red-500 hover:scale-150 transition-transform cursor-crosshair z-10`;
-      // Usamos las coordenadas X e Y calculadas por el backend (porcentajes)
+      el.className = `nodo-punto absolute w-1.5 h-1.5 bg-red-500/60 rounded-full z-10`;
       el.style.left = b.x + '%';
       el.style.top = b.y + '%';
-      // Tooltip nativo simple
-      el.title = `Banco #${b.id} (${b.toneladas} TM)`;
       fragment.appendChild(el);
     });
 
-    // 2. Dibujar Puertos (Puntos azules con icono de ancla)
     puertos.forEach((p: any) => {
       const el = document.createElement('div');
-      el.className = `nodo-punto absolute w-4 h-4 bg-blue-600 border-2 border-white rounded-sm shadow-lg z-20 hover:scale-125 transition-transform cursor-pointer flex items-center justify-center`;
+      el.className = `nodo-punto absolute w-4 h-4 bg-blue-600 border-2 border-white rounded-sm shadow-lg z-20 flex items-center justify-center`;
       el.style.left = p.x + '%';
       el.style.top = p.y + '%';
-      el.title = `Puerto: ${p.nombre}`;
       el.innerHTML = `<i class="fas fa-anchor text-[8px] text-white"></i>`;
-
-      // Etiqueta con el nombre del puerto
       const label = document.createElement('div');
-      label.className = `absolute -top-5 left-1/2 -translate-x-1/2 bg-white/80 px-1.5 rounded text-[9px] font-bold text-slate-700 whitespace-nowrap shadow pointer-events-none border border-slate-200`;
+      label.className = `absolute -top-5 left-1/2 -translate-x-1/2 bg-white/80 px-1.5 rounded text-[9px] font-bold text-slate-700 whitespace-nowrap shadow border border-slate-200`;
       label.innerText = p.nombre;
       el.appendChild(label);
-
       fragment.appendChild(el);
     });
 
     mapArea.appendChild(fragment);
   }
 
-  // Acción del botón "Generar Ruta Óptima"
   calcularRutaPersonalizada() {
     if (!this.barcoSeleccionadoId) {
-      alert("Por favor selecciona una embarcación primero.");
+      alert("Por favor selecciona una embarcación.");
       return;
     }
 
     this.cargandoRuta = true;
     this.datosRuta = null;
+    this.cdr.detectChanges();
 
-    // Preparamos el objeto con los datos del formulario para enviar al backend
     const payload = {
       id_embarcacion: this.barcoSeleccionadoId,
       capacidad_actual: this.formDatos.capacidad,
       combustible_actual: this.formDatos.combustible,
-      velocidad_personalizada: this.formDatos.velocidad
+      velocidad_personalizada: this.formDatos.velocidad,
+      puerto_salida_id: this.formDatos.puertoSalida
+      // Ya no enviamos puertoLlegada
     };
 
     this.api.optimizarRuta(payload).subscribe({
       next: (res) => {
         this.datosRuta = res;
-        // Dibujamos la línea verde de la ruta
         this.dibujarRutaEnMapa(res.secuencia_ruta);
         this.cargandoRuta = false;
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.cargandoRuta = false;
-        alert("Error al calcular la ruta. Verifica la conexión con el backend.");
+        this.cdr.detectChanges();
+        alert("Error al calcular ruta.");
       }
     });
   }
 
-  // Dibuja la línea de la ruta y los puntos de parada usando SVG
+  // AQUÍ VA LA FUNCIÓN DE DIBUJO MEJORADA CON NEÓN Y FLECHAS
   dibujarRutaEnMapa(ruta: any[]) {
     const mapArea = document.getElementById('full-map-area');
     if (!mapArea) return;
 
-    // Borrar ruta anterior si existe
     const oldSvg = mapArea.querySelector('svg');
     if (oldSvg) oldSvg.remove();
 
     if (!ruta || ruta.length < 2) return;
 
-    // Construir el "Path" SVG conectando las coordenadas X/Y de la ruta
     let pathD = `M ${ruta[0].x}% ${ruta[0].y}%`;
     for (let i = 1; i < ruta.length; i++) {
       pathD += ` L ${ruta[i].x}% ${ruta[i].y}%`;
@@ -168,31 +155,53 @@ export class MapaComponent implements OnInit {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute('class', 'absolute inset-0 w-full h-full pointer-events-none z-30');
 
-    // Definir filtro de brillo (glow) para que la línea resalte
     svg.innerHTML = `
         <defs>
-            <filter id="glow">
-                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
                 <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#fbbf24" />
+            </marker>
         </defs>
-        <path d="${pathD}" stroke="#10b981" stroke-width="2.5" fill="none" stroke-dasharray="4,2" filter="url(#glow)">
-            <animate attributeName="stroke-dashoffset" from="50" to="0" dur="2s" repeatCount="indefinite" />
+        <path d="${pathD}"
+              stroke="#fbbf24"
+              stroke-width="4"
+              fill="none"
+              stroke-dasharray="8,4"
+              filter="url(#glow)"
+              marker-end="url(#arrow)">
+            <animate attributeName="stroke-dashoffset" from="100" to="0" dur="3s" repeatCount="indefinite" />
         </path>
     `;
 
-    // Agregar círculos en cada parada de la ruta (Bancos visitados)
     ruta.forEach((p, index) => {
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      const colorFill = index === 0 ? "#2563eb" : (index === ruta.length-1 ? "#dc2626" : "white");
+      const radio = index === 0 || index === ruta.length-1 ? "12" : "8";
+
       const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       circle.setAttribute("cx", p.x + "%");
       circle.setAttribute("cy", p.y + "%");
+      circle.setAttribute("r", radio);
+      circle.setAttribute("fill", colorFill);
+      circle.setAttribute("stroke", "#fbbf24");
+      circle.setAttribute("stroke-width", "2");
 
-      // Inicio y fin un poco más grandes, intermedios normales
-      circle.setAttribute("r", index === 0 || index === ruta.length-1 ? "3" : "2");
-      // Color azul para inicio (puerto), blanco para paradas
-      circle.setAttribute("fill", index === 0 ? "#2563eb" : "white");
-      circle.setAttribute("stroke", "#10b981");
-      svg.appendChild(circle);
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", p.x + "%");
+      text.setAttribute("y", p.y + "%");
+      text.setAttribute("dy", ".3em");
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("fill", index === 0 || index === ruta.length-1 ? "white" : "#1e293b");
+      text.setAttribute("font-size", "10");
+      text.setAttribute("font-weight", "bold");
+      text.textContent = (index + 1).toString();
+
+      g.appendChild(circle);
+      g.appendChild(text);
+      svg.appendChild(g);
     });
 
     mapArea.appendChild(svg);

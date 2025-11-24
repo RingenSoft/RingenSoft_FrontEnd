@@ -1,144 +1,151 @@
-<div class="h-screen flex overflow-hidden bg-gray-100 font-sans">
-
-  <!-- Sidebar Global -->
+<div class="h-screen flex overflow-hidden bg-slate-50 font-sans">
   <app-sidebar></app-sidebar>
 
-  <!-- Main Content -->
-  <main class="flex-1 flex flex-col overflow-y-auto relative">
-    <!-- Header -->
-    <header class="bg-white shadow-sm p-6 flex justify-between items-center sticky top-0 z-30">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Tablero de Control</h1>
-        <p class="text-sm text-slate-500">Resumen operativo en tiempo real</p>
-      </div>
-
-      <div class="flex items-center space-x-4">
-        <!-- Alerta dinámica -->
-        <div *ngIf="kpis.alertas > 0" class="bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold animate-pulse border border-red-100">
-          <i class="fas fa-exclamation-circle mr-1"></i> {{ kpis.alertas }} Alertas
+  <main class="flex-1 flex flex-col overflow-y-auto">
+    <div class="bg-white p-6 border-b border-slate-200 shadow-sm z-10">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-800">Centro de Comando</h1>
+          <p class="text-slate-500 text-sm">Monitoreo en tiempo real de operaciones pesqueras.</p>
         </div>
-
-        <div class="flex items-center">
-          <div class="text-right mr-3 hidden md:block">
-            <div class="text-sm font-bold text-slate-700">Operador</div>
-            <div class="text-[10px] text-slate-400 uppercase">Logística</div>
-          </div>
-          <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold border-2 border-white shadow-sm">
-            OP
-          </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1 rounded-full">
+            <i class="fas fa-satellite-dish mr-1 animate-pulse text-green-500"></i> EN VIVO
+          </span>
+          <button (click)="cargarDatos()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors">
+            <i class="fas fa-sync-alt" [class.fa-spin]="cargando"></i>
+          </button>
         </div>
       </div>
-    </header>
+    </div>
 
-    <!-- Content Body -->
-    <div class="p-6 space-y-6 max-w-7xl mx-auto w-full">
+    <div class="p-6 space-y-6">
 
-      <!-- KPI Cards (Datos Dinámicos del Backend) -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <!-- Card 1 -->
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
-          <div>
-            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Flota Activa</div>
-            <div class="text-2xl font-bold text-slate-800">{{ kpis.flota_activa }}</div>
-          </div>
-          <div class="mt-3 text-green-600 text-xs font-bold flex items-center">
-            <i class="fas fa-arrow-up mr-1"></i> {{ kpis.operatividad }} Operativo
-          </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
-          <div>
-            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Pesca del Día</div>
-            <div class="text-2xl font-bold text-slate-800">{{ kpis.pesca_dia }}</div>
-          </div>
-          <div class="mt-3 text-blue-600 text-xs font-bold">
-            Meta: 1200 TM
-          </div>
-        </div>
-
-        <!-- Card 3 -->
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
-          <div>
-            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Ahorro Combustible</div>
-            <div class="text-2xl font-bold text-slate-800">{{ kpis.ahorro }}</div>
-          </div>
-          <div class="mt-3 text-purple-600 text-xs font-bold">
-            vs. Rutas manuales
-          </div>
-        </div>
-
-        <!-- Card 4 -->
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition">
-          <div>
-            <div class="text-slate-400 text-xs font-bold uppercase mb-1">Estado Sistema</div>
-            <div class="text-2xl font-bold text-slate-800">Online</div>
-          </div>
-          <div class="mt-3 text-emerald-600 text-xs font-bold flex items-center">
-            <span class="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></span> Conectado
-          </div>
-        </div>
+      <div *ngIf="cargando" class="flex flex-col items-center justify-center h-64 text-blue-500">
+        <i class="fas fa-circle-notch fa-spin text-4xl mb-3"></i>
+        <p class="font-medium animate-pulse">Analizando datos oceanográficos...</p>
       </div>
 
-      <!-- Sección Principal: Mapa y Lista -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[400px]">
+      <div *ngIf="errorCarga && !cargando" class="bg-red-50 text-red-600 p-6 rounded-xl text-center border border-red-100">
+        <i class="fas fa-exclamation-triangle text-2xl mb-2"></i>
+        <p>No se pudo conectar con el servidor central.</p>
+        <button (click)="cargarDatos()" class="mt-2 text-sm font-bold underline">Reintentar</button>
+      </div>
 
-        <!-- Mapa Miniatura (Visualización en Vivo) -->
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
-          <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-white z-10">
-            <h3 class="font-bold text-slate-700 flex items-center">
-              <i class="fas fa-globe-americas text-blue-500 mr-2"></i> Vista Satelital (En Vivo)
-            </h3>
-            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded">Actualizado hace 1 min</span>
-          </div>
+      <div *ngIf="reporte && !cargando" class="animate-[fadeIn_0.5s_ease-out]">
 
-          <!-- Contenedor Mapa Mini -->
-          <div class="flex-1 relative bg-slate-200 flex justify-center items-center overflow-hidden">
-            <!--
-               Usamos el mismo aspect ratio y lógica de imagen que en el Mapa Completo
-               para mantener consistencia visual.
-            -->
-            <div id="dashboard-map-area"
-                 class="relative h-[90%] aspect-[0.69] bg-white shadow-lg rounded border border-white"
-                 [style.backgroundImage]="'url(' + mapaUrl + ')'"
-                 style="background-size: 100% 100%; background-position: center; background-repeat: no-repeat;">
-              <!-- Puntos inyectados dinámicamente por dashboard.component.ts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <i class="fas fa-fish text-6xl text-blue-600"></i>
             </div>
+            <p class="text-xs font-bold text-slate-400 uppercase mb-1">Biomasa Detectada</p>
+            <h3 class="text-2xl font-black text-slate-800">{{ reporte.total_toneladas_detectadas | number:'1.0-0' }} TM</h3>
+            <p class="text-xs text-blue-500 mt-2 font-medium">
+              <i class="fas fa-water mr-1"></i> Disponible
+            </p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <i class="fas fa-ship text-6xl text-emerald-600"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-400 uppercase mb-1">Capacidad Operativa</p>
+            <h3 class="text-2xl font-black text-slate-800">{{ reporte.flota_capacidad_total | number:'1.0-0' }} TM</h3>
+            <p class="text-xs text-emerald-500 mt-2 font-medium">
+              <i class="fas fa-check mr-1"></i> Flota Activa
+            </p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <i class="fas fa-map-marked-alt text-6xl text-orange-500"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-400 uppercase mb-1">Zona Más Activa</p>
+            <h3 class="text-lg font-black text-slate-800 leading-tight">{{ reporte.zonas_mas_activas }}</h3>
+            <p class="text-xs text-orange-500 mt-2 font-medium">
+              <i class="fas fa-temperature-high mr-1"></i> Alta densidad
+            </p>
+          </div>
+
+          <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+            <div class="absolute right-0 top-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <i class="fas fa-leaf text-6xl text-green-500"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-400 uppercase mb-1">CO2 Evitado (Est.)</p>
+            <h3 class="text-2xl font-black text-slate-800">{{ reporte.ahorro_carbono | number:'1.0-0' }} kg</h3>
+            <p class="text-xs text-green-600 mt-2 font-medium">
+              <i class="fas fa-arrow-down mr-1"></i> Por Rutas VRP
+            </p>
           </div>
         </div>
 
-        <!-- Lista de Flota (Resumen en tiempo real) -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
-          <div class="p-4 border-b border-slate-50 bg-white">
-            <h3 class="font-bold text-slate-700">Actividad Reciente</h3>
-          </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
 
-          <div class="flex-1 overflow-y-auto p-2 space-y-2 bg-slate-50/50">
-            <!-- Item Dinámico (Bucle ngFor sobre barcos reales) -->
-            <div *ngFor="let barco of listaEmbarcaciones" class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm hover:border-blue-300 transition group cursor-pointer">
-              <div class="flex justify-between items-center mb-1">
-                <span class="font-bold text-sm text-slate-700 group-hover:text-blue-600">{{ barco.nombre }}</span>
-                <span [ngClass]="{
-                        'bg-green-100 text-green-700': barco.estado === 'EN_RUTA',
-                        'bg-slate-100 text-slate-600': barco.estado === 'EN_PUERTO',
-                        'bg-yellow-100 text-yellow-700': barco.estado === 'MANTENIMIENTO'
-                    }" class="text-[10px] px-2 py-0.5 rounded font-bold uppercase">{{ barco.estado }}</span>
-              </div>
-              <div class="flex justify-between items-center text-xs text-slate-500">
-                <span><i class="fas fa-box mr-1 text-slate-400"></i> {{ barco.capacidad_bodega }} TM</span>
-                <span *ngIf="barco.estado === 'EN_RUTA'"><i class="fas fa-clock mr-1 text-blue-400"></i> {{ barco.eta }}</span>
+          <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <h3 class="font-bold text-slate-800 mb-6">Proyección de Captura Semanal</h3>
+            <div class="h-64 flex items-end justify-between gap-2">
+              <div *ngFor="let item of reporte.tendencia_semanal" class="flex flex-col items-center w-full group cursor-pointer">
+                <div class="text-xs font-bold text-blue-600 mb-2 opacity-0 group-hover:opacity-100 transition-opacity -translate-y-2 group-hover:translate-y-0">
+                  {{ item.value }}
+                </div>
+                <div [style.height]="getBarHeight(item.value)"
+                     class="w-full bg-blue-100 rounded-t-md relative hover:bg-blue-500 transition-colors duration-300">
+                </div>
+                <span class="text-xs font-bold text-slate-400 mt-3">{{ item.label }}</span>
               </div>
             </div>
-
-            <!-- Estado Vacío (Si no hay barcos registrados) -->
-            <div *ngIf="listaEmbarcaciones.length === 0" class="text-center py-8 text-slate-400 text-sm">
-              <i class="fas fa-ship text-2xl mb-2 opacity-30"></i>
-              <p>No hay actividad reciente.</p>
-            </div>
           </div>
 
-          <div class="p-3 border-t bg-white text-center">
-            <a routerLink="/flota" class="text-blue-600 text-xs font-bold hover:underline">Ver toda la flota</a>
+          <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            <h3 class="font-bold text-slate-800 mb-4">Flota por Material</h3>
+            <div class="space-y-4">
+              <div *ngFor="let mat of reporte.distribucion_materiales" class="group">
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="font-medium text-slate-600">{{ mat.material }}</span>
+                  <span class="font-bold text-slate-800">{{ mat.cantidad }} und.</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div class="bg-slate-800 h-2 rounded-full transition-all duration-1000 group-hover:bg-blue-600"
+                       [style.width]="mat.porcentaje + '%'"></div>
+                </div>
+                <div class="text-[10px] text-right text-slate-400 mt-0.5">{{ mat.porcentaje }}% del total</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800">Ranking de Eficiencia de Flota</h3>
+            <button class="text-xs font-bold text-blue-600 hover:underline">Ver reporte completo</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead class="bg-slate-50 text-xs uppercase font-bold text-slate-500">
+              <tr>
+                <th class="p-4">#</th>
+                <th class="p-4">Embarcación</th>
+                <th class="p-4">Captura Proyectada</th>
+                <th class="p-4 text-right">Score Eficiencia</th>
+              </tr>
+              </thead>
+              <tbody class="text-sm divide-y divide-slate-100">
+              <tr *ngFor="let barco of reporte.top_barcos" class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 font-bold text-slate-400">
+                  <span *ngIf="barco.ranking === 1" class="text-yellow-500"><i class="fas fa-crown"></i></span>
+                  <span *ngIf="barco.ranking > 1">{{ barco.ranking }}</span>
+                </td>
+                <td class="p-4 font-bold text-slate-700">{{ barco.nombre }}</td>
+                <td class="p-4 text-slate-600">{{ barco.captura_total | number:'1.0-0' }} TM</td>
+                <td class="p-4 text-right">
+                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">
+                      {{ barco.eficiencia }} pts
+                    </span>
+                </td>
+              </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 

@@ -1,8 +1,9 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- IMPORTANTE
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-import {SidebarComponent} from '../../components/sidebar/sidebar';
+import { SidebarComponent } from '../../components/sidebar/sidebar';
+// Si usas ng2-charts u otra librería, impórtala aquí, si no, usamos HTML/CSS puro
+// Para este ejemplo usaremos HTML/CSS puro para las barras para evitar errores de dependencias
 
 @Component({
   selector: 'app-dashboard',
@@ -13,81 +14,42 @@ import {SidebarComponent} from '../../components/sidebar/sidebar';
 })
 export class DashboardComponent implements OnInit {
 
-  // Datos dinámicos
-  kpis: any = {
-    flota_activa: 'Cargando...',
-    operatividad: '--%',
-    pesca_dia: '--',
-    ahorro: '--',
-    alertas: 0
-  };
+  reporte: any = null;
+  cargando: boolean = true;
+  errorCarga: boolean = false;
 
-  listaEmbarcaciones: any[] = [];
-
-  // Mapa
-  mapaUrl = 'assets/mapa_peru.jpg'; // La misma imagen local que en MapaComponent
-
-  constructor(private router: Router, private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarDatos();
   }
 
   cargarDatos() {
-    // 1. Traer KPIs
-    this.api.getKpis().subscribe(data => {
-      this.kpis = data;
-    });
+    this.cargando = true;
+    this.errorCarga = false;
+    this.cdr.detectChanges(); // Forzar vista de spinner
 
-    // 2. Traer Flota (Para la lista lateral)
-    this.api.getEmbarcaciones().subscribe(data => {
-      // Tomamos solo los primeros 5 para no saturar el dashboard
-      this.listaEmbarcaciones = data.slice(0, 5);
-    });
-
-    // 3. Traer Puntos del Mapa y Dibujar
-    this.api.getDatosMapa().subscribe(({ puertos, bancos }) => {
-      const bancosValidos = bancos.filter((b: any) => b.x > 0 && b.y > 0);
-      // Usamos timeout para asegurar que el HTML del mapa existe
-      setTimeout(() => this.dibujarMapaMiniatura(puertos, bancosValidos), 100);
+    this.api.getReportesAvanzados().subscribe({
+      next: (data) => {
+        console.log("Dashboard Data:", data);
+        this.reporte = data;
+        this.cargando = false;
+        this.cdr.detectChanges(); // <--- LA SOLUCIÓN: Actualizar vista
+      },
+      error: (err) => {
+        console.error("Error dashboard:", err);
+        this.cargando = false;
+        this.errorCarga = true;
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  dibujarMapaMiniatura(puertos: any[], bancos: any[]) {
-    const mapArea = document.getElementById('dashboard-map-area');
-    if (!mapArea) return;
-
-    mapArea.innerHTML = ''; // Limpiar
-
-    const fragment = document.createDocumentFragment();
-
-    // Dibujar Bancos (Puntos rojos pequeños)
-    // Solo dibujamos una muestra aleatoria (ej. 50) para que el mapa pequeño se vea limpio
-    const muestraBancos = bancos.sort(() => 0.5 - Math.random()).slice(0, 50);
-
-    muestraBancos.forEach((b: any) => {
-      const el = document.createElement('div');
-      el.className = `absolute w-1 h-1 bg-red-500/60 rounded-full z-10`;
-      el.style.left = b.x + '%';
-      el.style.top = b.y + '%';
-      fragment.appendChild(el);
-    });
-
-    // Dibujar Puertos (Puntos azules)
-    puertos.forEach((p: any) => {
-      const el = document.createElement('div');
-      el.className = `absolute w-2 h-2 bg-blue-600 border border-white rounded-sm shadow z-20`;
-      el.style.left = p.x + '%';
-      el.style.top = p.y + '%';
-      el.title = p.nombre;
-      fragment.appendChild(el);
-    });
-
-    mapArea.appendChild(fragment);
-  }
-
-  logout() {
-    localStorage.clear();
-    this.router.navigate(['/login']);
+  // Función auxiliar para calcular altura de barras CSS (0 a 100%)
+  getBarHeight(valor: number): string {
+    if (!this.reporte) return '0%';
+    const max = Math.max(...this.reporte.tendencia_semanal.map((d: any) => d.value)) || 1;
+    const porcentaje = (valor / max) * 100;
+    return `${porcentaje}%`;
   }
 }
