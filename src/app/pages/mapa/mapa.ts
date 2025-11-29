@@ -15,7 +15,7 @@ export class MapaComponent implements OnInit {
 
   cargandoRuta: boolean = false;
   datosRuta: any = null;
-  mapaUrl = '/assets/mapa.jpg';
+  mapaUrl = 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Peru_location_map.svg';
 
   listaBarcos: any[] = [];
   listaPuertos: any[] = [];

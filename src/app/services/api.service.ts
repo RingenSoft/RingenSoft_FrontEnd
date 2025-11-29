@@ -48,4 +48,12 @@ export class ApiService {
   getReportesAvanzados(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/reportes/dashboard`, this.getHeaders());
   }
+
+  cambiarEstadoEmbarcacion(id: string, nuevoEstado: string): Observable<any> {
+    return this.http.patch<any>(
+      `${this.apiUrl}/embarcaciones/${id}/estado`,
+      { estado: nuevoEstado },
+      this.getHeaders()
+    );
+  }
 }

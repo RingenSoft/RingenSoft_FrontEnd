@@ -1,8 +1,8 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- IMPORTAR ChangeDetectorRef
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import {SidebarComponent} from '../../components/sidebar/sidebar';
+import { SidebarComponent } from '../../components/sidebar/sidebar';
 
 @Component({
   selector: 'app-flota',
@@ -27,7 +27,6 @@ export class FlotaComponent implements OnInit {
     anio_fabricacion: 2020
   };
 
-  // Inyectamos ChangeDetectorRef en el constructor
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -36,16 +35,12 @@ export class FlotaComponent implements OnInit {
 
   cargarFlota() {
     this.cargando = true;
-    // Forzamos detección al iniciar carga para asegurar que se vea el spinner
     this.cdr.detectChanges();
 
     this.api.getEmbarcaciones().subscribe({
       next: (data) => {
-        console.log("Datos recibidos:", data); // Log para depurar
         this.embarcaciones = data;
         this.cargando = false;
-        // ESTA ES LA SOLUCIÓN MÁGICA:
-        // Forzamos a Angular a actualizar la vista inmediatamente
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -67,46 +62,48 @@ export class FlotaComponent implements OnInit {
         this.mensaje = `¡${res.nombre} registrado correctamente!`;
         this.mostrarFormulario = false;
         this.cargarFlota();
+        this.nuevoBarco = { nombre: '', capacidad_bodega: 300, velocidad_promedio: 12, consumo: 1.5, material: 'ACERO NAVAL', tripulacion: 10, anio_fabricacion: 2020 };
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: (err) => alert('Error al registrar embarcación.')
+    });
+  }
 
-        this.nuevoBarco = {
-          nombre: '',
-          capacidad_bodega: 300,
-          velocidad_promedio: 12,
-          consumo: 1.5,
-          material: 'ACERO NAVAL',
-          tripulacion: 10,
-          anio_fabricacion: 2020
-        };
+  // --- NUEVA LÓGICA DE ESTADO (SELECTOR) ---
+  cambiarEstado(barco: any, event: any) {
+    const nuevoEstado = event.target.value;
+    const estadoAnterior = barco.estado;
 
-        this.cdr.detectChanges(); // Actualizar vista tras registro
-        setTimeout(() => {
-          this.mensaje = '';
-          this.cdr.detectChanges(); // Actualizar vista al borrar mensaje
-        }, 3000);
+    // Actualización visual optimista
+    barco.estado = nuevoEstado;
+
+    this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado).subscribe({
+      next: (res) => {
+        console.log("Estado actualizado:", res);
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
-        alert('Error al registrar embarcación.');
+        barco.estado = estadoAnterior; // Revertir si falla
+        alert("Error al cambiar estado.");
+        this.cdr.detectChanges();
       }
     });
   }
 
   optimizar(id: string, nombre: string) {
     this.mensaje = `Calculando ruta óptima para ${nombre}...`;
-    this.cdr.detectChanges(); // Mostrar mensaje inmediatamente
-
-    this.api.optimizarRuta({ id_embarcacion: id }).subscribe({
+    this.cdr.detectChanges();
+    // Parametros minimos requeridos por el backend
+    this.api.optimizarRuta({ id_embarcacion: id, puerto_salida_id: 'CHIMBOTE' }).subscribe({
       next: (res) => {
-        this.mensaje = `✅ Ruta generada: ${res.distancia_total_km} km (Tiempo est: ${res.tiempo_estimado_horas}h)`;
+        this.mensaje = `✅ Ruta generada: ${res.distancia_total_km} km`;
         this.cdr.detectChanges();
-        setTimeout(() => {
-          this.mensaje = '';
-          this.cdr.detectChanges();
-        }, 5000);
+        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 5000);
       },
       error: (err) => {
-        console.error(err);
-        this.mensaje = '❌ Error de conexión con el algoritmo.';
+        this.mensaje = '❌ Error de conexión.';
         this.cdr.detectChanges();
       }
     });

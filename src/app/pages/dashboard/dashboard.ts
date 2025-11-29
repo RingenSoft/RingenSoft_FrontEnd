@@ -2,13 +2,14 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- IM
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import {RouterLink} from '@angular/router';
 // Si usas ng2-charts u otra librería, impórtala aquí, si no, usamos HTML/CSS puro
 // Para este ejemplo usaremos HTML/CSS puro para las barras para evitar errores de dependencias
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent],
+  imports: [CommonModule, SidebarComponent,RouterLink],
   templateUrl: 'dashboard.html',
   styleUrl: 'dashboard.css'
 })

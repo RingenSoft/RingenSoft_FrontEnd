@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // <--- IMPORTAR ESTO
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
-import {SidebarComponent} from '../../components/sidebar/sidebar';
+import { SidebarComponent } from '../../components/sidebar/sidebar';
 
 @Component({
   selector: 'app-reportes',
@@ -15,22 +15,25 @@ export class ReportesComponent implements OnInit {
   data: any = null;
   fechaActual = new Date();
 
-  constructor(private api: ApiService) {}
+  // Inyectamos el detector de cambios
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarDatosAvanzados();
   }
 
   cargarDatosAvanzados() {
-    // Llamamos al nuevo endpoint que creamos en el ApiService
     this.api.getReportesAvanzados().subscribe({
       next: (res) => {
-        // Asignamos la respuesta a la variable data
-        // El HTML detectará que 'data' ya no es null y mostrará el dashboard
+        console.log("Reportes cargados:", res);
         this.data = res;
+        // La línea mágica que quita el "Cargando...":
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Error cargando reportes:", err);
+        // Aquí podrías poner una variable de error si quieres
+        this.cdr.detectChanges();
       }
     });
   }
