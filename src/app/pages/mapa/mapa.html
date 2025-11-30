@@ -55,16 +55,24 @@
     </div>
 
     <div class="flex-1 bg-[#a5bfdd] relative overflow-hidden flex justify-center items-center">
+
       <div id="full-map-area"
-           class="relative h-[95vh] aspect-[0.82] bg-slate-300 shadow-2xl border-4 border-white overflow-hidden"
+           class="relative h-[95vh] aspect-[0.82] bg-slate-300 shadow-2xl border-4 border-white transition-transform duration-1000 ease-in-out will-change-transform"
+           [style.transform]="transformStyle"
+           [style.transform-origin]="transformOrigin"
            [style.backgroundImage]="'url(' + mapaUrl + ')'"
            style="background-size: 100% 100%;">
       </div>
 
-      <div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-3 py-2 rounded text-[10px] flex gap-3 pointer-events-none">
+      <div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-3 py-2 rounded text-[10px] flex gap-3 pointer-events-none shadow-sm z-50">
         <div class="flex items-center"><span class="w-2 h-2 bg-blue-600 mr-1"></span> Puerto</div>
         <div class="flex items-center"><span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span> Banco</div>
       </div>
+
+      <button *ngIf="isZoomed" (click)="resetZoom()"
+              class="absolute bottom-4 right-4 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg shadow-lg border border-slate-200 text-xs font-bold transition-all z-50 flex items-center animate-[fadeIn_0.3s]">
+        <i class="fas fa-expand mr-2"></i> Ver Mapa Completo
+      </button>
     </div>
 
     <div *ngIf="datosRuta" class="w-80 bg-white border-l border-slate-200 shadow-xl z-40 flex flex-col animate-[slideInRight_0.4s]">
@@ -111,7 +119,9 @@
           </tbody>
         </table>
       </div>
-      <div class="p-4 bg-slate-50 border-t border-slate-200 text-[11px] text-slate-700 leading-relaxed h-48 overflow-y-auto font-mono">
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 text-[10px] text-slate-600 leading-relaxed h-32 overflow-y-auto">
+        <strong class="block mb-1 text-slate-700">Detalle Técnico:</strong>
         <span class="whitespace-pre-line">{{ datosRuta.resumen_texto }}</span>
       </div>
     </div>

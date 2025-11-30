@@ -17,6 +17,12 @@ export class MapaComponent implements OnInit {
   datosRuta: any = null;
   mapaUrl = 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Peru_location_map.svg';
 
+  // --- [NUEVO] PEGAR ESTO AQUÍ DEBAJO ---
+  transformStyle: string = 'scale(1)';
+  transformOrigin: string = 'center center';
+  isZoomed: boolean = false;
+  // --------------------------------------
+
   listaBarcos: any[] = [];
   listaPuertos: any[] = [];
   barcoSeleccionadoId: string = '';
@@ -110,6 +116,7 @@ export class MapaComponent implements OnInit {
 
     this.cargandoRuta = true;
     this.datosRuta = null;
+    this.resetZoom();
     this.cdr.detectChanges();
 
     const payload = {
@@ -125,6 +132,9 @@ export class MapaComponent implements OnInit {
       next: (res) => {
         this.datosRuta = res;
         this.dibujarRutaEnMapa(res.secuencia_ruta);
+
+        setTimeout(() => this.aplicarZoomARuta(res.secuencia_ruta), 100);
+
         this.cargandoRuta = false;
         this.cdr.detectChanges();
       },
@@ -205,5 +215,45 @@ export class MapaComponent implements OnInit {
     });
 
     mapArea.appendChild(svg);
+  }
+  aplicarZoomARuta(ruta: any[]) {
+    if (!ruta || ruta.length < 2) return;
+
+    // 1. Encontrar los límites (Caja que encierra la ruta)
+    let minX = 100, maxX = 0, minY = 100, maxY = 0;
+
+    ruta.forEach(p => {
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    });
+
+    // 2. Calcular centro
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const width = maxX - minX;
+    const height = maxY - minY;
+
+    // 3. Calcular escala (con margen para que no quede pegado)
+    const scaleX = 80 / (width || 1);
+    const scaleY = 80 / (height || 1);
+    let scale = Math.min(scaleX, scaleY);
+
+    if (scale > 3.5) scale = 3.5; // Máximo zoom permitido
+    if (scale < 1) scale = 1;     // No alejar
+
+    // 4. Aplicar al HTML
+    this.transformOrigin = `${centerX}% ${centerY}%`;
+    this.transformStyle = `scale(${scale})`;
+    this.isZoomed = true;
+    this.cdr.detectChanges();
+  }
+
+  resetZoom() {
+    this.transformStyle = 'scale(1)';
+    this.transformOrigin = 'center center';
+    this.isZoomed = false;
+    this.cdr.detectChanges();
   }
 }
