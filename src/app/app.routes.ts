@@ -10,11 +10,8 @@ import {authGuard} from './guards/auth-guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
-  // --- Rutas Públicas ---
   { path: 'login', component: LoginComponent },
-  { path: 'registro', component: RegistroComponent }, // <--- NUEVA RUTA
-
-  // --- Rutas Privadas (Requieren Login) ---
+  { path: 'registro', component: RegistroComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
   { path: 'mapa', component: MapaComponent, canActivate: [authGuard] },
   { path: 'flota', component: FlotaComponent, canActivate: [authGuard] },

@@ -44,7 +44,6 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/optimizar-ruta/`, datos);
   }
 
-  // NUEVO: Obtener Reportes Completos
   getReportesAvanzados(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/reportes/dashboard`, this.getHeaders());
   }

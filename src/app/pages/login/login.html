@@ -1,53 +1,52 @@
-<div class="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700 font-sans">
-  <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition hover:scale-[1.01] duration-300">
-    <!-- Logo y Título -->
-    <div class="flex justify-center mb-6">
-      <div class="bg-blue-100 p-4 rounded-full">
-        <i class="fas fa-fish text-4xl text-blue-600"></i>
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden font-sans">
+
+  <div class="absolute inset-0 z-0">
+    <img src="https://media.istockphoto.com/id/649765276/es/foto/la-pesca-de-arrastre.jpg?s=612x612&w=0&k=20&c=gcKloEnS9RKPF-4AdKA4lDJ0BYUCs4V87vMckiYpaGE="
+         alt="Mar Peruano"
+         class="w-full h-full object-cover animate-[pulse_60s_infinite]">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
+  </div>
+
+  <div class="relative z-10 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl w-full max-w-[400px] p-8 border-t-4 border-blue-600 animate-[fadeInUp_0.5s]">
+
+    <div class="text-center mb-8">
+      <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm ring-4 ring-blue-50/50">
+        <i class="fas fa-anchor text-3xl text-blue-600"></i>
       </div>
-    </div>
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Ringensoft</h2>
-    <p class="text-center text-gray-500 mb-6 text-sm">Optimización de Rutas de Acopio</p>
-
-    <!-- Mensaje de Error -->
-    <div *ngIf="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-xs font-bold text-center animate-pulse">
-      {{ errorMsg }}
+      <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">RingenSoft</h1>
+      <p class="text-slate-500 text-sm mt-1 font-medium">Acceso a Flota</p>
     </div>
 
-    <!-- Formulario -->
-    <form (ngSubmit)="ingresar()">
-      <div class="mb-4">
-        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">ID Flota / Usuario</label>
+    <div *ngIf="errorMsg" class="mb-6 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 rounded-r text-sm flex items-center shadow-sm">
+      <i class="fas fa-exclamation-circle mr-2"></i> {{ errorMsg }}
+    </div>
+
+    <form (ngSubmit)="ingresar()" class="space-y-5">
+      <div class="space-y-1">
+        <label class="text-xs font-bold text-slate-500 uppercase ml-1 tracking-wider">Usuario</label>
         <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                        <i class="fas fa-user"></i>
-                    </span>
-          <input [(ngModel)]="usuario" name="usuario" class="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" type="text" placeholder="Usuario" required>
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-user text-slate-400"></i></div>
+          <input [(ngModel)]="usuario" name="usuario" type="text" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm placeholder:text-slate-300" placeholder="ID Corporativo">
         </div>
       </div>
-      <div class="mb-6">
-        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">Contraseña</label>
+
+      <div class="space-y-1">
+        <label class="text-xs font-bold text-slate-500 uppercase ml-1 tracking-wider">Contraseña</label>
         <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                        <i class="fas fa-lock"></i>
-                    </span>
-          <input [(ngModel)]="password" name="password" class="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" type="password" placeholder="•••••••" required>
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-lock text-slate-400"></i></div>
+          <input [(ngModel)]="password" name="password" type="password" required class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all text-sm placeholder:text-slate-300" placeholder="••••••••">
         </div>
       </div>
-      <button [disabled]="cargando" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center" type="submit">
-        <span *ngIf="!cargando">Ingresar al Sistema</span>
-        <span *ngIf="cargando"><i class="fas fa-spinner fa-spin mr-2"></i> Validando...</span>
+
+      <button type="submit" [disabled]="cargando" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-500/30 transition-all transform hover:-translate-y-0.5 disabled:opacity-70 flex justify-center items-center">
+        <span *ngIf="!cargando">INGRESAR</span>
+        <div *ngIf="cargando"><i class="fas fa-circle-notch fa-spin mr-2"></i></div>
       </button>
     </form>
 
-    <!-- Footer: Enlace a Registro (NUEVO) -->
-    <div class="text-center mt-6 border-t border-gray-100 pt-4">
-      <p class="text-xs text-gray-500 mb-1">¿Nuevo en Ringensoft?</p>
-      <a routerLink="/registro" class="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer">
-        Crea tu cuenta aquí
-      </a>
+    <div class="mt-8 text-center border-t border-slate-100 pt-6">
+      <p class="text-slate-400 text-xs mb-2">¿Nuevo en la empresa?</p>
+      <a routerLink="/registro" class="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer transition-colors">Crear una cuenta</a>
     </div>
-
-    <p class="text-center text-[10px] text-gray-400 mt-6">&copy; 2025 Ringensoft Analytics</p>
   </div>
 </div>

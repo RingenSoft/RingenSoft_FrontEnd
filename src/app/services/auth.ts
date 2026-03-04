@@ -7,12 +7,10 @@ import { Router } from '@angular/router';
   providedIn: 'root'
 })
 export class AuthService {
-  // URL base para autenticación
   private apiUrl = 'http://127.0.0.1:8000/auth';
 
   constructor(private http: HttpClient, private router: Router) { }
 
-  // Login (Existente)
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
@@ -26,8 +24,7 @@ export class AuthService {
     );
   }
 
-  // NUEVO: Registro de usuario
-  // Conecta con @app.post("/auth/registro") en Python
+
   registro(datos: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/registro`, datos);
   }

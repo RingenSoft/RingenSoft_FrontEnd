@@ -15,7 +15,6 @@ export class ReportesComponent implements OnInit {
   data: any = null;
   fechaActual = new Date();
 
-  // Inyectamos el detector de cambios
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -27,12 +26,10 @@ export class ReportesComponent implements OnInit {
       next: (res) => {
         console.log("Reportes cargados:", res);
         this.data = res;
-        // La línea mágica que quita el "Cargando...":
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Error cargando reportes:", err);
-        // Aquí podrías poner una variable de error si quieres
         this.cdr.detectChanges();
       }
     });

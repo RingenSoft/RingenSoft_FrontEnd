@@ -1,17 +1,18 @@
 import { Component } from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import {AuthService} from '../../services/auth';
+import { AuthService } from '../../services/auth'; // Tu servicio correcto
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule,RouterLink],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: 'login.html',
   styleUrl: 'login.css'
 })
 export class LoginComponent {
+  // Variables que usa el HTML nuevo
   usuario: string = '';
   password: string = '';
   errorMsg: string = '';
@@ -20,9 +21,9 @@ export class LoginComponent {
   constructor(private auth: AuthService, private router: Router) {}
 
   ingresar() {
-    // Validación básica de campos vacíos
+    // 1. Validación Local
     if (!this.usuario || !this.password) {
-      this.errorMsg = 'Por favor completa todos los campos';
+      this.errorMsg = 'Por favor ingresa tu ID y contraseña.';
       return;
     }
 
@@ -30,29 +31,31 @@ export class LoginComponent {
     this.errorMsg = '';
 
     const credenciales = {
-      username: this.usuario,
+      username: this.usuario, // El backend espera "username"
       password: this.password
     };
 
-    // Llamada al servicio de autenticación
+    // 2. Llamada al AuthService
     this.auth.login(credenciales).subscribe({
       next: (res) => {
         console.log('Login exitoso', res);
         this.cargando = false;
-        // Si el login es correcto, navegamos al sistema
+        // Redirigir al Dashboard tras éxito
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
         console.error('Error login', err);
         this.cargando = false;
 
-        // Manejo de errores HTTP del backend
+        // Mensajes amigables según error
         if (err.status === 401) {
-          this.errorMsg = 'Contraseña incorrecta';
+          this.errorMsg = 'Credenciales incorrectas. Verifica tu contraseña.';
         } else if (err.status === 404) {
-          this.errorMsg = 'Usuario no encontrado';
+          this.errorMsg = 'Usuario no encontrado en el sistema.';
+        } else if (err.status === 0) {
+          this.errorMsg = 'No hay conexión con el servidor.';
         } else {
-          this.errorMsg = 'Error de conexión con el servidor';
+          this.errorMsg = 'Error inesperado. Intenta más tarde.';
         }
       }
     });

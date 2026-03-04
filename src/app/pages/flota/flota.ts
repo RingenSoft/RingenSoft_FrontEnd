@@ -70,12 +70,10 @@ export class FlotaComponent implements OnInit {
     });
   }
 
-  // --- NUEVA LÓGICA DE ESTADO (SELECTOR) ---
   cambiarEstado(barco: any, event: any) {
     const nuevoEstado = event.target.value;
     const estadoAnterior = barco.estado;
 
-    // Actualización visual optimista
     barco.estado = nuevoEstado;
 
     this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado).subscribe({
@@ -85,7 +83,7 @@ export class FlotaComponent implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        barco.estado = estadoAnterior; // Revertir si falla
+        barco.estado = estadoAnterior;
         alert("Error al cambiar estado.");
         this.cdr.detectChanges();
       }
@@ -95,7 +93,6 @@ export class FlotaComponent implements OnInit {
   optimizar(id: string, nombre: string) {
     this.mensaje = `Calculando ruta óptima para ${nombre}...`;
     this.cdr.detectChanges();
-    // Parametros minimos requeridos por el backend
     this.api.optimizarRuta({ id_embarcacion: id, puerto_salida_id: 'CHIMBOTE' }).subscribe({
       next: (res) => {
         this.mensaje = `✅ Ruta generada: ${res.distancia_total_km} km`;

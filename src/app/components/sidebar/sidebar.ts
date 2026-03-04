@@ -12,7 +12,6 @@ export class SidebarComponent {
   constructor(private router: Router) {}
 
   logout() {
-    // Aquí podrías limpiar tokens si los tuvieras
     this.router.navigate(['/login']);
   }
 }

@@ -3,8 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
 import {RouterLink} from '@angular/router';
-// Si usas ng2-charts u otra librería, impórtala aquí, si no, usamos HTML/CSS puro
-// Para este ejemplo usaremos HTML/CSS puro para las barras para evitar errores de dependencias
+
 
 @Component({
   selector: 'app-dashboard',
@@ -28,14 +27,14 @@ export class DashboardComponent implements OnInit {
   cargarDatos() {
     this.cargando = true;
     this.errorCarga = false;
-    this.cdr.detectChanges(); // Forzar vista de spinner
+    this.cdr.detectChanges();
 
     this.api.getReportesAvanzados().subscribe({
       next: (data) => {
         console.log("Dashboard Data:", data);
         this.reporte = data;
         this.cargando = false;
-        this.cdr.detectChanges(); // <--- LA SOLUCIÓN: Actualizar vista
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Error dashboard:", err);
@@ -46,7 +45,6 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  // Función auxiliar para calcular altura de barras CSS (0 a 100%)
   getBarHeight(valor: number): string {
     if (!this.reporte) return '0%';
     const max = Math.max(...this.reporte.tendencia_semanal.map((d: any) => d.value)) || 1;
