@@ -79,7 +79,7 @@ export class MapaComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsKey}`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.googleMapsKey}&libraries=visualization`;
       script.async = true;
       script.onload = () => resolve();
       document.head.appendChild(script);
@@ -121,30 +121,66 @@ export class MapaComponent implements OnInit, AfterViewInit, OnDestroy {
           });
         });
 
-        bancos.slice(0, 350).forEach((b: any) => {
-          const marker = new google.maps.Marker({
-            position: { lat: b.latitud, lng: b.longitud },
-            map: this.map,
-            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 3, fillColor: "#ef4444", fillOpacity: 0.7, strokeWeight: 0 }
+        // 1. Array matemático para el Heatmap de Google
+        const datosTermicos: any[] = [];
+
+        bancos.forEach((b: any) => {
+          // Asignamos el peso térmico. Si el agua es muy fría/ideal, tendrá más "peso" visual
+          let peso = 0;
+          if (b.temperatura <= 19.0) peso = 10; // Fuerte intensidad para aguas de pesca
+          else peso = 2; // Baja intensidad para aguas cálidas sin pesca
+
+          datosTermicos.push({
+            location: new google.maps.LatLng(b.latitud, b.longitud),
+            weight: peso
           });
-          marker.addListener("mouseover", () => {
-            this.infoWindow.setContent(`
-              <div style="padding:5px;font-family:sans-serif;">
-                <h4 style="margin:0 0 4px;color:#b91c1c;font-size:13px;font-weight:bold;">Banco #${b.id}</h4>
-                <div style="font-size:11px;color:#475569;line-height:1.5;">
-                  <b>Biomasa:</b> ${b.toneladas} TM<br>
-                  <b>Lat/Lon:</b> ${b.latitud.toFixed(3)}, ${b.longitud.toFixed(3)}
-                </div>
-              </div>`);
-            this.infoWindow.open(this.map, marker);
-          });
-          marker.addListener("mouseout", () => this.infoWindow.close());
+
+          // 2. Solo dibujamos los Cardúmenes reales (puntos de anclaje de biomasa)
+          if (b.toneladas > 0) {
+              const markerPez = new google.maps.Marker({
+                position: { lat: b.latitud, lng: b.longitud },
+                map: this.map,
+                icon: { 
+                  path: google.maps.SymbolPath.CIRCLE, scale: 5, 
+                  fillColor: "#ef4444", fillOpacity: 1, strokeWeight: 1, strokeColor: "#ffffff"
+                },
+                zIndex: 20
+              });
+
+              markerPez.addListener("mouseover", () => {
+                this.infoWindow.setContent(`
+                  <div style="padding:8px;font-family:sans-serif;">
+                    <h4 style="margin:0 0 5px;color:#10b981;font-weight:bold;">📍 Cardumen Activo</h4>
+                    <div style="font-size:12px;color:#475569;">
+                      <b>🐟 Biomasa:</b> ${b.toneladas} TM<br>
+                      <b>🌡️ SST Real:</b> ${b.temperatura} °C<br>
+                      <div style="font-size:10px;color:#94a3b8;margin-top:3px;">🛰️ Datos: Open-Meteo Satellite</div>
+                    </div>
+                  </div>`);
+                this.infoWindow.open(this.map, markerPez);
+              });
+              markerPez.addListener("mouseout", () => this.infoWindow.close());
+          }
         });
-      },
-      error: () => {
-        this.toast.error('No se pudieron cargar los datos del mapa.');
+
+        // 3. INYECTAR LA CAPA TÉRMICA REAL (HEATMAP)
+        const heatmap = new google.maps.visualization.HeatmapLayer({
+          data: datosTermicos,
+          map: this.map,
+          radius: 60, // Radio de difuminado para crear una mancha fluida
+          opacity: 0.5,
+          gradient: [
+            "rgba(0, 255, 255, 0)",      // Transparente
+            "rgba(0, 255, 255, 1)",      // Cyan (Agua muy fría)
+            "rgba(0, 191, 255, 1)",      // Celeste
+            "rgba(16, 185, 129, 1)",     // Verde (Agua Óptima)
+            "rgba(255, 165, 0, 1)",      // Naranja (Cálido)
+            "rgba(239, 68, 68, 1)"       // Rojo (Demasiado cálido)
+          ]
+        });
       }
-    });
+    }
+      );
   }
 
   cargarListaBarcos() {
@@ -325,7 +361,7 @@ export class MapaComponent implements OnInit, AfterViewInit, OnDestroy {
 
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text("Generado por Ringensoft — Algoritmo Híbrido Greedy + 2-Opt", 105, 290, { align: "center" });
+    doc.text("Generado por Ringensoft — Motor de Optimización Google OR-Tools", 105, 290, { align: "center" });
     doc.save(`Ruta_${ruta.id_embarcacion}_${fecha.replace(/\//g, '-')}.pdf`);
   }
 }

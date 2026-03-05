@@ -39,6 +39,15 @@ export class ApiService {
     return this.http.post<any>(`${this.apiUrl}/embarcaciones`, datos, this.getHeaders());
   }
 
+// Módulo de Puertos
+  getPuertos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/puertos`, this.getHeaders());
+  }
+
+  // Módulo de Embarcaciones (Dar de baja)
+  eliminarEmbarcacion(id_embarcacion: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/embarcaciones/${id_embarcacion}`, this.getHeaders());
+  }
   optimizarRuta(datos: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/optimizar-ruta/`, datos, this.getHeaders()); // ✅ Con auth
   }
