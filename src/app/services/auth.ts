@@ -2,14 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'http://127.0.0.1:8000/auth';
+  private apiUrl = `${environment.apiUrl}/auth`; // ✅ Ya no es hardcodeado
 
-  constructor(private http: HttpClient, private router: Router) { }
+  constructor(private http: HttpClient, private router: Router) {}
 
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
@@ -24,13 +23,12 @@ export class AuthService {
     );
   }
 
-
   registro(datos: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/registro`, datos);
   }
 
   logout() {
-    localStorage.clear();
+    localStorage.clear(); // ✅ Limpia todo
     this.router.navigate(['/login']);
   }
 
@@ -38,7 +36,7 @@ export class AuthService {
     return !!localStorage.getItem('token');
   }
 
-  getUsuarioActual() {
+  getUsuarioActual(): string | null {
     return localStorage.getItem('usuario');
   }
 }

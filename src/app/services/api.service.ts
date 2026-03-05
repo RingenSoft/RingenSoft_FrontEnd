@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, forkJoin } from 'rxjs';
+import { environment } from '../../environments/environment';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ApiService {
 
-  private apiUrl = 'http://127.0.0.1:8000';
+  private apiUrl = environment.apiUrl; // ✅ Ya no es hardcodeado
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   private getHeaders() {
     const token = localStorage.getItem('token');
@@ -22,7 +21,7 @@ export class ApiService {
   }
 
   getKpis(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/kpis`);
+    return this.http.get<any>(`${this.apiUrl}/kpis`, this.getHeaders());
   }
 
   getEmbarcaciones(): Observable<any[]> {
@@ -41,7 +40,7 @@ export class ApiService {
   }
 
   optimizarRuta(datos: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/optimizar-ruta/`, datos);
+    return this.http.post<any>(`${this.apiUrl}/optimizar-ruta/`, datos, this.getHeaders()); // ✅ Con auth
   }
 
   getReportesAvanzados(): Observable<any> {

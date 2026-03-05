@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth';
+import { ToastService } from '../../toast/toast.service';
 
 @Component({
   selector: 'app-registro',
@@ -19,13 +20,25 @@ export class RegistroComponent {
     password: ''
   };
 
-  cargando: boolean = false;
+  cargando = false;
+  errorMsg = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private toast: ToastService  // ✅ Inyectado
+  ) {}
 
   registrar() {
-    if (!this.datos.username || !this.datos.password || !this.datos.nombre_completo) {
-      alert('Por favor completa todos los campos.');
+    this.errorMsg = '';
+
+    if (!this.datos.username.trim() || !this.datos.password || !this.datos.nombre_completo.trim()) {
+      this.errorMsg = 'Por favor completa todos los campos.';
+      return;
+    }
+
+    if (this.datos.password.length < 6) {
+      this.errorMsg = 'La contraseña debe tener al menos 6 caracteres.';
       return;
     }
 
@@ -33,13 +46,19 @@ export class RegistroComponent {
 
     this.auth.registro(this.datos).subscribe({
       next: () => {
-        alert('¡Cuenta creada con éxito! Ahora inicia sesión.');
+        this.cargando = false;
+        this.toast.success('¡Cuenta creada con éxito! Ahora inicia sesión.');  // ✅ Toast
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        console.error(err);
         this.cargando = false;
-        alert('Error al registrar. El usuario podría ya existir.');
+        if (err.status === 400) {
+          this.errorMsg = 'Este nombre de usuario ya existe. Elige otro.';
+        } else if (err.status === 0) {
+          this.errorMsg = 'No hay conexión con el servidor.';
+        } else {
+          this.errorMsg = 'Error al registrar. Intenta nuevamente.';
+        }
       }
     });
   }

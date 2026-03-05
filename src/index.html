@@ -5,12 +5,20 @@
   <title>Ringensoft - Optimización Pesquera</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sistema de optimización de rutas pesqueras con algoritmo VRP Híbrido Greedy + 2-Opt">
+
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7Joq65fsI77lCf7oE1zWoHTiam8FCuEs"></script>
+
+  <!-- ✅ Google Maps: la key se carga dinámicamente desde el componente Mapa
+       para poder leerla desde environment.ts -->
 </head>
 <body class="bg-gray-100">
-<app-root></app-root>
+  <app-root></app-root>
 </body>
 </html>
