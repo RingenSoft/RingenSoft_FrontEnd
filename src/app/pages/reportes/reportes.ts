@@ -1,91 +1,130 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component, OnInit, AfterViewInit, OnDestroy,
+  ChangeDetectorRef, ElementRef, ViewChild
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from '../../components/sidebar/sidebar';
 import { ApiService } from '../../services/api.service';
+import { SidebarComponent } from '../../components/sidebar/sidebar';
+import { Chart, registerables } from 'chart.js';
 import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+
+Chart.register(...registerables);
 
 @Component({
-  selector: 'app-reportes',
-  standalone: true,
-  imports: [CommonModule, SidebarComponent],
-  templateUrl: 'reportes.html'
+  selector:    'app-reportes',
+  standalone:  true,
+  imports:     [CommonModule, SidebarComponent],
+  templateUrl: 'reportes.html',
+  styleUrl:    'reportes.css'
 })
-export class ReportesComponent implements OnInit {
-  @ViewChild('reportePDF', { static: false }) reporteElement!: ElementRef;
+export class ReportesComponent implements OnInit, AfterViewInit, OnDestroy {
 
-  cargando = true;
-  flota: any[] = [];
-  fechaReporte = new Date();
+  @ViewChild('chartTendencia') chartTendenciaRef!: ElementRef<HTMLCanvasElement>;
 
-  analisis_mantenimiento: any[] = [];
-  eficiencia_global = 0;
+  data:       any  = null;
+  cargando    = true;
+  fechaActual = new Date();
+  private chart: Chart | null = null;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() {
-    this.api.getEmbarcaciones().subscribe({
-      next: (data) => {
-        this.flota = data;
-        this.generarAnalisisPredictivo();
+  ngOnInit()       { this.cargarDatosAvanzados(); }
+  ngAfterViewInit(){ /* chart se renderiza en cargarDatosAvanzados */ }
+  ngOnDestroy()    { this.chart?.destroy(); }
+
+  cargarDatosAvanzados() {
+    this.cargando = true;
+    this.api.getReportesAvanzados().subscribe({
+      next: (res) => {
+        this.data    = res;
         this.cargando = false;
+        this.cdr.detectChanges();
+        setTimeout(() => this._renderChart(), 80);
       },
-      error: () => {
-        this.cargando = false;
+      error: () => { this.cargando = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  private _renderChart() {
+    const el = this.chartTendenciaRef?.nativeElement;
+    if (!el || !this.data?.tendencia_semanal?.length) return;
+    this.chart?.destroy();
+
+    const labels = this.data.tendencia_semanal.map((d: any) => d.label);
+    const vals   = this.data.tendencia_semanal.map((d: any) => d.value);
+    const maxVal = Math.max(...vals);
+
+    this.chart = new Chart(el, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'TM proyectadas',
+          data:  vals,
+          backgroundColor: vals.map((v: number) =>
+            v === maxVal ? 'rgba(56,189,248,0.85)' : 'rgba(56,189,248,0.2)'
+          ),
+          borderColor: vals.map((v: number) =>
+            v === maxVal ? '#38bdf8' : 'rgba(56,189,248,0.4)'
+          ),
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a', titleColor: '#94a3b8',
+            bodyColor: '#38bdf8', borderColor: '#1e3a5f', borderWidth: 1,
+            callbacks: { label: (ctx) => ` ${(ctx.parsed.y ?? 0).toFixed(0)} TM` }
+          }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,0.03)' },
+               ticks: { color: '#475569', font: { size: 10, weight: 'bold' } } },
+          y: { grid: { color: 'rgba(255,255,255,0.03)' },
+               ticks: { color: '#475569', font: { size: 10 } }, beginAtZero: true }
+        }
       }
     });
   }
 
-  generarAnalisisPredictivo() {
-    let scoreTotal = 0;
+  // ── Helpers ───────────────────────────────────────────────────────────────
 
-    this.analisis_mantenimiento = this.flota.map(nave => {
-      const edad = this.fechaReporte.getFullYear() - (nave.anio_fabricacion || 2010);
-
-      // ✅ CORRECCIÓN: el backend envía "material" (no "material_casco")
-      //    _embarcacion_to_response() mapea material_casco → material
-      const materialNave = (nave.material || '').toUpperCase();
-
-      let riesgo = (edad * 2.5) + ((nave.consumo || 0) * 10);
-      if (nave.estado === 'MANTENIMIENTO')        riesgo += 30;
-      if (materialNave.includes('MADERA'))        riesgo += 15;
-      if (materialNave.includes('FIBRA'))         riesgo += 5;
-
-      riesgo = Math.min(100, Math.max(10, riesgo));
-      const salud = 100 - riesgo;
-      scoreTotal += salud;
-
-      let recomendacion = 'Operación Normal';
-      if (riesgo > 75)      recomendacion = 'Requiere inspección de motor urgente (IA Anomaly)';
-      else if (riesgo > 50) recomendacion = 'Programar dique seco próximo trimestre';
-
-      return {
-        ...nave,
-        riesgo_falla: Math.round(riesgo),
-        salud_pct:    Math.round(salud),
-        recomendacion
-      };
-    });
-
-    this.analisis_mantenimiento.sort((a, b) => b.riesgo_falla - a.riesgo_falla);
-    this.eficiencia_global = Math.round(scoreTotal / (this.flota.length || 1));
+  getEstadoPct(valor: number): number {
+    const total = this.data?.estado_flota?.reduce((s: number, e: any) => s + e.value, 0) || 1;
+    return Math.round((valor / total) * 100);
   }
 
-  exportarPDF() {
-    const DATA = this.reporteElement.nativeElement;
-    const btn  = document.getElementById('btn-exportar');
-    if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+  descargarPDF() {
+    if (!this.data) return;
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('RingenSoft — Centro de Inteligencia', 14, 20);
+    doc.setFontSize(10);
+    doc.text(`Generado: ${this.fechaActual.toLocaleString()}`, 14, 30);
+    doc.setLineWidth(0.3);
+    doc.line(14, 34, 196, 34);
 
-    html2canvas(DATA, { scale: 2, useCORS: true }).then(canvas => {
-      const fileWidth  = 208;
-      const fileHeight = (canvas.height * fileWidth) / canvas.width;
-      const FILEURI    = canvas.toDataURL('image/png');
-      const PDF        = new jsPDF('p', 'mm', 'a4');
+    doc.setFontSize(12);
+    doc.text('Métricas principales', 14, 44);
+    doc.setFontSize(10);
+    doc.text(`• Biomasa detectada:  ${this.data.total_toneladas_detectadas?.toFixed(0)} TM`, 14, 54);
+    doc.text(`• Capacidad activa:   ${this.data.flota_capacidad_total?.toFixed(0)} TM`, 14, 62);
+    doc.text(`• CO₂ evitado:        ${this.data.ahorro_carbono?.toFixed(0)} kg`, 14, 70);
+    doc.text(`• Zona más activa:    ${this.data.zonas_mas_activas || '—'}`, 14, 78);
 
-      PDF.addImage(FILEURI, 'PNG', 0, 0, fileWidth, fileHeight);
-      PDF.save(`Reporte_Flota_${this.fechaReporte.getTime()}.pdf`);
+    if (this.data.top_barcos?.length) {
+      doc.setFontSize(12);
+      doc.text('Ranking de productividad', 14, 96);
+      doc.setFontSize(10);
+      this.data.top_barcos.slice(0, 5).forEach((b: any, i: number) => {
+        doc.text(`${i + 1}. ${b.nombre}  —  ${b.captura_total?.toFixed(0)} TM  (${b.eficiencia?.toFixed(0)}%)`, 14, 106 + i * 8);
+      });
+    }
 
-      if (btn) btn.innerHTML = '<i class="fas fa-file-pdf"></i> Exportar a PDF';
-    });
+    doc.save(`reporte_ringensoft_${Date.now()}.pdf`);
   }
 }

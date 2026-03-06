@@ -1,46 +1,87 @@
-<aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl h-full z-50">
-  <div class="p-6 flex items-center border-b border-slate-800 bg-slate-950">
-    <i class="fas fa-fish text-3xl mr-3 text-blue-500 animate-bounce"></i>
-    <div>
-      <span class="font-bold text-xl tracking-wide block">Ringensoft</span>
-      <span class="text-[10px] text-slate-400 uppercase tracking-widest">Logística Pesquera</span>
+<nav class="w-16 lg:w-56 h-screen bg-slate-900 border-r border-slate-700/50
+            flex flex-col py-4 gap-1 flex-shrink-0 z-50">
+
+  <!-- Logo -->
+  <div class="px-4 pb-4 border-b border-slate-700/50 mb-2">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-anchor text-white text-sm"></i>
+      </div>
+      <span class="hidden lg:block text-white font-black text-base tracking-tight">RingenSoft</span>
     </div>
   </div>
 
-  <nav class="flex-1 p-4 space-y-2 mt-4">
-    <a routerLink="/dashboard" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-tachometer-alt"></i>
-      </div>
-      <span class="font-medium">Dashboard</span>
-    </a>
+  <!-- Navegación principal -->
+  <a routerLink="/dashboard" routerLinkActive="bg-blue-600 text-white"
+     class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
+            hover:text-white hover:bg-slate-800 transition-all">
+    <i class="fas fa-chart-line w-4 text-center flex-shrink-0"></i>
+    <span class="hidden lg:block text-sm font-semibold">Dashboard</span>
+  </a>
 
-    <a routerLink="/mapa" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-map-marked-alt"></i>
-      </div>
-      <span class="font-medium">Mapa de Rutas</span>
-    </a>
+  <a routerLink="/mapa" routerLinkActive="bg-blue-600 text-white"
+     class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
+            hover:text-white hover:bg-slate-800 transition-all">
+    <i class="fas fa-map-marked-alt w-4 text-center flex-shrink-0"></i>
+    <span class="hidden lg:block text-sm font-semibold">Mapa y Rutas</span>
+  </a>
 
-    <a routerLink="/flota" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-ship"></i>
-      </div>
-      <span class="font-medium">Gestión de Flota</span>
-    </a>
+  <a routerLink="/flota" routerLinkActive="bg-blue-600 text-white"
+     class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
+            hover:text-white hover:bg-slate-800 transition-all">
+    <i class="fas fa-ship w-4 text-center flex-shrink-0"></i>
+    <span class="hidden lg:block text-sm font-semibold">Mi Flota</span>
+  </a>
 
-    <a routerLink="/reportes" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-chart-pie"></i>
-      </div>
-      <span class="font-medium">Reportes</span>
-    </a>
-  </nav>
+  <a routerLink="/reportes" routerLinkActive="bg-blue-600 text-white"
+     class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
+            hover:text-white hover:bg-slate-800 transition-all">
+    <i class="fas fa-file-alt w-4 text-center flex-shrink-0"></i>
+    <span class="hidden lg:block text-sm font-semibold">Reportes</span>
+  </a>
 
-  <div class="p-4 border-t border-slate-800 bg-slate-950">
-    <button (click)="logout()" class="flex items-center text-slate-400 hover:text-red-400 transition w-full text-left group p-2 rounded-lg hover:bg-slate-900">
-      <i class="fas fa-sign-out-alt mr-3 group-hover:-translate-x-1 transition-transform"></i>
-      <span class="font-medium">Cerrar Sesión</span>
-    </button>
+  <!-- Separador -->
+  <div class="mx-4 my-1 border-t border-slate-700/50"></div>
+
+  <!-- Herramientas avanzadas -->
+  <div class="px-4 mb-1 hidden lg:block">
+    <span class="text-[9px] text-slate-600 uppercase font-bold tracking-widest">
+      Inteligencia Geoespacial
+    </span>
   </div>
-</aside>
+
+  <!-- ✅ Nuevo: Análisis Satelital -->
+  <a routerLink="/satelite" routerLinkActive="bg-sky-600 text-white"
+     class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
+            hover:text-white hover:bg-sky-900/50 transition-all
+            border border-transparent hover:border-sky-700/30">
+    <i class="fas fa-satellite w-4 text-center flex-shrink-0 text-sky-400"></i>
+    <span class="hidden lg:block text-sm font-semibold text-sky-300">Satélite</span>
+  </a>
+
+  <!-- Pescar -->
+  <a routerLink="/pescar" routerLinkActive="bg-emerald-600 text-white"
+     class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
+            hover:text-white hover:bg-emerald-900/50 transition-all
+            border border-transparent hover:border-emerald-700/30">
+    <i class="fas fa-fish w-4 text-center flex-shrink-0 text-emerald-400"></i>
+    <span class="hidden lg:block text-sm font-semibold text-emerald-300">¿A dónde pesco?</span>
+  </a>
+
+  <!-- Spacer -->
+  <div class="flex-1"></div>
+
+  <!-- Footer usuario -->
+  <div class="mx-2 border-t border-slate-700/50 pt-3">
+    <div class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-800
+                transition-colors cursor-pointer">
+      <div class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
+        <i class="fas fa-user text-slate-400 text-xs"></i>
+      </div>
+      <div class="hidden lg:block flex-1 min-w-0">
+        <div class="text-white text-xs font-semibold truncate">Sesión activa</div>
+        <div class="text-slate-500 text-[9px]">RingenSoft v7</div>
+      </div>
+    </div>
+  </div>
+</nav>

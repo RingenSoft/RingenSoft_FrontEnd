@@ -1,0 +1,180 @@
+<div class="h-screen flex overflow-hidden bg-slate-900 font-sans">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 overflow-y-auto bg-gradient-to-b from-blue-950 to-slate-900">
+
+    <!-- HEADER -->
+    <div class="px-6 pt-8 pb-2">
+      <div class="flex items-center gap-3 mb-1">
+        <span class="text-4xl">🎣</span>
+        <div>
+          <h1 class="text-2xl font-bold text-white">¿A dónde salgo hoy?</h1>
+          <p class="text-blue-300 text-sm mt-0.5">
+            Dinos desde dónde y cuánto tiempo tienes — calculamos la mejor ruta con datos del mar
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="px-6 pb-10 max-w-2xl mx-auto">
+
+      <!-- CARGANDO DATOS INICIALES -->
+      <div *ngIf="cargandoDatos" class="flex items-center justify-center py-16">
+        <div class="flex items-center gap-3 text-blue-300">
+          <svg class="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span class="text-sm font-medium">Cargando puertos y flota...</span>
+        </div>
+      </div>
+
+      <!-- FORMULARIO — visible cuando los datos están listos -->
+      <div *ngIf="!cargandoDatos && !resultado" class="space-y-5 pt-4">
+
+        <!-- Puerto de salida (siempre visible desde el inicio) -->
+        <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/10">
+          <label class="block text-blue-200 font-bold text-base mb-3">
+            ⚓ ¿Desde qué puerto sales?
+          </label>
+
+          <div *ngIf="puertos.length === 0" class="text-amber-400 text-sm py-2">
+            ⚠️ No se cargaron puertos. Verifica que el backend esté activo.
+          </div>
+
+          <select *ngIf="puertos.length > 0"
+                  [(ngModel)]="puertoSeleccionado"
+                  class="w-full bg-blue-950 border-2 border-blue-400 text-white rounded-xl
+                         py-4 px-4 text-lg font-bold focus:outline-none focus:border-blue-300">
+            <option *ngFor="let p of puertos" [value]="p.id">{{ p.nombre }}</option>
+          </select>
+        </div>
+
+        <!-- Embarcación -->
+        <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/10">
+          <label class="block text-blue-200 font-bold text-base mb-3">
+            🚢 ¿Con qué embarcación?
+          </label>
+
+          <div *ngIf="barcos.length === 0" class="text-amber-400 text-sm py-2">
+            ⚠️ No tienes embarcaciones registradas. Ve a "Mi Flota" para agregar una.
+          </div>
+
+          <select *ngIf="barcos.length > 0"
+                  [(ngModel)]="barcoSeleccionado"
+                  class="w-full bg-blue-950 border-2 border-blue-400 text-white rounded-xl
+                         py-4 px-4 text-lg font-bold focus:outline-none focus:border-blue-300">
+            <option *ngFor="let b of barcos" [value]="b.id_embarcacion">
+              {{ b.nombre }} — {{ b.capacidad_bodega }} TM
+            </option>
+          </select>
+        </div>
+
+        <!-- Horas disponibles -->
+        <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/10">
+          <label class="block text-blue-200 font-bold text-base mb-3">
+            ⏰ ¿Cuántas horas tienes para pescar?
+          </label>
+          <div class="flex gap-3 flex-wrap">
+            <button *ngFor="let h of [4, 6, 8, 10, 12, 16]"
+                    (click)="horasDisponibles = h"
+                    [class]="horasDisponibles === h
+                      ? 'flex-1 min-w-[70px] py-4 rounded-xl font-bold text-lg bg-blue-500 text-white shadow-lg border-2 border-blue-300'
+                      : 'flex-1 min-w-[70px] py-4 rounded-xl font-bold text-lg bg-white/10 text-blue-200 border-2 border-transparent hover:border-blue-400 transition-all'">
+              {{ h }}h
+            </button>
+          </div>
+        </div>
+
+        <!-- BOTÓN PRINCIPAL -->
+        <button (click)="calcular()"
+                [disabled]="cargando || !formularioValido"
+                class="w-full py-6 rounded-2xl text-xl font-black tracking-wide shadow-2xl
+                       transition-all duration-200 flex items-center justify-center gap-3
+                       bg-gradient-to-r from-red-600 to-orange-500
+                       hover:from-red-500 hover:to-orange-400
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       text-white shadow-red-900/50">
+          <span *ngIf="!cargando">🗺️ CALCULAR MI MEJOR RUTA</span>
+          <span *ngIf="cargando" class="flex items-center gap-3">
+            <svg class="animate-spin h-6 w-6" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            Calculando con OR-Tools...
+          </span>
+        </button>
+
+        <p class="text-center text-slate-500 text-xs">
+          🛰️ Open-Meteo Marine · 🌿 NOAA CoastWatch · 🚫 Vedas SERNANP/IMARPE
+        </p>
+      </div>
+
+      <!-- RESULTADO -->
+      <div *ngIf="resultado && !cargando" class="space-y-5 pt-4">
+
+        <!-- Resumen principal -->
+        <div class="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/10">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h2 class="text-xl font-black text-white">Tu ruta de hoy</h2>
+              <p class="text-blue-300 text-sm">Salida desde {{ resultado.puerto_salida }}</p>
+            </div>
+            <button (click)="limpiar()"
+                    class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all text-lg">
+              ✕
+            </button>
+          </div>
+
+          <!-- KPIs -->
+          <div class="grid grid-cols-3 gap-3 mb-4">
+            <div class="bg-emerald-500/20 border border-emerald-500/30 rounded-xl p-3 text-center">
+              <div class="text-2xl font-black text-emerald-400">{{ resultado.carga_total_tm }}</div>
+              <div class="text-emerald-300 text-[10px] font-bold mt-1">TONELADAS</div>
+            </div>
+            <div class="bg-blue-500/20 border border-blue-500/30 rounded-xl p-3 text-center">
+              <div class="text-2xl font-black text-blue-400">{{ resultado.horas_estimadas }}h</div>
+              <div class="text-blue-300 text-[10px] font-bold mt-1">TIEMPO</div>
+            </div>
+            <div class="bg-amber-500/20 border border-amber-500/30 rounded-xl p-3 text-center">
+              <div class="text-2xl font-black text-amber-400">{{ resultado.paradas }}</div>
+              <div class="text-amber-300 text-[10px] font-bold mt-1">PARADAS</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Instrucciones paso a paso -->
+        <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/10">
+          <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+            📋 Qué hacer paso a paso
+          </h3>
+          <div class="space-y-3">
+            <div *ngFor="let inst of resultado.instrucciones; let i = index"
+                 class="flex items-start gap-3 py-2.5 border-b border-white/10 last:border-0">
+              <div class="w-6 h-6 rounded-full bg-blue-600/40 border border-blue-500/30
+                          flex items-center justify-center text-[10px] font-black text-blue-300 flex-shrink-0 mt-0.5">
+                {{ i + 1 }}
+              </div>
+              <p class="text-white/90 text-sm leading-relaxed">{{ inst }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advertencias -->
+        <div *ngFor="let adv of resultado.advertencias"
+             class="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4
+                    text-yellow-200 text-sm font-medium">
+          {{ adv }}
+        </div>
+
+        <!-- Volver -->
+        <button (click)="limpiar()"
+                class="w-full py-4 rounded-xl text-base font-bold text-slate-300
+                       bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+          ← Calcular otra ruta
+        </button>
+
+      </div>
+    </div>
+  </main>
+</div>

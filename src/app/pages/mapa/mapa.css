@@ -1,3 +1,30 @@
-.agua-fria { box-shadow: 0 0 10px blue; background: cyan; }
-.agua-ideal { box-shadow: 0 0 10px green; background: lime; }
-.agua-calida { box-shadow: 0 0 10px red; background: orange; }
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar oscuro para el panel de resultados */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* Slider de opacidad */
+input[type='range'] {
+  -webkit-appearance: none;
+  background: #1e293b;
+  border-radius: 99px;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #0ea5e9;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(14, 165, 233, 0.5);
+}

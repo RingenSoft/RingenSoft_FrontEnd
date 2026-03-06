@@ -1,0 +1,442 @@
+<div class="h-screen flex overflow-hidden bg-slate-950 font-sans">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- ═══════════════════════════════════════════════
+         PANEL IZQUIERDO — Controles
+    ═══════════════════════════════════════════════ -->
+    <div class="w-72 flex-shrink-0 bg-slate-900 border-r border-slate-700/50
+                flex flex-col overflow-y-auto">
+
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-700/50">
+        <div class="flex items-center gap-2 mb-1">
+          <div class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></div>
+          <span class="text-sky-400 text-[10px] font-bold uppercase tracking-widest">
+            Sentinel-2 · NOAA CoastWatch
+          </span>
+        </div>
+        <h1 class="text-white font-black text-lg leading-tight">
+          Análisis Satelital
+        </h1>
+        <p class="text-slate-500 text-xs mt-1">
+          Detección de cardúmenes por productividad marina
+        </p>
+      </div>
+
+      <div class="p-4 space-y-5 flex-1">
+
+        <!-- Tipo de imagen -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400
+                        uppercase tracking-widest mb-2">
+            Tipo de análisis
+          </label>
+          <div class="space-y-2">
+            <button *ngFor="let t of tipos"
+                    (click)="tipoSeleccionado = t.id"
+                    class="w-full text-left p-3 rounded-xl border transition-all duration-200"
+                    [class]="tipoSeleccionado === t.id
+                      ? 'bg-sky-950/80 border-sky-500/60 ring-1 ring-sky-500/30'
+                      : 'bg-slate-800/40 border-slate-700/50 hover:border-slate-600'">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-base">{{ t.icono }}</span>
+                <span class="text-white text-xs font-bold">{{ t.nombre }}</span>
+                <div *ngIf="tipoSeleccionado === t.id"
+                     class="ml-auto w-1.5 h-1.5 rounded-full bg-sky-400"></div>
+              </div>
+              <p class="text-slate-500 text-[9px] leading-relaxed pl-6">{{ t.desc }}</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Zona del litoral -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400
+                        uppercase tracking-widest mb-2">
+            Zona del litoral
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button *ngFor="let z of zonas"
+                    (click)="zonaSeleccionada = z.id"
+                    class="p-2.5 rounded-xl border text-center transition-all duration-200"
+                    [class]="zonaSeleccionada === z.id
+                      ? 'bg-slate-700 border-slate-500 text-white'
+                      : 'bg-slate-800/40 border-slate-700/50 text-slate-400 hover:border-slate-600'">
+              <div class="font-bold text-xs">{{ z.nombre }}</div>
+              <div class="text-[9px] text-slate-500 mt-0.5">{{ z.rango }}</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Rango de fechas -->
+        <div>
+          <label class="block text-[10px] font-bold text-slate-400
+                        uppercase tracking-widest mb-2">
+            Ventana de tiempo
+          </label>
+          <div class="space-y-2">
+            <div>
+              <div class="text-[9px] text-slate-500 mb-1">Desde</div>
+              <input type="date" [(ngModel)]="fechaInicio"
+                     class="w-full bg-slate-800 border border-slate-600 text-white
+                            text-sm rounded-lg px-3 py-2 focus:outline-none
+                            focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+            </div>
+            <div>
+              <div class="text-[9px] text-slate-500 mb-1">Hasta</div>
+              <input type="date" [(ngModel)]="fechaFin"
+                     class="w-full bg-slate-800 border border-slate-600 text-white
+                            text-sm rounded-lg px-3 py-2 focus:outline-none
+                            focus:ring-2 focus:ring-sky-500 focus:border-sky-500">
+            </div>
+          </div>
+          <p class="text-[9px] text-slate-600 mt-2 leading-relaxed">
+            Sentinel-2 busca la escena con menor nubosidad en la ventana indicada.
+          </p>
+        </div>
+
+        <!-- Botón descargar -->
+        <button (click)="descargarImagen()"
+                [disabled]="cargandoImagen"
+                class="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide
+                       transition-all duration-200 flex items-center justify-center gap-2
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       bg-gradient-to-r from-sky-600 to-indigo-700
+                       hover:from-sky-500 hover:to-indigo-600
+                       text-white shadow-lg shadow-sky-900/30">
+          <span *ngIf="!cargandoImagen">
+            🛰️ Obtener imagen satelital
+          </span>
+          <span *ngIf="cargandoImagen" class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10"
+                      stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            Descargando...
+          </span>
+        </button>
+
+        <!-- Nota sobre credenciales -->
+        <div class="bg-amber-950/40 border border-amber-800/40 rounded-xl p-3">
+          <div class="text-amber-400 text-[10px] font-bold mb-1">
+            🔑 Sentinel Hub (gratis)
+          </div>
+          <p class="text-amber-200/60 text-[9px] leading-relaxed">
+            Registra tu cuenta en sentinel-hub.com y agrega en <code class="bg-amber-900/50 px-1 rounded">.env</code>:
+          </p>
+          <code class="block text-[8px] text-amber-300/80 mt-2 bg-black/30
+                       rounded p-2 leading-relaxed font-mono">
+            SENTINEL_CLIENT_ID=...<br>
+            SENTINEL_CLIENT_SECRET=...
+          </code>
+          <p class="text-amber-200/50 text-[9px] mt-1">
+            Sin credenciales se usa NOAA como demo.
+          </p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         CENTRO — Imagen satelital
+    ═══════════════════════════════════════════════ -->
+    <div class="flex-1 flex flex-col bg-slate-950 overflow-hidden">
+
+      <!-- Barra de estado -->
+      <div class="h-10 flex-shrink-0 bg-slate-900/80 border-b border-slate-700/50
+                  flex items-center px-4 gap-4 text-[10px]">
+        <span class="text-slate-500">Zona:</span>
+        <span class="text-white font-bold">{{ zonaActual.nombre }} — {{ zonaActual.rango }}</span>
+        <span class="text-slate-600">·</span>
+        <span class="text-slate-500">Tipo:</span>
+        <span class="text-white font-bold">{{ tipoActual.icono }} {{ tipoActual.nombre }}</span>
+        <span *ngIf="snapshot" class="text-slate-600">·</span>
+        <span *ngIf="snapshot" class="text-slate-500">Fecha imagen:</span>
+        <span *ngIf="snapshot" class="text-sky-400 font-bold">{{ snapshot.fecha_imagen }}</span>
+        <div *ngIf="modoDemo"
+             class="ml-auto bg-amber-500/20 border border-amber-500/30 text-amber-400
+                    px-2 py-0.5 rounded-full font-bold">
+          MODO DEMO — NOAA
+        </div>
+        <div *ngIf="snapshot?.modo === 'sentinel_hub'"
+             class="ml-auto bg-sky-500/20 border border-sky-500/30 text-sky-400
+                    px-2 py-0.5 rounded-full font-bold">
+          🛰️ SENTINEL-2 REAL
+        </div>
+      </div>
+
+      <!-- Área de imagen -->
+      <div class="flex-1 flex items-center justify-center relative overflow-hidden p-6">
+
+        <!-- Estado: sin imagen aún -->
+        <div *ngIf="!snapshot && !cargandoImagen"
+             class="flex flex-col items-center gap-5 text-center max-w-sm">
+          <div class="w-20 h-20 rounded-2xl bg-slate-800/60 border border-slate-700/50
+                      flex items-center justify-center text-4xl">
+            🛰️
+          </div>
+          <div>
+            <h3 class="text-white font-bold text-lg mb-2">Sin imagen cargada</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">
+              Selecciona el tipo de análisis, la zona y el rango de fechas,
+              luego pulsa <span class="text-sky-400 font-semibold">Obtener imagen satelital</span>.
+            </p>
+          </div>
+          <!-- Leyenda de tipos -->
+          <div class="w-full space-y-2 mt-2">
+            <div class="bg-slate-800/40 border border-slate-700/30 rounded-xl p-3 text-left">
+              <div class="text-sky-300 text-xs font-bold mb-1">🌿 ¿Qué buscar con NDCI?</div>
+              <p class="text-slate-400 text-[10px] leading-relaxed">
+                Zonas rojas/amarillas = alta clorofila = mucho fitoplancton =
+                anchoveta y otros pelágicos probablemente presentes.
+                Zonas azules = agua pobre en nutrientes = evitar.
+              </p>
+            </div>
+            <div class="bg-slate-800/40 border border-slate-700/30 rounded-xl p-3 text-left">
+              <div class="text-emerald-300 text-xs font-bold mb-1">🔬 ¿Qué buscar con FAI?</div>
+              <p class="text-slate-400 text-[10px] leading-relaxed">
+                Manchas verdes intensas = materia orgánica flotante = cardúmenes
+                de anchoveta en superficie (comportamiento de afloramiento).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado: cargando -->
+        <div *ngIf="cargandoImagen"
+             class="flex flex-col items-center gap-4 text-center">
+          <div class="relative w-24 h-24">
+            <!-- Anillos animados tipo radar satelital -->
+            <div class="absolute inset-0 rounded-full border-2 border-sky-500/30
+                        animate-ping"></div>
+            <div class="absolute inset-2 rounded-full border-2 border-sky-500/50
+                        animate-ping" style="animation-delay:0.3s"></div>
+            <div class="absolute inset-4 rounded-full border-2 border-sky-500/70
+                        animate-ping" style="animation-delay:0.6s"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-3xl">
+              🛰️
+            </div>
+          </div>
+          <div>
+            <p class="text-white font-bold">Contactando satélite...</p>
+            <p class="text-slate-500 text-sm mt-1">
+              Descargando imagen {{ tipoActual.nombre }} · {{ zonaActual.nombre }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Imagen cargada -->
+        <div *ngIf="snapshot && !cargandoImagen && snapshot.imagen_base64"
+             class="h-full flex flex-col gap-3 w-full max-w-2xl">
+
+          <!-- Imagen principal -->
+          <div class="flex-1 relative rounded-2xl overflow-hidden border border-slate-700/50
+                      shadow-2xl shadow-black/50 cursor-zoom-in"
+               (click)="imagenZoom = true">
+            <img [src]="imagenSrc" alt="Imagen satelital"
+                 class="w-full h-full object-contain bg-black">
+
+            <!-- Overlay de info al hover -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent
+                        to-transparent opacity-0 hover:opacity-100 transition-opacity
+                        flex items-end p-4">
+              <div class="text-white text-xs">
+                <span class="bg-black/50 backdrop-blur rounded-lg px-3 py-1.5">
+                  🔍 Clic para ampliar · {{ snapshot.ancho_px }}×{{ snapshot.alto_px }}px
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Barra de escala de color según tipo -->
+          <div class="bg-slate-900/80 backdrop-blur rounded-xl p-3 border border-slate-700/30
+                      flex items-center gap-4">
+            <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest
+                         flex-shrink-0">Escala:</span>
+
+            <ng-container *ngIf="tipoSeleccionado === 'rgb'">
+              <div class="flex items-center gap-2 flex-1 text-[10px] text-slate-400">
+                <span>Color natural — sin escala artificial</span>
+                <span class="text-slate-600">·</span>
+                <span>Manchas oscuras en azul = posibles cardúmenes</span>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="tipoSeleccionado === 'ndci'">
+              <div class="flex-1 h-2 rounded-full"
+                   style="background:linear-gradient(to right,#1d4ed8,#0891b2,#10b981,#fbbf24,#ef4444)">
+              </div>
+              <div class="flex justify-between text-[9px] text-slate-500 w-full absolute
+                          bottom-1 left-16 right-4 pointer-events-none hidden">
+                <span>Bajo</span><span>Alto</span>
+              </div>
+              <span class="text-[10px] text-slate-400 flex-shrink-0">Bajo → Alto NDCI</span>
+            </ng-container>
+
+            <ng-container *ngIf="tipoSeleccionado === 'fai'">
+              <div class="flex-1 h-2 rounded-full"
+                   style="background:linear-gradient(to right,#fbbf24,#84cc16,#16a34a)">
+              </div>
+              <span class="text-[10px] text-slate-400 flex-shrink-0">Amarillo → Verde intenso (FAI alto)</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Error sin imagen -->
+        <div *ngIf="snapshot && !snapshot.imagen_base64"
+             class="flex flex-col items-center gap-4 text-center max-w-sm">
+          <div class="text-5xl">⚠️</div>
+          <div>
+            <h3 class="text-amber-400 font-bold mb-2">Sin imagen disponible</h3>
+            <p class="text-slate-500 text-sm leading-relaxed">{{ snapshot.mensaje }}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         PANEL DERECHO — Manchas detectadas
+    ═══════════════════════════════════════════════ -->
+    <div class="w-72 flex-shrink-0 bg-slate-900 border-l border-slate-700/50
+                flex flex-col overflow-hidden">
+
+      <!-- Header manchas -->
+      <div class="p-4 border-b border-slate-700/50">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="text-white font-black text-sm">Manchas detectadas</h2>
+          <button (click)="cargarManchas()"
+                  [disabled]="cargandoManchas"
+                  class="text-slate-500 hover:text-sky-400 transition-colors p-1.5
+                         rounded hover:bg-slate-800 disabled:opacity-50">
+            <svg [class]="cargandoManchas ? 'animate-spin' : ''"
+                 class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+        </div>
+        <p class="text-slate-500 text-[10px] leading-relaxed">
+          Zonas con clorofila &gt; 1 mg/m³ agrupadas por proximidad.
+          Precursor estadístico del modelo CNN.
+        </p>
+        <div *ngIf="manchas" class="mt-2 flex items-center gap-2">
+          <div class="text-emerald-400 font-black text-xl">{{ manchas.total }}</div>
+          <div class="text-slate-500 text-[10px]">manchas en el litoral peruano</div>
+        </div>
+      </div>
+
+      <!-- Lista de manchas -->
+      <div class="flex-1 overflow-y-auto">
+
+        <!-- Cargando -->
+        <div *ngIf="cargandoManchas"
+             class="flex items-center justify-center py-12 text-slate-500">
+          <svg class="animate-spin h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10"
+                    stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          <span class="text-sm">Analizando...</span>
+        </div>
+
+        <!-- Sin manchas -->
+        <div *ngIf="!cargandoManchas && manchas?.total === 0"
+             class="p-6 text-center text-slate-600 text-sm">
+          No se detectaron zonas de alta productividad hoy.
+        </div>
+
+        <!-- Tarjetas de manchas -->
+        <div *ngIf="!cargandoManchas && manchas?.manchas?.length"
+             class="divide-y divide-slate-700/30">
+          <div *ngFor="let m of manchas.manchas; let i = index"
+               class="p-4 hover:bg-slate-800/30 transition-colors">
+
+            <!-- Header mancha -->
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <div class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center
+                            text-[10px] font-black text-slate-300">
+                  {{ i + 1 }}
+                </div>
+                <div>
+                  <div class="text-white text-xs font-bold">Zona {{ m.zona }}</div>
+                  <div class="text-slate-500 text-[9px]">
+                    {{ m.lat }}°, {{ m.lon }}°
+                  </div>
+                </div>
+              </div>
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full border"
+                    [class]="getIntensidadClass(m.intensidad)">
+                {{ m.intensidad }}
+              </span>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-3 gap-1.5">
+              <div class="bg-slate-800/50 rounded-lg p-2 text-center">
+                <div class="text-emerald-400 font-black text-sm">{{ m.clorofila_media }}</div>
+                <div class="text-slate-600 text-[8px] font-bold">mg/m³</div>
+              </div>
+              <div class="bg-slate-800/50 rounded-lg p-2 text-center">
+                <div class="text-sky-400 font-black text-sm">{{ m.n_puntos }}</div>
+                <div class="text-slate-600 text-[8px] font-bold">puntos</div>
+              </div>
+              <div class="bg-slate-800/50 rounded-lg p-2 text-center">
+                <div class="text-amber-400 font-black text-sm">{{ m.biomasa_tm }}</div>
+                <div class="text-slate-600 text-[8px] font-bold">TM</div>
+              </div>
+            </div>
+
+            <!-- Barra de clorofila relativa -->
+            <div class="mt-2">
+              <div class="h-1 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-700"
+                     [style.width.%]="barWidth(m.clorofila_media)"
+                     [style.background]="getBarColor(m.intensidad)">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer: info de fuentes y próximo paso CNN -->
+      <div class="p-4 border-t border-slate-700/50 space-y-3">
+        <div class="text-[9px] text-slate-600 leading-relaxed">
+          📡 Fuente: ERDDAP NOAA · MODIS Aqua 8 días<br>
+          🧪 Umbral: {{ manchas?.umbral_chl_mgm3 ?? 1.0 }} mg/m³ · {{ manchas?.fuente?.split('·')[1]?.trim() ?? 'IMARPE' }}
+        </div>
+        <div class="bg-indigo-950/50 border border-indigo-700/40 rounded-xl p-3">
+          <div class="text-indigo-400 text-[10px] font-bold mb-1">
+            🤖 Próximo paso: CNN
+          </div>
+          <p class="text-indigo-300/60 text-[9px] leading-relaxed">
+            Con imágenes Sentinel-2 etiquetadas por biólogos IMARPE,
+            entrenamos una red neuronal para clasificar estas manchas
+            en anchoveta, jurel, caballa u otros pelágicos.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══════════ MODAL ZOOM ═══════════ -->
+<div *ngIf="imagenZoom"
+     class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-zoom-out"
+     (click)="imagenZoom = false">
+  <img [src]="imagenSrc" alt="Imagen satelital ampliada"
+       class="max-w-full max-h-full rounded-xl shadow-2xl object-contain"
+       (click)="$event.stopPropagation()">
+  <button class="absolute top-4 right-4 text-white/60 hover:text-white text-2xl
+                 bg-black/50 rounded-full w-10 h-10 flex items-center justify-center"
+          (click)="imagenZoom = false">✕</button>
+</div>

@@ -1,146 +1,151 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
-import { ToastService } from '../../toast/toast.service';
-import { forkJoin } from 'rxjs';
 
 @Component({
-  selector: 'app-flota',
-  standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
-  templateUrl: 'flota.html'
+  selector:    'app-flota',
+  standalone:  true,
+  imports:     [CommonModule, SidebarComponent, FormsModule],
+  templateUrl: 'flota.html',
+  styleUrl:    'flota.css'
 })
 export class FlotaComponent implements OnInit {
+
   embarcaciones: any[] = [];
-  puertos: any[] = [];
+  cargando        = true;
+  mensaje         = '';
+  mostrarFormulario = false;
 
-  mostrarModal = false;
-  cargando = true;
-
-  kpis = { total: 0, capacidad_tm: 0, operativas: 0, mantenimiento: 0 };
-
-  nuevaNave = {
-    id_embarcacion: '',
-    nombre: '',
-    capacidad_bodega: 100,
-    velocidad_promedio: 12.0,
-    consumo_combustible: 1.0,
-    tripulacion_maxima: 10,
-    anio_fabricacion: 2024,
-    material_casco: 'ACERO NAVAL',
-    estado: 'EN_PUERTO',
-    puerto_base_id: ''
+  nuevoBarco = {
+    nombre:             '',
+    capacidad_bodega:   300,
+    velocidad_promedio: 12,
+    consumo:            1.5,
+    material:           'ACERO NAVAL',
+    tripulacion:        10,
+    anio_fabricacion:   2020,
   };
 
-  // ✅ Inyectamos ToastService para reemplazar alert() y confirm()
+  // Capacidad máxima de referencia para las barras (ajustar según tu flota)
+  private readonly CAP_MAX_REF = 600;
+
   constructor(
     private api: ApiService,
-    private toast: ToastService
+    private cdr: ChangeDetectorRef,
+    private router: Router,
   ) {}
 
-  ngOnInit() {
-    this.cargarDatos();
-  }
+  ngOnInit() { this.cargarFlota(); }
 
-  cargarDatos() {
+  cargarFlota() {
     this.cargando = true;
-    forkJoin({
-      navs: this.api.getEmbarcaciones(),
-      pts:  this.api.getPuertos()
-    }).subscribe({
-      next: (resultados: any) => {
-        this.embarcaciones = resultados.navs;
-        this.puertos       = resultados.pts;
-        this.calcularKPIs();
-        this.cargando = false;
-      },
-      error: () => {
-        this.cargando = false;
-        // El interceptor ya muestra el toast de error de conexión
-      }
+    this.cdr.detectChanges();
+    this.api.getEmbarcaciones().subscribe({
+      next:  (data) => { this.embarcaciones = data; this.cargando = false; this.cdr.detectChanges(); },
+      error: ()     => { this.cargando = false; this.cdr.detectChanges(); }
     });
   }
 
-  calcularKPIs() {
-    this.kpis.total        = this.embarcaciones.length;
-    this.kpis.capacidad_tm = this.embarcaciones.reduce((acc, curr) => acc + (curr.capacidad_bodega || 0), 0);
-    this.kpis.mantenimiento = this.embarcaciones.filter(e => e.estado === 'MANTENIMIENTO').length;
-    this.kpis.operativas   = this.kpis.total - this.kpis.mantenimiento;
+  registrarBarco() {
+    if (!this.nuevoBarco.nombre) return;
+    this.api.crearEmbarcacion(this.nuevoBarco).subscribe({
+      next: (res) => {
+        this.mensaje = `${res.nombre} registrada correctamente.`;
+        this.mostrarFormulario = false;
+        this.cargarFlota();
+        this.nuevoBarco = { nombre: '', capacidad_bodega: 300, velocidad_promedio: 12, consumo: 1.5, material: 'ACERO NAVAL', tripulacion: 10, anio_fabricacion: 2020 };
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3500);
+      },
+      error: () => {}
+    });
   }
 
-  abrirModal() {
-    const randomId = Math.floor(1000 + Math.random() * 9000);
-    this.nuevaNave = {
-      id_embarcacion:   `NAV-${randomId}`,
-      nombre:           '',
-      capacidad_bodega: 150,
-      velocidad_promedio: 12.0,
-      consumo_combustible: 1.0,
-      tripulacion_maxima: 10,
-      anio_fabricacion: new Date().getFullYear(),
-      material_casco:   'ACERO NAVAL',
-      estado:           'EN_PUERTO',
-      puerto_base_id:   this.puertos.length > 0 ? this.puertos[0].id : ''
-    };
-    this.mostrarModal = true;
+  cambiarEstado(barco: any, event: any) {
+    const nuevoEstado   = event.target.value;
+    const estadoAnterior = barco.estado;
+    barco.estado = nuevoEstado;
+    this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado).subscribe({
+      error: () => { barco.estado = estadoAnterior; this.cdr.detectChanges(); }
+    });
   }
 
-  cerrarModal() {
-    this.mostrarModal = false;
+  optimizar(id: string, nombre: string) {
+    this.router.navigate(['/mapa'], { queryParams: { barco: id } });
   }
 
-  guardarNave() {
-    // ✅ CORRECCIÓN: Toast en lugar de alert()
-    if (!this.nuevaNave.nombre || !this.nuevaNave.puerto_base_id) {
-      this.toast.warning('Por favor, completa el Nombre y el Puerto Base.');
-      return;
+  cerrarModalSiEsFondo(event: MouseEvent) {
+    if ((event.target as HTMLElement).classList.contains('fixed')) {
+      this.mostrarFormulario = false;
     }
-
-    this.api.crearEmbarcacion(this.nuevaNave).subscribe({
-      next: () => {
-        this.toast.success(`Embarcación "${this.nuevaNave.nombre}" registrada con éxito.`);
-        this.cargarDatos();
-        this.cerrarModal();
-      },
-      error: () => {
-        // Recargamos de todas formas en caso de error de respuesta parcial
-        this.cargarDatos();
-        this.cerrarModal();
-      }
-    });
   }
 
-  eliminarNave(id: string, nombre: string) {
-    // ✅ CORRECCIÓN: Toast de confirmación en lugar de confirm()
-    //    Para confirmación real sin alert nativo, mostramos un toast de warning
-    //    y el usuario puede cancelar en 5 segundos. Alternativa: usar un modal propio.
-    this.toast.warning(`Eliminando "${nombre}"... Si fue un error, recarga la página.`);
+  // ── Helpers visuales para las cards ──────────────────────────────────────
 
-    this.api.eliminarEmbarcacion(id).subscribe({
-      next: () => {
-        this.toast.success(`Embarcación "${nombre}" dada de baja.`);
-        this.cargarDatos();
-      },
-      error: () => {
-        this.toast.error('No se pudo dar de baja la embarcación.');
-        this.cargarDatos();
-      }
-    });
+  contarEstado(estado: string): number {
+    return this.embarcaciones.filter(b => b.estado === estado).length;
   }
 
-  actualizarEstado(id: string, event: any) {
-    const nuevoEstado = event.target.value;
-    this.api.cambiarEstadoEmbarcacion(id, nuevoEstado).subscribe({
-      next: () => {
-        this.toast.info(`Estado actualizado a ${nuevoEstado}.`);
-        this.cargarDatos();
-      },
-      error: () => {
-        this.toast.error('Error al actualizar el estado en el servidor.');
-        this.cargarDatos();
-      }
-    });
+  getBorderColor(estado: string): string {
+    const map: Record<string, string> = {
+      'EN_RUTA':      'border-emerald-700/50 hover:border-emerald-600/70',
+      'EN_ALTAMAR':   'border-sky-700/50 hover:border-sky-600/70',
+      'MANTENIMIENTO':'border-red-800/40 hover:border-red-700/60',
+      'EN_PUERTO':    'border-slate-700/50 hover:border-slate-600/60',
+    };
+    return map[estado] ?? 'border-slate-700/50';
+  }
+
+  getIconBg(estado: string): string {
+    const map: Record<string, string> = {
+      'EN_RUTA':      'bg-emerald-900/40 border border-emerald-700/40',
+      'EN_ALTAMAR':   'bg-sky-900/40 border border-sky-700/40',
+      'MANTENIMIENTO':'bg-red-900/30 border border-red-800/40',
+      'EN_PUERTO':    'bg-slate-800 border border-slate-700',
+    };
+    return map[estado] ?? 'bg-slate-800';
+  }
+
+  getIconEmoji(estado: string): string {
+    const map: Record<string, string> = {
+      'EN_RUTA':      '🚢',
+      'EN_ALTAMAR':   '🎣',
+      'MANTENIMIENTO':'🔧',
+      'EN_PUERTO':    '⚓',
+    };
+    return map[estado] ?? '🚢';
+  }
+
+  getBadgeClass(estado: string): string {
+    const map: Record<string, string> = {
+      'EN_RUTA':      'text-emerald-400 bg-emerald-900/30 border-emerald-700/40',
+      'EN_ALTAMAR':   'text-sky-400 bg-sky-900/30 border-sky-700/40',
+      'MANTENIMIENTO':'text-red-400 bg-red-900/20 border-red-800/40',
+      'EN_PUERTO':    'text-slate-400 bg-slate-800 border-slate-700',
+    };
+    return map[estado] ?? 'text-slate-400 bg-slate-800 border-slate-700';
+  }
+
+  getEstadoLabel(estado: string): string {
+    const map: Record<string, string> = {
+      'EN_RUTA':      'En ruta',
+      'EN_ALTAMAR':   'Pescando',
+      'MANTENIMIENTO':'Taller',
+      'EN_PUERTO':    'En puerto',
+    };
+    return map[estado] ?? estado;
+  }
+
+  getBarWidth(cap: number): number {
+    return Math.min(100, Math.round((cap / this.CAP_MAX_REF) * 100));
+  }
+
+  getBarColor(cap: number): string {
+    if (cap >= 400) return 'bg-emerald-400';
+    if (cap >= 200) return 'bg-sky-400';
+    return 'bg-slate-500';
   }
 }

@@ -1,244 +1,300 @@
-<div class="h-screen flex overflow-hidden bg-slate-50/50 font-sans text-slate-800">
+<div class="h-screen flex overflow-hidden bg-slate-950 font-sans">
   <app-sidebar></app-sidebar>
 
-  <main class="flex-1 flex flex-col relative overflow-y-auto">
-    <div class="bg-white/80 backdrop-blur-xl px-8 py-6 border-b border-slate-200/60 shadow-sm sticky top-0 z-20 flex justify-between items-center transition-all">
-      <div>
-        <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
-          <div class="bg-blue-600 text-white p-2 rounded-xl shadow-lg shadow-blue-200">
-            <i class="fas fa-ship text-lg"></i>
+  <main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
+
+    <!-- HEADER -->
+    <div class="bg-slate-900/80 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">
+            Administración · Unidades navales
           </div>
-          Registro de Flota
-        </h1>
-        <p class="text-slate-500 text-xs font-medium mt-2">Administración centralizada de unidades navales y control de puertos.</p>
-      </div>
-      <button (click)="abrirModal()" class="bg-slate-900 hover:bg-blue-600 text-white px-5 py-3 rounded-xl text-sm font-bold shadow-xl shadow-slate-200 transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1">
-        <i class="fas fa-plus"></i> Registrar Embarcación
-      </button>
-    </div>
-
-    <div class="p-8 max-w-7xl mx-auto w-full">
-      
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-[fadeIn_0.4s_ease-out]">
-        
-        <div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
-          <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-layer-group"></i>
+          <h1 class="text-white font-black text-xl">Gestión de Flota</h1>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- KPIs rápidos -->
+          <div class="hidden md:flex items-center gap-4 mr-2">
+            <div class="text-center">
+              <div class="text-white font-black text-lg leading-none">{{ embarcaciones.length }}</div>
+              <div class="text-slate-600 text-[9px] uppercase font-bold">Total</div>
+            </div>
+            <div class="w-px h-8 bg-slate-700"></div>
+            <div class="text-center">
+              <div class="text-emerald-400 font-black text-lg leading-none">
+                {{ contarEstado('EN_RUTA') + contarEstado('EN_ALTAMAR') }}
+              </div>
+              <div class="text-slate-600 text-[9px] uppercase font-bold">Activas</div>
+            </div>
+            <div class="w-px h-8 bg-slate-700"></div>
+            <div class="text-center">
+              <div class="text-red-400 font-black text-lg leading-none">
+                {{ contarEstado('MANTENIMIENTO') }}
+              </div>
+              <div class="text-slate-600 text-[9px] uppercase font-bold">En taller</div>
+            </div>
           </div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Total Flota</p>
-          <h3 class="text-3xl font-black text-slate-800">{{ kpis.total }} <span class="text-sm font-medium text-slate-400">naves</span></h3>
-        </div>
 
-        <div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all"></div>
-          <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-weight-hanging"></i>
-          </div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Capacidad Global</p>
-          <h3 class="text-3xl font-black text-slate-800">{{ kpis.capacidad_tm | number:'1.0-0' }} <span class="text-sm font-medium text-slate-400">TM</span></h3>
-        </div>
+          <button (click)="cargarFlota()"
+                  class="p-2 text-slate-500 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition-all">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
 
-        <div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all"></div>
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-check-circle"></i>
-          </div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Activas / En Mar</p>
-          <h3 class="text-3xl font-black text-emerald-600">{{ kpis.operativas }} <span class="text-sm font-medium text-slate-400">operando</span></h3>
-        </div>
-
-        <div class="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300">
-          <div class="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all"></div>
-          <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl mb-4 group-hover:scale-110 transition-transform duration-300">
-            <i class="fas fa-tools"></i>
-          </div>
-          <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">En Astillero</p>
-          <h3 class="text-3xl font-black text-rose-500">{{ kpis.mantenimiento }} <span class="text-sm font-medium text-slate-400">en taller</span></h3>
-        </div>
-      </div>
-
-      <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden animate-[fadeIn_0.5s_ease-out]">
-        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
-          <h3 class="font-black text-slate-800 text-lg">Directorio Naval</h3>
-          <div class="text-xs text-slate-400 font-medium">
-            Mostrando {{ embarcaciones.length }} unidades registradas
-          </div>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-slate-50/50 text-[10px] uppercase font-black text-slate-400 tracking-wider">
-              <tr>
-                <th class="p-5 pl-8 border-b border-slate-100">Embarcación</th>
-                <th class="p-5 border-b border-slate-100">Puerto Base</th>
-                <th class="p-5 border-b border-slate-100">Capacidad</th>
-                <th class="p-5 border-b border-slate-100">Casco</th>
-                <th class="p-5 text-center border-b border-slate-100">Estado</th>
-                <th class="p-5 text-right pr-8 border-b border-slate-100">Acciones</th>
-              </tr>
-            </thead>
-            <tbody class="text-sm divide-y divide-slate-50">
-              
-              <tr *ngIf="cargando">
-                <td colspan="6" class="p-12 text-center text-slate-400 font-bold animate-pulse">
-                  <i class="fas fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i><br>
-                  Consultando base de datos...
-                </td>
-              </tr>
-
-              <tr *ngFor="let nave of embarcaciones" class="hover:bg-blue-50/30 transition-colors group">
-                
-                <td class="p-5 pl-8">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                      <i class="fas fa-ship"></i>
-                    </div>
-                    <div>
-                      <div class="font-black text-slate-700 group-hover:text-blue-700 transition-colors">{{ nave.nombre }}</div>
-                      <div class="text-[10px] text-slate-400 font-mono mt-0.5 tracking-wide">{{ nave.id_embarcacion }}</div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td class="p-5">
-                  <div class="inline-flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 text-xs font-bold text-slate-600">
-                    <i class="fas fa-map-marker-alt text-blue-400"></i>
-                    {{ nave.puerto_base_id || 'No asignado' }}
-                  </div>
-                </td>
-
-                <td class="p-5">
-                  <span class="font-mono font-bold text-slate-800 text-base">{{ nave.capacidad_bodega }}</span>
-                  <span class="text-xs text-slate-400 ml-1">TM</span>
-                </td>
-                
-                <td class="p-5">
-                  <span class="bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider">
-                    {{ nave.material || 'Desconocido' }}
-                  </span>
-                </td>
-
-                <td class="p-5 text-center">
-                  <div class="relative inline-block w-full max-w-[130px]">
-                    <select (change)="actualizarEstado(nave.id_embarcacion, $event)" 
-                            [value]="nave.estado"
-                            class="w-full appearance-none px-3 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase border shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
-                            [ngClass]="{
-                              'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100': nave.estado === 'EN_RUTA' || nave.estado === 'EN_ALTAMAR',
-                              'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100': nave.estado === 'EN_PUERTO',
-                              'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100': nave.estado === 'MANTENIMIENTO'
-                            }">
-                      <option value="EN_PUERTO" class="text-slate-700 font-bold">En Puerto</option>
-                      <option value="EN_RUTA" class="text-slate-700 font-bold">En Ruta</option>
-                      <option value="EN_ALTAMAR" class="text-slate-700 font-bold">En Altamar</option>
-                      <option value="MANTENIMIENTO" class="text-slate-700 font-bold">Astillero</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-2 flex items-center">
-                      <i class="fas fa-caret-down text-[10px]"
-                         [ngClass]="{
-                           'text-emerald-500': nave.estado === 'EN_RUTA' || nave.estado === 'EN_ALTAMAR',
-                           'text-blue-500': nave.estado === 'EN_PUERTO',
-                           'text-rose-500': nave.estado === 'MANTENIMIENTO'
-                         }"></i>
-                    </div>
-                  </div>
-                </td>
-
-                <td class="p-5 text-right pr-8">
-                  <button (click)="eliminarNave(nave.id_embarcacion, nave.nombre)" class="w-8 h-8 rounded-lg text-slate-400 hover:text-white hover:bg-red-500 transition-all flex items-center justify-center ml-auto" title="Dar de baja">
-                    <i class="fas fa-trash-alt text-xs"></i>
-                  </button>
-                </td>
-              </tr>
-
-              <tr *ngIf="!cargando && embarcaciones.length === 0">
-                <td colspan="6" class="p-16 text-center text-slate-400">
-                  <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-folder-open text-3xl"></i>
-                  </div>
-                  <h3 class="font-bold text-lg text-slate-600">No hay embarcaciones</h3>
-                  <p class="text-sm mt-1">Registra tu primera nave para comenzar a operar.</p>
-                </td>
-              </tr>
-
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all animate-[slideInUp_0.3s_ease-out]">
-        
-        <div class="relative bg-gradient-to-r from-slate-900 to-slate-800 p-6 flex justify-between items-center text-white overflow-hidden">
-          <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/30 rounded-full blur-2xl"></div>
-          <h2 class="font-black text-xl relative z-10 flex items-center gap-2">
-            <i class="fas fa-plus-circle text-blue-400"></i> Alta de Embarcación
-          </h2>
-          <button (click)="cerrarModal()" class="relative z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white/10 hover:bg-red-500 hover:text-white transition-colors text-slate-300">
-            <i class="fas fa-times"></i>
+          <button (click)="mostrarFormulario = true"
+                  class="flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-white
+                         font-bold text-sm px-4 py-2 rounded-xl transition-all shadow-lg
+                         shadow-sky-500/20 hover:shadow-sky-400/30">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Registrar nave
           </button>
         </div>
+      </div>
+    </div>
 
-        <div class="p-8 space-y-6">
-          <div>
-            <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nombre de la Nave *</label>
-            <input type="text" [(ngModel)]="nuevaNave.nombre" placeholder="Ej. Don Francisco II" 
-                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-          </div>
+    <!-- TOAST -->
+    <div *ngIf="mensaje"
+         class="mx-6 mt-4 p-3 bg-emerald-900/40 border border-emerald-600/40 text-emerald-400
+                rounded-xl flex items-center gap-2 text-sm font-medium animate-pulse flex-shrink-0">
+      <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+      </svg>
+      {{ mensaje }}
+    </div>
 
-          <div class="grid grid-cols-2 gap-5">
-            <div>
-              <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Puerto Base *</label>
-              <div class="relative">
-                <select [(ngModel)]="nuevaNave.puerto_base_id" 
-                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer transition-all">
-                  <option value="" disabled>Seleccione...</option>
-                  <option *ngFor="let p of puertos" [value]="p.id">{{ p.nombre }}</option>
-                </select>
-                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-blue-500">
-                  <i class="fas fa-chevron-down text-xs"></i>
+    <!-- GRID DE BARCOS -->
+    <div class="flex-1 overflow-y-auto p-6">
+
+      <!-- Cargando -->
+      <div *ngIf="cargando" class="flex flex-col items-center justify-center h-64">
+        <div class="w-12 h-12 border-2 border-sky-500/30 border-t-sky-500 rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-500 font-medium">Cargando flota...</p>
+      </div>
+
+      <!-- Vacío -->
+      <div *ngIf="!cargando && embarcaciones.length === 0"
+           class="flex flex-col items-center justify-center h-64">
+        <div class="text-6xl mb-4">🚢</div>
+        <p class="text-slate-500 font-bold mb-1">Sin embarcaciones registradas</p>
+        <p class="text-slate-700 text-sm mb-4">Agrega tu primera nave para comenzar</p>
+        <button (click)="mostrarFormulario = true"
+                class="bg-sky-500 hover:bg-sky-400 text-white font-bold px-4 py-2
+                       rounded-xl transition-all text-sm">
+          Registrar primera nave
+        </button>
+      </div>
+
+      <!-- Cards de barcos -->
+      <div *ngIf="!cargando && embarcaciones.length > 0"
+           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+
+        <div *ngFor="let barco of embarcaciones"
+             class="bg-slate-900 border rounded-2xl overflow-hidden transition-all duration-300
+                    hover:shadow-lg group"
+             [class]="getBorderColor(barco.estado)">
+
+          <!-- Header de la card -->
+          <div class="p-5 pb-3">
+            <div class="flex items-start justify-between mb-3">
+              <!-- Icono + nombre -->
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl"
+                     [class]="getIconBg(barco.estado)">
+                  {{ getIconEmoji(barco.estado) }}
                 </div>
+                <div>
+                  <div class="text-white font-black text-sm leading-tight">{{ barco.nombre }}</div>
+                  <div class="text-slate-600 font-mono text-[10px]">{{ barco.id_embarcacion }}</div>
+                </div>
+              </div>
+
+              <!-- Badge estado -->
+              <span class="text-[9px] font-black px-2 py-1 rounded-full border uppercase tracking-wider flex-shrink-0"
+                    [class]="getBadgeClass(barco.estado)">
+                {{ getEstadoLabel(barco.estado) }}
+              </span>
+            </div>
+
+            <!-- Barra de capacidad -->
+            <div class="mb-3">
+              <div class="flex justify-between text-[9px] text-slate-600 font-bold uppercase mb-1">
+                <span>Capacidad bodega</span>
+                <span class="text-white">{{ barco.capacidad_bodega }} TM</span>
+              </div>
+              <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-700"
+                     [class]="getBarColor(barco.capacidad_bodega)"
+                     [style.width.%]="getBarWidth(barco.capacidad_bodega)"></div>
               </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Bodega (TM)</label>
-              <input type="number" [(ngModel)]="nuevaNave.capacidad_bodega" 
-                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-mono font-black text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+            <!-- Stats grid -->
+            <div class="grid grid-cols-3 gap-2">
+              <div class="bg-slate-800/50 rounded-lg p-2 text-center">
+                <div class="text-white font-bold text-sm">{{ barco.velocidad_promedio || 12 }}</div>
+                <div class="text-slate-600 text-[9px] uppercase">kn</div>
+              </div>
+              <div class="bg-slate-800/50 rounded-lg p-2 text-center">
+                <div class="text-white font-bold text-sm">{{ barco.tripulacion_maxima || '—' }}</div>
+                <div class="text-slate-600 text-[9px] uppercase">tripul.</div>
+              </div>
+              <div class="bg-slate-800/50 rounded-lg p-2 text-center">
+                <div class="text-white font-bold text-sm">{{ barco.anio_fabricacion || '—' }}</div>
+                <div class="text-slate-600 text-[9px] uppercase">año</div>
+              </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-5">
-            <div>
-              <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Material Casco</label>
-              <select [(ngModel)]="nuevaNave.material_casco" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                <option value="ACERO NAVAL">Acero Naval</option>
-                <option value="MADERA">Madera</option>
-                <option value="FIBRA DE VIDRIO">Fibra de Vidrio</option>
+          <!-- Footer: selector estado + acción -->
+          <div class="px-5 pb-5 pt-3 border-t border-slate-800/80 flex items-center gap-2">
+
+            <!-- Selector de estado inline -->
+            <div class="relative flex-1">
+              <select (change)="cambiarEstado(barco, $event)"
+                      class="w-full bg-slate-800 border border-slate-700 text-slate-300
+                             text-xs font-bold rounded-xl px-3 py-2 appearance-none outline-none
+                             cursor-pointer hover:border-slate-500 transition-all pr-7">
+                <option value="EN_PUERTO"     [selected]="barco.estado === 'EN_PUERTO'">⚓ En Puerto</option>
+                <option value="EN_RUTA"       [selected]="barco.estado === 'EN_RUTA'">🚢 En Ruta</option>
+                <option value="EN_ALTAMAR"    [selected]="barco.estado === 'EN_ALTAMAR'">🎣 Pescando</option>
+                <option value="MANTENIMIENTO" [selected]="barco.estado === 'MANTENIMIENTO'">🔧 Taller</option>
               </select>
+              <div class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Estado Inicial</label>
-              <select [(ngModel)]="nuevaNave.estado" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3.5 text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                <option value="EN_PUERTO">En Puerto</option>
-                <option value="MANTENIMIENTO">Mantenimiento</option>
-              </select>
-            </div>
+
+            <!-- Botón ruta VRP -->
+            <button (click)="optimizar(barco.id_embarcacion, barco.nombre)"
+                    [disabled]="barco.estado === 'MANTENIMIENTO'"
+                    class="flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/30
+                           text-sky-400 hover:bg-sky-500 hover:text-white hover:border-sky-500
+                           px-3 py-2 rounded-xl text-xs font-bold transition-all
+                           disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+              </svg>
+              Ruta VRP
+            </button>
           </div>
         </div>
-
-        <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
-          <button (click)="cerrarModal()" class="px-6 py-3 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-colors">
-            Cancelar
-          </button>
-          <button (click)="guardarNave()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
-            <i class="fas fa-check"></i> Confirmar Alta
-          </button>
-        </div>
-
       </div>
     </div>
   </main>
+</div>
+
+<!-- MODAL REGISTRO -->
+<div *ngIf="mostrarFormulario"
+     class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4"
+     (click)="cerrarModalSiEsFondo($event)">
+
+  <div class="bg-slate-900 border border-slate-700/60 rounded-2xl w-full max-w-lg shadow-2xl
+              shadow-black/50 overflow-hidden">
+
+    <!-- Modal header -->
+    <div class="px-6 py-5 border-b border-slate-700/50 flex items-center justify-between">
+      <div>
+        <div class="text-[10px] text-sky-400 font-bold uppercase tracking-widest mb-0.5">Flota</div>
+        <h2 class="text-white font-black text-lg">Nueva Embarcación</h2>
+      </div>
+      <button (click)="mostrarFormulario = false"
+              class="w-8 h-8 flex items-center justify-center rounded-xl bg-slate-800
+                     hover:bg-red-900/50 hover:text-red-400 text-slate-500 transition-all">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Modal body -->
+    <div class="p-6 space-y-4">
+
+      <!-- Nombre -->
+      <div>
+        <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+          Nombre de la nave *
+        </label>
+        <input [(ngModel)]="nuevoBarco.nombre" name="nombre" type="text"
+               placeholder="Ej. San Pedro III"
+               class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
+                      px-4 py-2.5 text-sm outline-none focus:border-sky-500 transition-all
+                      placeholder-slate-600">
+      </div>
+
+      <!-- Capacidad + Velocidad -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+            Capacidad (TM) *
+          </label>
+          <input [(ngModel)]="nuevoBarco.capacidad_bodega" name="capacidad" type="number"
+                 class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
+                        px-4 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+            Velocidad (kn)
+          </label>
+          <input [(ngModel)]="nuevoBarco.velocidad_promedio" name="velocidad" type="number"
+                 class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
+                        px-4 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
+        </div>
+      </div>
+
+      <!-- Material + Tripulación + Año -->
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+            Material
+          </label>
+          <select [(ngModel)]="nuevoBarco.material" name="material"
+                  class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
+                         px-3 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
+            <option value="ACERO NAVAL">Acero</option>
+            <option value="MADERA">Madera</option>
+            <option value="FIBRA DE VIDRIO">Fibra</option>
+            <option value="ALUMINIO">Aluminio</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+            Tripulación
+          </label>
+          <input [(ngModel)]="nuevoBarco.tripulacion" name="tripulacion" type="number"
+                 class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
+                        px-3 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
+        </div>
+        <div>
+          <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
+            Año fab.
+          </label>
+          <input [(ngModel)]="nuevoBarco.anio_fabricacion" name="anio" type="number"
+                 class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
+                        px-3 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal footer -->
+    <div class="px-6 py-4 border-t border-slate-700/50 flex gap-3">
+      <button (click)="mostrarFormulario = false"
+              class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white
+                     font-bold py-2.5 rounded-xl transition-all text-sm">
+        Cancelar
+      </button>
+      <button (click)="registrarBarco()"
+              class="flex-1 bg-sky-500 hover:bg-sky-400 text-white font-bold py-2.5
+                     rounded-xl transition-all text-sm shadow-lg shadow-sky-500/20">
+        Guardar embarcación
+      </button>
+    </div>
+  </div>
 </div>

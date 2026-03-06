@@ -1,114 +1,252 @@
-<div class="h-screen flex overflow-hidden bg-slate-50 font-sans text-slate-800">
+<div class="h-screen flex overflow-hidden bg-slate-950 font-sans">
   <app-sidebar></app-sidebar>
 
-  <main class="flex-1 flex flex-col relative overflow-y-auto">
-    <div class="bg-white/80 backdrop-blur-xl px-8 py-6 border-b border-slate-200/60 shadow-sm sticky top-0 z-20 flex justify-between items-center transition-all">
-      <div>
-        <h1 class="text-2xl font-black tracking-tight flex items-center gap-3">
-          <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg shadow-indigo-200">
-            <i class="fas fa-chart-pie text-lg"></i>
+  <main class="flex-1 flex flex-col overflow-hidden bg-slate-950">
+
+    <!-- HEADER -->
+    <div class="bg-slate-900/80 backdrop-blur border-b border-slate-700/50 px-6 py-4 flex-shrink-0">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">
+            Análisis estratégico · Temporada de pesca
           </div>
-          Inteligencia de Flota
-        </h1>
-        <p class="text-slate-500 text-xs font-medium mt-2">Mantenimiento predictivo impulsado por análisis de datos.</p>
+          <h1 class="text-white font-black text-xl">Centro de Inteligencia</h1>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-slate-600 text-xs font-mono hidden md:block">
+            {{ fechaActual | date:'dd MMM yyyy · HH:mm' }}
+          </div>
+          <button (click)="cargarDatosAvanzados()"
+                  class="p-2 text-slate-500 hover:text-sky-400 hover:bg-slate-800 rounded-lg transition-all">
+            <svg [class]="cargando ? 'animate-spin' : ''"
+                 class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+          <button (click)="descargarPDF()"
+                  [disabled]="!data"
+                  class="flex items-center gap-2 bg-slate-800 border border-slate-700 hover:border-sky-600
+                         text-slate-300 hover:text-sky-400 font-bold text-xs px-4 py-2 rounded-xl
+                         transition-all disabled:opacity-40">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Exportar PDF
+          </button>
+        </div>
       </div>
-      <button id="btn-exportar" (click)="exportarPDF()" [disabled]="cargando || flota.length === 0" class="bg-slate-900 hover:bg-red-600 text-white px-5 py-3 rounded-xl text-sm font-bold shadow-xl shadow-slate-200 transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1 disabled:opacity-50">
-        <i class="fas fa-file-pdf"></i> Exportar a PDF
-      </button>
     </div>
 
-    <div class="p-8 max-w-5xl mx-auto w-full" #reportePDF>
-      
-      <div class="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 p-8 md:p-12 animate-[fadeInUp_0.5s_ease-out]">
-        
-        <div class="flex justify-between items-start border-b border-slate-200 pb-8 mb-8">
-          <div>
-            <img src="assets/logo.png" alt="RingenSoft" class="h-8 mb-4 opacity-80" onerror="this.style.display='none'">
-            <h2 class="text-3xl font-black text-slate-800 tracking-tight">Reporte de Salud Operativa</h2>
-            <p class="text-sm font-bold text-indigo-600 uppercase tracking-widest mt-1">Machine Learning Diagnostics</p>
-          </div>
-          <div class="text-right">
-            <p class="text-xs font-bold text-slate-400 uppercase">Fecha de Emisión</p>
-            <p class="text-lg font-black text-slate-700">{{ fechaReporte | date:'mediumDate' }}</p>
-            <p class="text-xs text-slate-500 mt-1">{{ fechaReporte | date:'shortTime' }}</p>
-          </div>
-        </div>
+    <!-- CONTENIDO -->
+    <div class="flex-1 overflow-y-auto p-6">
 
-        <div *ngIf="!cargando && flota.length > 0" class="bg-indigo-50/50 rounded-2xl p-6 mb-10 border border-indigo-100 flex items-center gap-6">
-          <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
-            <svg class="w-full h-full transform -rotate-90">
-              <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8" fill="transparent" class="text-indigo-100" />
-              <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8" fill="transparent"
-                      [attr.stroke-dasharray]="251.2"
-                      [attr.stroke-dashoffset]="251.2 - (251.2 * eficiencia_global) / 100"
-                      class="text-indigo-600 drop-shadow-md transition-all duration-1000 ease-out" />
-            </svg>
-            <div class="absolute flex flex-col items-center justify-center text-indigo-700">
-              <span class="text-2xl font-black leading-none">{{ eficiencia_global }}<span class="text-sm">%</span></span>
+      <!-- Cargando -->
+      <div *ngIf="!data && cargando" class="flex flex-col items-center justify-center h-64">
+        <div class="relative w-14 h-14 mb-4">
+          <div class="absolute inset-0 rounded-full border-2 border-sky-500/20 animate-ping"></div>
+          <div class="absolute inset-0 flex items-center justify-center text-2xl">📊</div>
+        </div>
+        <p class="text-slate-500 animate-pulse">Generando análisis...</p>
+      </div>
+
+      <div *ngIf="data" class="space-y-5">
+
+        <!-- FILA 1: KPIs principales -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <div class="bg-slate-900 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden
+                      hover:border-sky-700/50 transition-all group">
+            <div class="absolute right-3 top-3 text-4xl opacity-5 group-hover:opacity-10 transition-opacity">🐟</div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Biomasa detectada</div>
+            <div class="text-2xl font-black text-white">
+              {{ data.total_toneladas_detectadas | number:'1.0-0' }}
+              <span class="text-sm font-normal text-slate-500">TM</span>
+            </div>
+            <div class="text-[11px] text-sky-400 mt-2">📍 {{ data.zonas_mas_activas || 'Analizando...' }}</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden
+                      hover:border-emerald-700/50 transition-all group">
+            <div class="absolute right-3 top-3 text-4xl opacity-5 group-hover:opacity-10 transition-opacity">🚢</div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Capacidad activa</div>
+            <div class="text-2xl font-black text-white">
+              {{ data.flota_capacidad_total | number:'1.0-0' }}
+              <span class="text-sm font-normal text-slate-500">TM</span>
+            </div>
+            <div class="text-[11px] text-emerald-400 mt-2">⚙️ Flota operativa</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden
+                      hover:border-violet-700/50 transition-all group">
+            <div class="absolute right-3 top-3 text-4xl opacity-5 group-hover:opacity-10 transition-opacity">🌿</div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">CO₂ evitado</div>
+            <div class="text-2xl font-black text-emerald-400">
+              {{ data.ahorro_carbono | number:'1.0-0' }}
+              <span class="text-sm font-normal text-emerald-700">kg</span>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-2">Por rutas VRP optimizadas</div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-700/50 rounded-2xl p-5 relative overflow-hidden
+                      hover:border-amber-700/50 transition-all group">
+            <div class="absolute right-3 top-3 text-4xl opacity-5 group-hover:opacity-10 transition-opacity">⭐</div>
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Top nave</div>
+            <div class="text-base font-black text-white leading-tight">
+              {{ data.top_barcos?.[0]?.nombre || '—' }}
+            </div>
+            <div class="text-[11px] text-amber-400 mt-2">
+              👑 {{ data.top_barcos?.[0]?.captura_total | number:'1.0-0' }} TM proyectadas
             </div>
           </div>
-          
-          <div>
-            <h3 class="text-lg font-black text-slate-800 mb-1">Índice de Eficiencia de Flota</h3>
-            <p class="text-sm text-slate-600 leading-relaxed">
-              Basado en el modelo de evaluación predictiva, la flota de <span class="font-bold">{{flota.length}} naves</span> presenta un estado de salud global del {{eficiencia_global}}%. 
-              <span *ngIf="eficiencia_global > 80" class="text-emerald-600 font-bold">Condición operativa excelente.</span>
-              <span *ngIf="eficiencia_global <= 80" class="text-orange-600 font-bold">Se recomiendan revisiones preventivas.</span>
-            </p>
+        </div>
+
+        <!-- FILA 2: Gráfico tendencia + Estado flota -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+          <!-- Tendencia semanal con Chart.js -->
+          <div class="lg:col-span-2 bg-slate-900 border border-slate-700/50 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">
+                  Proyección
+                </div>
+                <div class="text-white font-bold text-sm">Tendencia de captura semanal</div>
+              </div>
+              <div class="text-slate-700 text-[9px] font-bold uppercase">Basado en cap. operativa</div>
+            </div>
+            <div class="h-52">
+              <canvas #chartTendencia></canvas>
+            </div>
           </div>
-        </div>
 
-        <div *ngIf="cargando" class="py-20 text-center">
-          <i class="fas fa-brain fa-spin text-4xl text-indigo-300 mb-4"></i>
-          <p class="font-bold text-slate-400 animate-pulse">Analizando parámetros mecánicos...</p>
-        </div>
-
-        <div *ngIf="!cargando && flota.length > 0">
-          <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Detalle de Anomalías y Riesgos</h3>
-          
-          <div class="space-y-4">
-            <div *ngFor="let nave of analisis_mantenimiento" class="p-5 rounded-2xl border transition-all hover:shadow-md"
-                 [ngClass]="nave.riesgo_falla > 70 ? 'bg-rose-50/30 border-rose-200' : 'bg-white border-slate-100'">
-              
-              <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center gap-3">
-                  <i class="fas fa-ship text-xl" [ngClass]="nave.riesgo_falla > 70 ? 'text-rose-500' : 'text-slate-400'"></i>
-                  <div>
-                    <h4 class="font-black text-slate-800">{{ nave.nombre }}</h4>
-                    <p class="text-[10px] text-slate-500 font-mono">{{ nave.id_embarcacion }} • Fab: {{ nave.anio_fabricacion }}</p>
+          <!-- Estado de flota -->
+          <div class="bg-slate-900 border border-slate-700/50 rounded-2xl p-5">
+            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-4">
+              Estado de flota
+            </div>
+            <div class="space-y-4">
+              <div *ngFor="let estado of data.estado_flota" class="group">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2.5 h-2.5 rounded-full"
+                         [style.background]="estado.color"></div>
+                    <span class="text-slate-400 text-xs font-medium">{{ estado.label }}</span>
                   </div>
+                  <span class="text-white font-black text-sm">{{ estado.value }}</span>
                 </div>
-                
-                <div class="text-right">
-                  <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase"
-                        [ngClass]="nave.riesgo_falla > 70 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'">
-                    Riesgo Falla: {{ nave.riesgo_falla }}%
-                  </span>
+                <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-1000"
+                       [style.background]="estado.color"
+                       [style.width.%]="getEstadoPct(estado.value)"></div>
                 </div>
-              </div>
-
-              <div class="w-full bg-slate-100 rounded-full h-1.5 mb-3 overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-1000"
-                     [style.width]="nave.salud_pct + '%'"
-                     [ngClass]="{
-                       'bg-emerald-500': nave.salud_pct >= 70,
-                       'bg-yellow-500': nave.salud_pct >= 40 && nave.salud_pct < 70,
-                       'bg-rose-500': nave.salud_pct < 40
-                     }"></div>
-              </div>
-
-              <div class="bg-white/50 rounded-lg p-3 text-xs font-medium border"
-                   [ngClass]="nave.riesgo_falla > 70 ? 'border-rose-100 text-rose-800' : 'border-slate-50 text-slate-600'">
-                <i class="fas fa-robot mr-1" [class.text-indigo-400]="nave.riesgo_falla <= 70"></i>
-                <span class="font-bold">Output de IA:</span> {{ nave.recomendacion }}
               </div>
             </div>
           </div>
         </div>
 
-        <div *ngIf="!cargando && flota.length === 0" class="text-center py-10 text-slate-400">
-          <i class="fas fa-chart-line text-4xl mb-3 opacity-50"></i>
-          <p>No hay data histórica suficiente para emitir un reporte.</p>
+        <!-- FILA 3: Ranking de productividad -->
+        <div class="bg-slate-900 border border-slate-700/50 rounded-2xl overflow-hidden">
+          <div class="p-5 border-b border-slate-700/50 flex items-center justify-between">
+            <div>
+              <div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-0.5">
+                Clasificación
+              </div>
+              <div class="text-white font-bold text-sm">Ranking de productividad</div>
+            </div>
+            <div class="text-[9px] text-slate-600 font-bold uppercase">Top 5 unidades</div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b border-slate-800">
+                  <th class="px-5 py-3 text-[9px] text-slate-600 font-bold uppercase w-12">#</th>
+                  <th class="px-5 py-3 text-[9px] text-slate-600 font-bold uppercase">Embarcación</th>
+                  <th class="px-5 py-3 text-[9px] text-slate-600 font-bold uppercase text-right">Cap. mes (TM)</th>
+                  <th class="px-5 py-3 text-[9px] text-slate-600 font-bold uppercase">Eficiencia</th>
+                  <th class="px-5 py-3 text-[9px] text-slate-600 font-bold uppercase text-center">Premio</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60">
+                <tr *ngFor="let barco of data.top_barcos"
+                    class="hover:bg-slate-800/30 transition-colors group">
+
+                  <td class="px-5 py-3.5">
+                    <span *ngIf="barco.ranking === 1" class="text-xl">👑</span>
+                    <span *ngIf="barco.ranking === 2" class="text-xl">🥈</span>
+                    <span *ngIf="barco.ranking === 3" class="text-xl">🥉</span>
+                    <span *ngIf="barco.ranking > 3"
+                          class="text-slate-600 text-xs font-bold bg-slate-800
+                                 px-2 py-0.5 rounded-full">{{ barco.ranking }}</span>
+                  </td>
+
+                  <td class="px-5 py-3.5">
+                    <div class="text-white font-bold text-sm group-hover:text-sky-400 transition-colors">
+                      {{ barco.nombre }}
+                    </div>
+                    <div class="text-slate-700 text-[9px] uppercase font-bold">Clase industrial</div>
+                  </td>
+
+                  <td class="px-5 py-3.5 text-right">
+                    <span class="text-sky-400 font-mono font-black text-sm">
+                      {{ barco.captura_total | number:'1.0-0' }}
+                    </span>
+                  </td>
+
+                  <td class="px-5 py-3.5">
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-400 rounded-full"
+                             [style.width.%]="barco.eficiencia"></div>
+                      </div>
+                      <span class="text-emerald-400 text-[10px] font-bold w-8 text-right">
+                        {{ barco.eficiencia | number:'1.0-0' }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td class="px-5 py-3.5 text-center">
+                    <span *ngIf="barco.eficiencia >= 80"
+                          class="text-[9px] font-bold text-emerald-400 bg-emerald-900/30
+                                 border border-emerald-700/40 px-2 py-0.5 rounded-full">
+                      Alto rendimiento
+                    </span>
+                    <span *ngIf="barco.eficiencia < 80 && barco.eficiencia >= 50"
+                          class="text-[9px] font-bold text-amber-400 bg-amber-900/20
+                                 border border-amber-700/30 px-2 py-0.5 rounded-full">
+                      Normal
+                    </span>
+                    <span *ngIf="barco.eficiencia < 50"
+                          class="text-[9px] font-bold text-slate-500 bg-slate-800
+                                 border border-slate-700 px-2 py-0.5 rounded-full">
+                      Bajo
+                    </span>
+                  </td>
+                </tr>
+
+                <tr *ngIf="!data.top_barcos?.length">
+                  <td colspan="5" class="px-5 py-10 text-center text-slate-700 text-xs italic">
+                    Sin datos de ranking disponibles.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- FILA 4: Nota técnica -->
+        <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 flex items-start gap-3">
+          <div class="text-2xl flex-shrink-0">📡</div>
+          <div>
+            <div class="text-white text-xs font-bold mb-0.5">Fuentes de datos</div>
+            <div class="text-slate-600 text-[10px] leading-relaxed">
+              Biomasa calculada con datos satelitales NOAA MODIS Aqua (clorofila-a 8 días) y
+              SST Open-Meteo Marine. Eficiencia calculada por capacidad / consumo proyectado.
+              CO₂ estimado con factor 2.68 kg CO₂/litro combustible marine diesel.
+            </div>
+          </div>
         </div>
 
       </div>
