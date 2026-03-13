@@ -14,27 +14,31 @@ import { SidebarComponent } from '../../components/sidebar/sidebar';
 })
 export class FlotaComponent implements OnInit {
 
-  embarcaciones: any[] = [];
-  cargando        = true;
-  mensaje         = '';
+  embarcaciones:    any[] = [];
+  cargando          = true;
+  mensaje           = '';
   mostrarFormulario = false;
 
+  // ✅ CORRECCIÓN: campos con los nombres exactos que espera el schema del backend
+  // EmbarcacionCreate espera: nombre, capacidad_bodega, velocidad_promedio,
+  // consumo_combustible, material_casco, tripulacion_maxima, anio_fabricacion
   nuevoBarco = {
-    nombre:             '',
-    capacidad_bodega:   300,
-    velocidad_promedio: 12,
-    consumo:            1.5,
-    material:           'ACERO NAVAL',
-    tripulacion:        10,
-    anio_fabricacion:   2020,
+    nombre:              '',
+    capacidad_bodega:    300,
+    velocidad_promedio:  12,
+    consumo_combustible: 1.5,      // ← era 'consumo', 422 corregido
+    material_casco:      'ACERO NAVAL',  // ← era 'material', 422 corregido
+    tripulacion_maxima:  10,        // ← era 'tripulacion', 422 corregido
+    anio_fabricacion:    2020,
+    estado:              'EN_PUERTO',
+    puerto_base_id:      null as string | null,
   };
 
-  // Capacidad máxima de referencia para las barras (ajustar según tu flota)
   private readonly CAP_MAX_REF = 600;
 
   constructor(
-    private api: ApiService,
-    private cdr: ChangeDetectorRef,
+    private api:    ApiService,
+    private cdr:    ChangeDetectorRef,
     private router: Router,
   ) {}
 
@@ -50,22 +54,44 @@ export class FlotaComponent implements OnInit {
   }
 
   registrarBarco() {
-    if (!this.nuevoBarco.nombre) return;
+    if (!this.nuevoBarco.nombre.trim()) return;
+
+    // ✅ El id_embarcacion es opcional — el backend genera U{user_id}-{n}
     this.api.crearEmbarcacion(this.nuevoBarco).subscribe({
       next: (res) => {
-        this.mensaje = `${res.nombre} registrada correctamente.`;
+        this.mensaje          = `✅ ${res.nombre} registrada correctamente.`;
         this.mostrarFormulario = false;
         this.cargarFlota();
-        this.nuevoBarco = { nombre: '', capacidad_bodega: 300, velocidad_promedio: 12, consumo: 1.5, material: 'ACERO NAVAL', tripulacion: 10, anio_fabricacion: 2020 };
+        this._resetForm();
         this.cdr.detectChanges();
         setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3500);
       },
-      error: () => {}
+      error: (err) => {
+        const detail = err?.error?.detail;
+        if (Array.isArray(detail)) {
+          // Pydantic v2 devuelve un array de errores de validación
+          const campos = detail.map((e: any) => `${e.loc?.slice(-1)?.[0]}: ${e.msg}`).join(', ');
+          this.mensaje = `❌ Error de validación: ${campos}`;
+        } else {
+          this.mensaje = `❌ ${detail || 'No se pudo registrar la embarcación'}`;
+        }
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 5000);
+      }
     });
   }
 
+  private _resetForm() {
+    this.nuevoBarco = {
+      nombre: '', capacidad_bodega: 300, velocidad_promedio: 12,
+      consumo_combustible: 1.5, material_casco: 'ACERO NAVAL',
+      tripulacion_maxima: 10, anio_fabricacion: 2020,
+      estado: 'EN_PUERTO', puerto_base_id: null,
+    };
+  }
+
   cambiarEstado(barco: any, event: any) {
-    const nuevoEstado   = event.target.value;
+    const nuevoEstado    = event.target.value;
     const estadoAnterior = barco.estado;
     barco.estado = nuevoEstado;
     this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado).subscribe({
@@ -73,7 +99,15 @@ export class FlotaComponent implements OnInit {
     });
   }
 
-  optimizar(id: string, nombre: string) {
+  eliminarBarco(id: string) {
+    if (!confirm('¿Eliminar esta embarcación?')) return;
+    this.api.eliminarEmbarcacion(id).subscribe({
+      next:  () => this.cargarFlota(),
+      error: () => {}
+    });
+  }
+
+  optimizar(id: string, _nombre?: string) {
     this.router.navigate(['/mapa'], { queryParams: { barco: id } });
   }
 
@@ -83,7 +117,7 @@ export class FlotaComponent implements OnInit {
     }
   }
 
-  // ── Helpers visuales para las cards ──────────────────────────────────────
+  // ── Helpers visuales ──────────────────────────────────────────────────────
 
   contarEstado(estado: string): number {
     return this.embarcaciones.filter(b => b.estado === estado).length;
@@ -111,10 +145,8 @@ export class FlotaComponent implements OnInit {
 
   getIconEmoji(estado: string): string {
     const map: Record<string, string> = {
-      'EN_RUTA':      '🚢',
-      'EN_ALTAMAR':   '🎣',
-      'MANTENIMIENTO':'🔧',
-      'EN_PUERTO':    '⚓',
+      'EN_RUTA':      '🚢', 'EN_ALTAMAR': '🎣',
+      'MANTENIMIENTO':'🔧', 'EN_PUERTO':  '⚓',
     };
     return map[estado] ?? '🚢';
   }
@@ -131,10 +163,8 @@ export class FlotaComponent implements OnInit {
 
   getEstadoLabel(estado: string): string {
     const map: Record<string, string> = {
-      'EN_RUTA':      'En ruta',
-      'EN_ALTAMAR':   'Pescando',
-      'MANTENIMIENTO':'Taller',
-      'EN_PUERTO':    'En puerto',
+      'EN_RUTA':      'En ruta',  'EN_ALTAMAR':   'Pescando',
+      'MANTENIMIENTO':'Taller',   'EN_PUERTO':    'En puerto',
     };
     return map[estado] ?? estado;
   }

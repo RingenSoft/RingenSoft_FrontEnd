@@ -139,7 +139,7 @@
                 <div class="text-slate-600 text-[9px] uppercase">kn</div>
               </div>
               <div class="bg-slate-800/50 rounded-lg p-2 text-center">
-                <div class="text-white font-bold text-sm">{{ barco.tripulacion_maxima || '—' }}</div>
+                <div class="text-white font-bold text-sm">{{ barco.tripulacion || '—' }}</div>
                 <div class="text-slate-600 text-[9px] uppercase">tripul.</div>
               </div>
               <div class="bg-slate-800/50 rounded-lg p-2 text-center">
@@ -171,7 +171,17 @@
             </div>
 
             <!-- Botón ruta VRP -->
-            <button (click)="optimizar(barco.id_embarcacion, barco.nombre)"
+            <button (click)="eliminarBarco(barco.id_embarcacion)"
+                title="Eliminar embarcación"
+                class="p-2 rounded-lg text-red-500/60 hover:text-red-400 hover:bg-red-900/20
+                       border border-transparent hover:border-red-800/40 transition-all
+                       text-xs flex-shrink-0">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+          </svg>
+        </button>
+        <button (click)="optimizar(barco.id_embarcacion, barco.nombre)"
                     [disabled]="barco.estado === 'MANTENIMIENTO'"
                     class="flex items-center gap-1.5 bg-sky-500/10 border border-sky-500/30
                            text-sky-400 hover:bg-sky-500 hover:text-white hover:border-sky-500
@@ -254,7 +264,7 @@
           <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
             Material
           </label>
-          <select [(ngModel)]="nuevoBarco.material" name="material"
+          <select [(ngModel)]="nuevoBarco.material_casco" name="material"
                   class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
                          px-3 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
             <option value="ACERO NAVAL">Acero</option>
@@ -267,7 +277,7 @@
           <label class="block text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1.5">
             Tripulación
           </label>
-          <input [(ngModel)]="nuevoBarco.tripulacion" name="tripulacion" type="number"
+          <input [(ngModel)]="nuevoBarco.tripulacion_maxima" name="tripulacion" type="number"
                  class="w-full bg-slate-800 border border-slate-700 text-white rounded-xl
                         px-3 py-2.5 text-sm outline-none focus:border-sky-500 transition-all">
         </div>

@@ -50,7 +50,6 @@
     </span>
   </div>
 
-  <!-- ✅ Nuevo: Análisis Satelital -->
   <a routerLink="/satelite" routerLinkActive="bg-sky-600 text-white"
      class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
             hover:text-white hover:bg-sky-900/50 transition-all
@@ -59,7 +58,7 @@
     <span class="hidden lg:block text-sm font-semibold text-sky-300">Satélite</span>
   </a>
 
-  <!-- Pescar -->
+  <!-- ✅ CORRECCIÓN: ruta /pescar → /pescar (la ruta en app.routes.ts es 'pescar') -->
   <a routerLink="/pescar" routerLinkActive="bg-emerald-600 text-white"
      class="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-slate-400
             hover:text-white hover:bg-emerald-900/50 transition-all
@@ -71,17 +70,21 @@
   <!-- Spacer -->
   <div class="flex-1"></div>
 
-  <!-- Footer usuario -->
+  <!-- ✅ CORRECCIÓN: mostrar nombre y rol del usuario (no "Sesión activa" hardcodeado) -->
   <div class="mx-2 border-t border-slate-700/50 pt-3">
     <div class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-800
-                transition-colors cursor-pointer">
+                transition-colors cursor-pointer" (click)="logout()">
       <div class="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
         <i class="fas fa-user text-slate-400 text-xs"></i>
       </div>
       <div class="hidden lg:block flex-1 min-w-0">
-        <div class="text-white text-xs font-semibold truncate">Sesión activa</div>
-        <div class="text-slate-500 text-[9px]">RingenSoft v7</div>
+        <!-- ✅ Ahora muestra el nombre real del usuario -->
+        <div class="text-white text-xs font-semibold truncate">{{ nombreUsuario }}</div>
+        <div class="text-slate-500 text-[9px] uppercase tracking-wide">{{ rolUsuario }}</div>
       </div>
+      <!-- Ícono de cerrar sesión visible al hacer hover -->
+      <i class="fas fa-sign-out-alt text-slate-600 text-xs hidden lg:block flex-shrink-0
+                hover:text-red-400 transition-colors" title="Cerrar sesión"></i>
     </div>
   </div>
 </nav>
