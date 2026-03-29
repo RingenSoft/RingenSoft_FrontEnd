@@ -33,7 +33,11 @@
       <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
         <i class="fas fa-bell"></i>
       </div>
-      <span class="font-medium">Alertas Marinas</span>
+      <span class="font-medium flex-1">Alertas Marinas</span>
+      <span *ngIf="alertaBadge.alertasRojas > 0"
+            class="ml-auto bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">
+        {{ alertaBadge.alertasRojas }}
+      </span>
     </a>
     
     <a routerLink="/mapa-calor" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">

@@ -93,18 +93,57 @@
         </div>
       </div>
 
-      <!-- Historial completo -->
+      <!-- Historial con filtros -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <p class="font-bold text-slate-700">Historial de rutas</p>
-          <span class="text-xs text-slate-400">{{ historial.length }} rutas</span>
+
+        <!-- Cabecera + filtros -->
+        <div class="p-4 border-b border-slate-100">
+          <div class="flex items-center justify-between mb-3">
+            <p class="font-bold text-slate-700">Historial de rutas</p>
+            <span class="text-xs text-slate-400">
+              {{ historialFiltrado.length }}
+              <span *ngIf="filtrosActivos"> de {{ historial.length }}</span>
+              rutas
+            </span>
+          </div>
+
+          <!-- Controles de filtro -->
+          <div class="flex flex-wrap gap-2 no-print">
+            <select [(ngModel)]="filtroEspecie"
+                    class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300">
+              <option value="">Todas las especies</option>
+              <option *ngFor="let e of especies" [value]="e">{{ e }}</option>
+            </select>
+
+            <input type="date" [(ngModel)]="filtroFechaDesde"
+                   class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300"
+                   placeholder="Desde"/>
+
+            <input type="date" [(ngModel)]="filtroFechaHasta"
+                   class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300"
+                   placeholder="Hasta"/>
+
+            <button *ngIf="filtrosActivos" (click)="limpiarFiltros()"
+                    class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+              <i class="fas fa-times"></i> Limpiar
+            </button>
+          </div>
         </div>
-        <div *ngIf="historial.length === 0" class="p-10 text-center text-slate-400">
+
+        <!-- Estado vacío -->
+        <div *ngIf="historialFiltrado.length === 0" class="p-10 text-center text-slate-400">
           <p class="text-4xl mb-3">🗺️</p>
-          <p class="font-bold">Sin rutas calculadas aún</p>
-          <p class="text-sm mt-1">Ve al Mapa de Rutas para calcular tu primera ruta</p>
+          <p class="font-bold" *ngIf="!filtrosActivos">Sin rutas calculadas aún</p>
+          <p class="font-bold" *ngIf="filtrosActivos">Sin resultados para los filtros aplicados</p>
+          <p class="text-sm mt-1" *ngIf="!filtrosActivos">Ve al Mapa de Rutas para calcular tu primera ruta</p>
+          <button *ngIf="filtrosActivos" (click)="limpiarFiltros()"
+                  class="mt-4 text-blue-600 text-sm font-bold hover:underline">
+            Limpiar filtros
+          </button>
         </div>
-        <div class="overflow-x-auto" *ngIf="historial.length > 0">
+
+        <!-- Tabla -->
+        <div class="overflow-x-auto" *ngIf="historialFiltrado.length > 0">
           <table class="w-full text-sm" style="table-layout:fixed">
             <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
@@ -119,7 +158,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let r of historial" class="border-b border-slate-50 hover:bg-blue-50 transition-colors">
+              <tr *ngFor="let r of historialFiltrado" class="border-b border-slate-50 hover:bg-blue-50 transition-colors">
                 <td class="p-3 text-slate-500 text-xs">{{ r.fecha | date:'dd/MM HH:mm' }}</td>
                 <td class="p-3 font-bold text-slate-700">{{ r.especie }}</td>
                 <td class="p-3 text-right text-slate-600">{{ r.distancia }} km</td>
@@ -144,8 +183,8 @@
     </div>
 
     <!-- Modal captura real -->
-    <div *ngIf="capturaModal" class="no-print"
-         class="fixed inset-0 z-50 flex items-center justify-center"
+    <div *ngIf="capturaModal"
+         class="no-print fixed inset-0 z-50 flex items-center justify-center"
          style="background:rgba(0,0,0,0.5)">
       <div class="bg-white rounded-2xl shadow-2xl p-6 w-80">
         <div class="flex items-center justify-between mb-4">

@@ -24,14 +24,17 @@ interface Mantenimiento {
 })
 export class FlotaComponent implements OnInit {
 
+  readonly ANIO_MIN = 1950;
+  readonly ANIO_MAX = new Date().getFullYear();
+
   // --- Tabs ---
   tabActiva: 'embarcaciones' | 'mantenimiento' = 'embarcaciones';
 
   // --- Embarcaciones ---
   embarcaciones: any[] = [];
-  cargando: boolean = true;
-  mensaje: string = '';
-  mostrarFormulario: boolean = false;
+  cargando      = true;
+  mensaje       = '';
+  mostrarFormulario = false;
 
   nuevoBarco = {
     nombre:             '',
@@ -44,6 +47,15 @@ export class FlotaComponent implements OnInit {
     tripulacion_max:    6,
     anio_fabricacion:   2018
   };
+
+  // --- Editar embarcación ---
+  editandoBarco: any = null;
+  barcoEditado: any  = {};
+
+  // --- Historial por embarcación ---
+  historialModalBarco: any   = null;
+  historialBarco: any[]      = [];
+  cargandoHistorial          = false;
 
   // --- Mantenimiento ---
   mantenimientos: Mantenimiento[] = [];
@@ -80,19 +92,29 @@ export class FlotaComponent implements OnInit {
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (err: any) => {
-        console.error('Error cargando flota', err);
+      error: () => {
         this.cargando = false;
         this.cdr.detectChanges();
       }
     });
   }
 
+  private validarBarco(barco: typeof this.nuevoBarco): string | null {
+    if (!barco.nombre.trim())                                          return 'El nombre es obligatorio';
+    if (barco.capacidad_bodega   < 1)                                  return 'La capacidad debe ser al menos 1 TM';
+    if (barco.velocidad_promedio < 1 || barco.velocidad_promedio > 50) return 'La velocidad debe estar entre 1 y 50 nudos';
+    if (barco.consumo_hora       < 1)                                  return 'El consumo debe ser al menos 1 L/h';
+    if (barco.autonomia_horas    < 1 || barco.autonomia_horas > 240)   return 'La autonomía debe estar entre 1 y 240 horas';
+    if (barco.tripulacion_max    < 1 || barco.tripulacion_max > 100)   return 'La tripulación debe estar entre 1 y 100';
+    if (barco.anio_fabricacion < this.ANIO_MIN || barco.anio_fabricacion > this.ANIO_MAX)
+      return `El año debe estar entre ${this.ANIO_MIN} y ${this.ANIO_MAX}`;
+    return null;
+  }
+
   registrarBarco() {
-    if (!this.nuevoBarco.nombre) {
-      alert('El nombre es obligatorio');
-      return;
-    }
+    const error = this.validarBarco(this.nuevoBarco);
+    if (error) { alert(error); return; }
+
     this.api.crearEmbarcacion(this.nuevoBarco).subscribe({
       next: (res) => {
         this.mensaje = `¡${res.nombre} registrado correctamente!`;
@@ -106,14 +128,66 @@ export class FlotaComponent implements OnInit {
     });
   }
 
+  abrirEdicion(barco: any) {
+    this.editandoBarco = barco;
+    this.barcoEditado  = { ...barco };
+  }
+
+  guardarEdicion() {
+    const error = this.validarBarco(this.barcoEditado);
+    if (error) { alert(error); return; }
+
+    this.api.actualizarEmbarcacion(this.editandoBarco.id_embarcacion, this.barcoEditado).subscribe({
+      next: () => {
+        this.mensaje = `${this.barcoEditado.nombre} actualizado correctamente`;
+        this.editandoBarco = null;
+        this.cargarFlota();
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: () => alert('Error al actualizar embarcación.')
+    });
+  }
+
+  eliminarBarco(barco: any) {
+    if (!confirm(`¿Eliminar "${barco.nombre}"? Esta acción no se puede deshacer.`)) return;
+    this.api.eliminarEmbarcacion(barco.id_embarcacion).subscribe({
+      next: () => {
+        this.mensaje = `${barco.nombre} eliminado`;
+        this.cargarFlota();
+        this.cdr.detectChanges();
+        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
+      },
+      error: () => alert('Error al eliminar embarcación.')
+    });
+  }
+
+  verHistorial(barco: any) {
+    this.historialModalBarco = barco;
+    this.historialBarco      = [];
+    this.cargandoHistorial   = true;
+    this.cdr.detectChanges();
+
+    this.api.getHistorialEmbarcacion(barco.id_embarcacion).subscribe({
+      next: (data: any) => {
+        this.historialBarco    = data.rutas || [];
+        this.cargandoHistorial = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.cargandoHistorial = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   cambiarEstado(barco: any, event: any) {
-    const nuevoEstado  = event.target.value;
+    const nuevoEstado    = event.target.value;
     const estadoAnterior = barco.estado;
     barco.estado = nuevoEstado;
     this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado).subscribe({
       next: () => this.cdr.detectChanges(),
-      error: (err) => {
-        console.error(err);
+      error: () => {
         barco.estado = estadoAnterior;
         alert('Error al cambiar estado.');
         this.cdr.detectChanges();
@@ -151,25 +225,19 @@ export class FlotaComponent implements OnInit {
   }
 
   agregarMantenimiento() {
-    if (!this.nuevoMant.id_embarcacion) {
-      alert('Selecciona una embarcación');
-      return;
-    }
-    if (!this.nuevoMant.descripcion.trim()) {
-      alert('La descripción es obligatoria');
-      return;
-    }
+    if (!this.nuevoMant.id_embarcacion) { alert('Selecciona una embarcación'); return; }
+    if (!this.nuevoMant.descripcion.trim()) { alert('La descripción es obligatoria'); return; }
 
     const barco = this.embarcaciones.find(b => b.id_embarcacion === this.nuevoMant.id_embarcacion);
     const registro: Mantenimiento = {
-      id:                   Date.now().toString(),
-      id_embarcacion:       this.nuevoMant.id_embarcacion,
-      nombre_embarcacion:   barco?.nombre ?? this.nuevoMant.id_embarcacion,
-      fecha:                this.nuevoMant.fecha,
-      tipo:                 this.nuevoMant.tipo,
-      descripcion:          this.nuevoMant.descripcion.trim(),
-      costo:                this.nuevoMant.costo,
-      proxima_revision:     this.nuevoMant.proxima_revision
+      id:                 Date.now().toString(),
+      id_embarcacion:     this.nuevoMant.id_embarcacion,
+      nombre_embarcacion: barco?.nombre ?? this.nuevoMant.id_embarcacion,
+      fecha:              this.nuevoMant.fecha,
+      tipo:               this.nuevoMant.tipo,
+      descripcion:        this.nuevoMant.descripcion.trim(),
+      costo:              this.nuevoMant.costo,
+      proxima_revision:   this.nuevoMant.proxima_revision
     };
 
     this.mantenimientos.unshift(registro);
@@ -180,7 +248,6 @@ export class FlotaComponent implements OnInit {
   }
 
   proximasRevisiones(): Mantenimiento[] {
-    const hoy = new Date();
     return this.mantenimientos
       .filter(m => m.proxima_revision)
       .sort((a, b) => new Date(a.proxima_revision).getTime() - new Date(b.proxima_revision).getTime())

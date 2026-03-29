@@ -73,8 +73,20 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/embarcaciones`, datos);
   }
 
+  actualizarEmbarcacion(id: string, datos: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/embarcaciones/${id}`, datos);
+  }
+
+  eliminarEmbarcacion(id: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/embarcaciones/${id}`);
+  }
+
   cambiarEstadoEmbarcacion(id: string, estado: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/embarcaciones/${id}/estado`, { estado });
+  }
+
+  getHistorialEmbarcacion(idEmbarcacion: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/historial?id_embarcacion=${idEmbarcacion}`);
   }
 
   getReportesAvanzados(): Observable<any> {

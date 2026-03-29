@@ -15,23 +15,30 @@ Chart.register(...registerables);
 })
 export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  @ViewChild('chartEspecies') chartEspeciesRef!: ElementRef;
+  @ViewChild('chartEspecies')   chartEspeciesRef!: ElementRef;
   @ViewChild('chartDistancias') chartDistanciasRef!: ElementRef;
 
-  estadisticas: any = null;
+  estadisticas: any  = null;
   historial:    any[] = [];
-  cargando      = true;
-  hoy           = new Date();
+  cargando           = true;
+  hoy                = new Date();
   private charts: any[] = [];
 
-  capturaModal: any     = null;
-  capturaValor          = 0;
+  // Filters
+  filtroEspecie     = '';
+  filtroFechaDesde  = '';
+  filtroFechaHasta  = '';
+
+  readonly especies = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+
+  capturaModal: any = null;
+  capturaValor      = 0;
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() { this.cargarDatos(); }
+  ngOnInit()       { this.cargarDatos(); }
   ngAfterViewInit() {}
-  ngOnDestroy() { this.charts.forEach(c => c.destroy()); }
+  ngOnDestroy()    { this.charts.forEach(c => c.destroy()); }
 
   cargarDatos() {
     this.cargando = true;
@@ -45,6 +52,25 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
       },
       error: () => { this.cargando = false; this.cdr.detectChanges(); }
     });
+  }
+
+  get historialFiltrado(): any[] {
+    return this.historial.filter(r => {
+      if (this.filtroEspecie && r.especie !== this.filtroEspecie) return false;
+      if (this.filtroFechaDesde && new Date(r.fecha) < new Date(this.filtroFechaDesde)) return false;
+      if (this.filtroFechaHasta && new Date(r.fecha) > new Date(this.filtroFechaHasta + 'T23:59:59')) return false;
+      return true;
+    });
+  }
+
+  get filtrosActivos(): boolean {
+    return !!(this.filtroEspecie || this.filtroFechaDesde || this.filtroFechaHasta);
+  }
+
+  limpiarFiltros() {
+    this.filtroEspecie    = '';
+    this.filtroFechaDesde = '';
+    this.filtroFechaHasta = '';
   }
 
   iniciarGraficos() {
