@@ -24,6 +24,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   estadisticas:   any    = null;
   embarcaciones:  any[]  = [];
   pronostico:     any    = null;
+  pronosticoHoras: { hora: string; olas_m: number; viento_kmh: number }[] = [];
   cargando              = true;
   errorCarga            = false;
   saludo                = '';
@@ -91,7 +92,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
     // Pronóstico 48h
     this.api.getPronostico48h(lat, lon).subscribe({
       next: (data: any) => {
-        this.pronostico = data;
+        this.pronostico      = data;
+        this.pronosticoHoras = (data?.horas || []).slice(0, 12);
         this.cdr.detectChanges();
       },
       error: () => {}

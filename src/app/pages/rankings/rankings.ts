@@ -15,12 +15,12 @@ export class RankingsComponent implements OnInit {
   cargando  = true;
 
   readonly MEDALLAS = ['🥇', '🥈', '🥉'];
-  readonly LOGROS: { id: string; nombre: string; desc: string; icono: string; req: (u: any) => boolean }[] = [
+  readonly LOGROS: { id: string; nombre: string; desc: string; icono: string; req: (u: any, idx?: number) => boolean }[] = [
     { id: 'primer_pez',   nombre: 'Primer Pez',       desc: 'Registra tu primera captura',       icono: '🐟', req: u => u.total_rutas >= 1 },
     { id: 'veterano',     nombre: 'Veterano del Mar',  desc: 'Completa 10 salidas',               icono: '⚓', req: u => u.total_rutas >= 10 },
     { id: 'gran_captura', nombre: 'Gran Captura',      desc: 'Supera 5 TM en una sola salida',    icono: '🏆', req: u => u.mejor_captura >= 5 },
     { id: 'navegante',    nombre: 'Gran Navegante',    desc: 'Navega más de 1,000 km en total',   icono: '🧭', req: u => u.total_km >= 1000 },
-    { id: 'lider',        nombre: 'Líder de Flota',    desc: 'Sé el #1 en captura total',         icono: '👑', req: (u, idx = 0) => idx === 0 },
+    { id: 'lider',        nombre: 'Líder de Flota',    desc: 'Sé el #1 en captura total',         icono: '👑', req: (_u, idx = 0) => idx === 0 },
     { id: 'constante',    nombre: 'Pescador Constante',desc: 'Completa 5 salidas o más',          icono: '🌊', req: u => u.total_rutas >= 5 },
   ];
 

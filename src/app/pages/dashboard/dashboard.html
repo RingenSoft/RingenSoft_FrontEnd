@@ -196,7 +196,7 @@
         </div>
 
         <!-- Pronóstico próximas horas -->
-        <div *ngIf="pronostico?.horas?.length > 0"
+        <div *ngIf="pronosticoHoras.length > 0"
              class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5 mb-5 animate-fade-in">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
@@ -212,7 +212,7 @@
             </span>
           </div>
           <div class="flex gap-2 overflow-x-auto pb-2 scroll-hidden">
-            <div *ngFor="let h of (pronostico.horas | slice:0:12)"
+            <div *ngFor="let h of pronosticoHoras"
                  class="flex-shrink-0 flex flex-col items-center bg-slate-900/60 rounded-xl px-3 py-3 min-w-[72px] border border-slate-700/60 hover:border-slate-500 transition-colors">
               <p class="text-[10px] text-slate-500 font-bold mb-2">{{ h.hora }}</p>
               <span class="text-xl mb-1">
