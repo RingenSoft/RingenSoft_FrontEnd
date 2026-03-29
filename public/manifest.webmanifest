@@ -1,0 +1,24 @@
+{
+  "name": "FishRoute Pro — Optimización Pesquera",
+  "short_name": "FishRoute",
+  "description": "Rutas de pesca óptimas con datos satelitales en tiempo real",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "favicon.ico",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["navigation", "productivity"],
+  "lang": "es-PE"
+}

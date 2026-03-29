@@ -59,12 +59,14 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
       zoom: 6,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19,
     }).addTo(this.mapa);
 
     L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-      opacity: 0.6,
+      opacity: 0.7,
     }).addTo(this.mapa);
 
     this.capaZonas = L.layerGroup().addTo(this.mapa);

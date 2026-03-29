@@ -4,9 +4,9 @@
   <main class="flex-1 flex relative">
 
     <!-- Panel izquierdo: configuración -->
-    <div class="absolute top-4 left-4 z-40 bg-white/95 backdrop-blur p-5 rounded-xl shadow-2xl border border-slate-200 w-80 max-h-[90vh] overflow-y-auto">
+    <div class="absolute top-4 left-4 z-40 bg-slate-900/96 backdrop-blur p-5 rounded-xl shadow-2xl border border-slate-700 w-80 max-h-[90vh] overflow-y-auto">
 
-      <h2 class="font-bold text-slate-800 text-lg mb-4 flex items-center border-b pb-3 border-slate-100">
+      <h2 class="font-bold text-white text-lg mb-4 flex items-center border-b pb-3 border-slate-700">
         🐟 Calcular Ruta Óptima
       </h2>
 
@@ -53,7 +53,7 @@
       </div>
 
       <!-- Datos embarcación -->
-      <div class="bg-slate-50 rounded-lg p-3 mb-4 space-y-2 border border-slate-200">
+      <div class="bg-slate-800 rounded-lg p-3 mb-4 space-y-2 border border-slate-700">
         <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Datos de la embarcación</p>
         <div class="flex gap-2">
           <div class="flex-1">
@@ -94,18 +94,26 @@
       </div>
 
       <!-- Botón calcular -->
-      <button (click)="calcularRuta()" [disabled]="cargandoRuta"
+      <button (click)="calcularRuta()" [disabled]="cargandoRuta || cargandoComparador"
               class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white py-3 rounded-xl text-sm font-bold shadow-lg transition-all">
         <span *ngIf="!cargandoRuta">🧭 CALCULAR RUTA ÓPTIMA</span>
         <span *ngIf="cargandoRuta">⏳ Consultando satélites NASA...</span>
       </button>
+
+      <!-- Botón comparar rutas -->
+      <button (click)="calcularRutasComparadas()" [disabled]="cargandoRuta || cargandoComparador"
+              class="w-full mt-2 bg-slate-700 hover:bg-slate-800 disabled:bg-slate-300 text-white py-2.5 rounded-xl text-sm font-bold shadow transition-all flex items-center justify-center gap-2">
+        <span *ngIf="!cargandoComparador">⚖️ COMPARAR 3 RUTAS</span>
+        <span *ngIf="cargandoComparador">⏳ Calculando alternativas...</span>
+      </button>
+      <p class="text-[9px] text-slate-400 text-center mt-1">Equilibrada · Máx. captura · Mín. combustible</p>
     </div>
 
     <!-- Mapa Leaflet -->
     <div id="mapa-leaflet" class="flex-1 z-0"></div>
 
     <!-- Panel condiciones (esquina superior derecha) -->
-    <div *ngIf="condiciones" class="absolute top-4 right-4 z-40 bg-white/95 backdrop-blur rounded-xl shadow-xl border p-4 w-64"
+    <div *ngIf="condiciones" class="absolute top-4 right-4 z-40 bg-slate-900/96 backdrop-blur rounded-xl shadow-xl border p-4 w-64"
          [style.border-color]="alertaColor">
       <div class="flex items-center gap-2 mb-3">
         <div class="w-3 h-3 rounded-full" [style.background]="alertaColor"></div>
@@ -138,22 +146,22 @@
     </div>
 
     <!-- Resultado ruta (panel inferior) -->
-    <div *ngIf="datosRuta?.status === 'OK'" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur rounded-xl shadow-xl border border-slate-200 px-6 py-3 flex gap-6 items-center">
+    <div *ngIf="datosRuta?.status === 'OK'" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-slate-900/96 backdrop-blur rounded-xl shadow-xl border border-slate-700 px-6 py-3 flex gap-6 items-center">
       <div class="text-center">
         <div class="text-[10px] text-slate-400 uppercase font-bold">Zonas</div>
-        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.zonas_visitadas }}</div>
+        <div class="text-lg font-black text-white">{{ datosRuta.resultado.zonas_visitadas }}</div>
       </div>
       <div class="text-center">
         <div class="text-[10px] text-slate-400 uppercase font-bold">Distancia</div>
-        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.distancia_total_km }} km</div>
+        <div class="text-lg font-black text-white">{{ datosRuta.resultado.distancia_total_km }} km</div>
       </div>
       <div class="text-center">
         <div class="text-[10px] text-slate-400 uppercase font-bold">Tiempo</div>
-        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.tiempo_total_horas }} h</div>
+        <div class="text-lg font-black text-white">{{ datosRuta.resultado.tiempo_total_horas }} h</div>
       </div>
       <div class="text-center">
         <div class="text-[10px] text-slate-400 uppercase font-bold">Carga est.</div>
-        <div class="text-lg font-black text-blue-600">{{ datosRuta.resultado.carga_estimada_tm }} TM</div>
+        <div class="text-lg font-black text-blue-400">{{ datosRuta.resultado.carga_estimada_tm }} TM</div>
       </div>
       <div class="text-center">
         <div class="text-[10px] text-slate-400 uppercase font-bold">FishScore</div>
@@ -163,7 +171,7 @@
       </div>
       <div class="text-center">
         <div class="text-[10px] text-slate-400 uppercase font-bold">Combustible</div>
-        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.combustible_usado_l }} L</div>
+        <div class="text-lg font-black text-white">{{ datosRuta.resultado.combustible_usado_l }} L</div>
       </div>
     </div>
 
@@ -183,7 +191,7 @@
     </div>
 
     <!-- Leyenda -->
-    <div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-3 py-2 rounded text-[10px] flex gap-3 shadow-sm z-40" *ngIf="!datosRuta">
+    <div class="absolute bottom-4 left-4 bg-slate-900/90 backdrop-blur px-3 py-2 rounded text-[10px] flex gap-3 shadow-sm z-40 text-slate-300 border border-slate-700" *ngIf="!datosRuta">
       <div class="flex items-center gap-1"><span style="background:#1D9E75" class="w-2 h-2 rounded-full inline-block"></span> Score alto</div>
       <div class="flex items-center gap-1"><span style="background:#F59E0B" class="w-2 h-2 rounded-full inline-block"></span> Score medio</div>
       <div class="flex items-center gap-1"><span style="background:#E24B4A" class="w-2 h-2 rounded-full inline-block"></span> Score bajo</div>
@@ -192,19 +200,105 @@
 
 
 
+    <!-- Modal comparador de 3 rutas -->
+<div *ngIf="mostrarComparador && rutasComparadas"
+     class="absolute inset-0 z-50 flex items-center justify-center"
+     style="background:rgba(0,0,0,0.65)">
+  <div class="bg-white rounded-2xl shadow-2xl w-[900px] max-w-[96vw] max-h-[90vh] overflow-y-auto p-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h3 class="font-black text-slate-800 text-xl">⚖️ Comparador de Rutas</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Elige la ruta que mejor se adapte a tu objetivo</p>
+      </div>
+      <button (click)="mostrarComparador = false"
+              class="text-slate-400 hover:text-slate-700 text-2xl font-bold leading-none">✕</button>
+    </div>
+
+    <!-- Alerta condiciones -->
+    <div *ngIf="rutasComparadas.alerta" class="mb-4 px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2"
+         [ngClass]="rutasComparadas.alerta.nivel === 'VERDE' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'">
+      <div class="w-2.5 h-2.5 rounded-full" [style.background]="rutasComparadas.alerta.color"></div>
+      {{ rutasComparadas.alerta.mensaje }}
+    </div>
+
+    <!-- 3 Tarjetas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div *ngFor="let ruta of rutasComparadas.rutas; let i = index"
+           class="rounded-xl border-2 p-4 cursor-pointer transition-all hover:shadow-lg"
+           [ngClass]="rutaSeleccionadaIdx === i ? 'border-blue-500 shadow-lg' : 'border-slate-200'"
+           (click)="seleccionarRutaComparada(i)">
+
+        <!-- Modo header -->
+        <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+          <span class="text-2xl">{{ modoCfg(ruta.modo).icon }}</span>
+          <div>
+            <p class="font-black text-sm text-slate-800">{{ modoCfg(ruta.modo).label }}</p>
+            <p class="text-[10px] text-slate-400 uppercase font-bold">{{ ruta.modo }}</p>
+          </div>
+          <div *ngIf="i === 0" class="ml-auto text-[9px] bg-blue-100 text-blue-600 font-bold px-2 py-0.5 rounded-full uppercase">Recomendada</div>
+        </div>
+
+        <!-- Métricas -->
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500">🐟 Carga estimada</span>
+            <span class="font-black text-lg" [style.color]="modoCfg(ruta.modo).color">
+              {{ ruta.carga_estimada_tm }} TM
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">🎯 FishScore prom.</span>
+            <span class="font-bold" [style.color]="colorPorScore(ruta.fish_score_promedio)">
+              {{ ruta.fish_score_promedio }}/100
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">📍 Zonas a visitar</span>
+            <span class="font-bold text-slate-700">{{ ruta.zonas_visitadas }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">📏 Distancia total</span>
+            <span class="font-bold text-slate-700">{{ ruta.distancia_total_km }} km</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">⏱️ Tiempo estimado</span>
+            <span class="font-bold text-slate-700">{{ ruta.tiempo_total_horas }} h</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">⛽ Combustible</span>
+            <span class="font-bold text-slate-700">{{ ruta.combustible_usado_l }} L</span>
+          </div>
+        </div>
+
+        <!-- Botón seleccionar -->
+        <button class="w-full mt-4 py-2.5 rounded-xl text-sm font-bold text-white transition-all"
+                [style.background]="modoCfg(ruta.modo).color">
+          Usar esta ruta →
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-[10px] text-slate-400 mt-4">
+      Al seleccionar una ruta, se dibujará en el mapa. Podrás calcular su rentabilidad estimada.
+    </p>
+  </div>
+</div>
+
     <!-- Modal calculadora de rentabilidad -->
 <div *ngIf="mostrarCalculadora"
      class="absolute inset-0 z-50 flex items-center justify-center"
      style="background:rgba(0,0,0,0.5)">
-  <div class="bg-white rounded-2xl shadow-2xl p-6 w-96 max-h-[90vh] overflow-y-auto">
+  <div class="bg-slate-800 rounded-2xl shadow-2xl p-6 w-96 max-h-[90vh] overflow-y-auto border border-slate-700">
 
     <div class="flex items-center justify-between mb-4">
-      <h3 class="font-bold text-slate-800 text-lg">💰 Calculadora de Rentabilidad</h3>
+      <h3 class="font-bold text-white text-lg">💰 Calculadora de Rentabilidad</h3>
       <button (click)="mostrarCalculadora = false"
-              class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+              class="text-slate-400 hover:text-slate-200 text-xl font-bold">✕</button>
     </div>
 
-    <div *ngIf="datosRuta?.resultado" class="bg-blue-50 rounded-xl p-3 mb-4 text-xs text-blue-700">
+    <div *ngIf="datosRuta?.resultado" class="bg-blue-900/30 rounded-xl p-3 mb-4 text-xs text-blue-300 border border-blue-800/40">
       Basado en ruta calculada: {{ datosRuta.resultado.carga_estimada_tm }} TM estimadas · {{ datosRuta.resultado.combustible_usado_l }}L combustible
     </div>
 
