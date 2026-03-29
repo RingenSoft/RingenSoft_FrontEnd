@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
 
-  private apiUrl = 'http://127.0.0.1:8000/api/v2/auth';
+  private apiUrl = `${environment.apiUrl}/auth`;
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -17,6 +18,9 @@ export class AuthService {
         localStorage.setItem('usuario', response.nombre);
         localStorage.setItem('rol', response.rol);
         localStorage.setItem('id_usuario', response.id_usuario);
+        if (response.zona_habitual) {
+          localStorage.setItem('zona_habitual', response.zona_habitual);
+        }
       })
     );
   }

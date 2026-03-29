@@ -33,16 +33,26 @@ export class PerfilComponent implements OnInit {
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    const nombre   = localStorage.getItem('usuario') || '';
-    const username = localStorage.getItem('username') || '';
-    this.usuario.nombre_completo = nombre;
-    this.usuario.username        = username;
+    this.usuario.username = localStorage.getItem('username') || '';
 
-    const perfilGuardado = localStorage.getItem('perfil_extra');
-    if (perfilGuardado) {
-      const extra = JSON.parse(perfilGuardado);
-      this.usuario = { ...this.usuario, ...extra };
-    }
+    this.api.getPerfil().subscribe({
+      next: (d: any) => {
+        this.usuario = {
+          nombre_completo:  d.nombre_completo || localStorage.getItem('usuario') || '',
+          username:         d.username || this.usuario.username,
+          zona_habitual:    d.zona_habitual   || 'CHIMBOTE',
+          tipo_pescador:    d.tipo_pescador   || 'ARTESANAL',
+          anos_experiencia: d.anos_experiencia ?? 5,
+          licencia_pesca:   d.licencia_pesca  || '',
+          telefono:         d.telefono        || '',
+        };
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.usuario.nombre_completo = localStorage.getItem('usuario') || '';
+        this.cdr.detectChanges();
+      }
+    });
 
     this.api.getPuertos().subscribe({
       next: (d: any) => { this.puertos = d.puertos; this.cdr.detectChanges(); }
@@ -63,16 +73,20 @@ export class PerfilComponent implements OnInit {
   }
 
   guardarPerfil() {
-    localStorage.setItem('perfil_extra', JSON.stringify({
+    this.api.actualizarPerfil({
       zona_habitual:    this.usuario.zona_habitual,
       tipo_pescador:    this.usuario.tipo_pescador,
       anos_experiencia: this.usuario.anos_experiencia,
       licencia_pesca:   this.usuario.licencia_pesca,
       telefono:         this.usuario.telefono,
-    }));
-    this.guardado = true;
-    setTimeout(() => { this.guardado = false; this.cdr.detectChanges(); }, 3000);
-    this.cdr.detectChanges();
+    }).subscribe({
+      next: () => {
+        this.guardado = true;
+        setTimeout(() => { this.guardado = false; this.cdr.detectChanges(); }, 3000);
+        this.cdr.detectChanges();
+      },
+      error: () => alert('Error al guardar perfil.')
+    });
   }
 
   getIniciales(): string {

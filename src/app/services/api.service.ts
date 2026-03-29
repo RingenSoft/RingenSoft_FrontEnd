@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
 
-  private apiUrl = 'http://127.0.0.1:8000/api/v2';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
@@ -28,6 +29,10 @@ export class ApiService {
     return this.http.get(`${this.apiUrl}/condiciones?lat=${lat}&lon=${lon}&especie=${especie}`);
   }
 
+  getPronostico48h(lat: number, lon: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/pronostico?lat=${lat}&lon=${lon}`);
+  }
+
   // RUTA ÓPTIMA
   calcularRutaOptima(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/ruta-optima`, datos);
@@ -37,9 +42,26 @@ export class ApiService {
     return this.http.post(`${this.apiUrl}/ruta-optima`, datos);
   }
 
+  calcularRutasComparadas(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/rutas-comparadas`, datos);
+  }
+
+  // ML
+  mlEntrenar(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/ml/entrenar`, {});
+  }
+
+  mlEstado(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/ml/estado`);
+  }
+
   // HISTORIAL
   getHistorial(): Observable<any> {
     return this.http.get(`${this.apiUrl}/historial`);
+  }
+
+  getHistorialPendientes(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/historial/pendientes`);
   }
 
   // REPORTAR CAPTURA
@@ -121,5 +143,41 @@ export class ApiService {
 
   eliminarPlan(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/planes/${id}`);
+  }
+
+  // PERFIL
+  getPerfil(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/perfil`);
+  }
+
+  actualizarPerfil(datos: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/perfil`, datos);
+  }
+
+  // MANTENIMIENTOS
+  getMantenimientos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/mantenimientos`);
+  }
+
+  crearMantenimiento(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/mantenimientos`, datos);
+  }
+
+  eliminarMantenimiento(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/mantenimientos/${id}`);
+  }
+
+  // RANKINGS
+  getRankings(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/rankings`);
+  }
+
+  // CHAT COMUNIDAD
+  getMensajes(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/mensajes`);
+  }
+
+  enviarMensaje(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/mensajes`, datos);
   }
 }

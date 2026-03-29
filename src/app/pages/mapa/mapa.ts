@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import { NotificacionesService } from '../../services/notificaciones.service';
 import * as L from 'leaflet';
 
 @Component({
@@ -16,7 +17,11 @@ export class MapaComponent implements OnInit, OnDestroy {
   private mapa!: L.Map;
   private rutaLayer?: L.LayerGroup;
   private fishScoreLayer?: L.LayerGroup;
-  mostrarCalculadora = false;
+  mostrarCalculadora   = false;
+  mostrarComparador    = false;
+  cargandoComparador   = false;
+  rutasComparadas: any = null;
+  rutaSeleccionadaIdx  = -1;
   calcRentabilidad = {
   precio_kg: 2.5,
   captura_estimada: 0,
@@ -58,7 +63,11 @@ resultadoRentabilidad: any = null;
     ILO:      [-17.64, -71.34],
   };
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private api: ApiService,
+    private cdr: ChangeDetectorRef,
+    private notifs: NotificacionesService,
+  ) {}
 
 ngOnInit() {
   // Esperar al siguiente ciclo para que Angular renderice el div#mapa-leaflet
@@ -80,16 +89,17 @@ ngOnInit() {
       zoomControl: true,
     });
 
-    // Capa base OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-      maxZoom: 18,
+    // Capa base oscura — CartoDB Dark Matter (estilo MarineTraffic)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19,
     }).addTo(this.mapa);
 
     // Capa náutica OpenSeaMap (puertos, boyas, profundidades)
     L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
       attribution: '© OpenSeaMap',
-      opacity: 0.7,
+      opacity: 0.8,
     }).addTo(this.mapa);
 
     this.rutaLayer      = L.layerGroup().addTo(this.mapa);
@@ -203,7 +213,13 @@ abrirCalculadora() {
         this.datosRuta    = res;
         this.alertaColor  = res.alerta?.color || '#1D9E75';
         this.cargandoRuta = false;
-        if (res.status === 'OK') this.dibujarRuta(res.resultado.ruta);
+        if (res.status === 'OK') {
+          this.dibujarRuta(res.resultado.ruta);
+          this.notifs.rutaCalculada(
+            Math.round(res.resultado.distancia_total_km || 0),
+            this.form.especie || 'ANCHOVETA'
+          );
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
@@ -263,6 +279,52 @@ abrirCalculadora() {
     console.warn('fitBounds error:', e);
   }
 }
+
+  calcularRutasComparadas() {
+    this.cargandoComparador = true;
+    this.rutasComparadas    = null;
+    this.rutaSeleccionadaIdx = -1;
+    this.cdr.detectChanges();
+
+    this.api.calcularRutasComparadas(this.form).subscribe({
+      next: (res) => {
+        this.cargandoComparador = false;
+        if (res.status === 'BLOQUEADO') {
+          this.datosRuta = res;
+          this.cdr.detectChanges();
+          return;
+        }
+        this.rutasComparadas = res;
+        this.mostrarComparador = true;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.cargandoComparador = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  seleccionarRutaComparada(idx: number) {
+    this.rutaSeleccionadaIdx = idx;
+    const ruta = this.rutasComparadas?.rutas?.[idx];
+    if (!ruta) return;
+    this.datosRuta = { status: 'OK', alerta: this.rutasComparadas.alerta, resultado: ruta };
+    this.alertaColor = this.rutasComparadas.alerta?.color || '#1D9E75';
+    this.dibujarRuta(ruta.ruta);
+    this.mostrarComparador = false;
+    this.cdr.detectChanges();
+  }
+
+  modoCfg(modo: string): { label: string; color: string; bg: string; icon: string } {
+    const map: Record<string, any> = {
+      equilibrado:     { label: 'Equilibrada',       color: '#3B82F6', bg: 'bg-blue-50',   icon: '⚖️' },
+      max_captura:     { label: 'Máxima captura',    color: '#10B981', bg: 'bg-green-50',  icon: '🎣' },
+      min_combustible: { label: 'Mínimo combustible', color: '#F59E0B', bg: 'bg-amber-50', icon: '⛽' },
+    };
+    return map[modo] ?? { label: modo, color: '#64748B', bg: 'bg-slate-50', icon: '🧭' };
+  }
 
   colorPorScore(score: number): string {
     if (score >= 70) return '#1D9E75';  // verde — excelente

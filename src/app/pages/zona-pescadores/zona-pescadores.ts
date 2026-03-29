@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
@@ -11,13 +11,17 @@ import { SidebarComponent } from '../../components/sidebar/sidebar';
   templateUrl: 'zona-pescadores.html',
   styleUrl: 'zona-pescadores.css'
 })
-export class ZonaPescadoresComponent implements OnInit {
+export class ZonaPescadoresComponent implements OnInit, OnDestroy {
 
+  @ViewChild('chatBottom') chatBottomRef!: ElementRef;
+
+  tab: 'avistamientos' | 'chat' = 'avistamientos';
+
+  // --- Avistamientos ---
   avistamientos:    any[] = [];
   mostrarFormulario = false;
   cargando          = true;
   enviando          = false;
-  // IDs votados en esta sesión (evita doble voto visual)
   private votados   = new Set<number>();
 
   puertos = [
@@ -34,11 +38,38 @@ export class ZonaPescadoresComponent implements OnInit {
     descripcion: ''
   };
 
+  // --- Chat ---
+  mensajes:       any[] = [];
+  cargandoChat    = false;
+  enviandoMensaje = false;
+  textoMensaje    = '';
+  tipoMensaje     = 'GENERAL';
+  miNombre        = '';
+  private chatInterval: any;
+
+  tiposMensaje = [
+    { id: 'GENERAL',   label: 'General',  emoji: '💬' },
+    { id: 'ALERTA',    label: 'Alerta',   emoji: '⚠️' },
+    { id: 'PREGUNTA',  label: 'Pregunta', emoji: '❓' },
+    { id: 'OFERTA',    label: 'Oferta',   emoji: '🤝' },
+  ];
+
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
+    this.miNombre = localStorage.getItem('usuario') || 'Tú';
     this.cargarAvistamientos();
+    this.cargarMensajes();
+    this.chatInterval = setInterval(() => {
+      if (this.tab === 'chat') this.cargarMensajes(true);
+    }, 15000);
   }
+
+  ngOnDestroy() {
+    if (this.chatInterval) clearInterval(this.chatInterval);
+  }
+
+  // =================== Avistamientos ===================
 
   cargarAvistamientos() {
     this.cargando = true;
@@ -81,28 +112,84 @@ export class ZonaPescadoresComponent implements OnInit {
     });
   }
 
-  yaVotado(id: number): boolean {
-    return this.votados.has(id);
+  yaVotado(id: number): boolean { return this.votados.has(id); }
+
+  // =================== Chat ===================
+
+  cargarMensajes(silencioso = false) {
+    if (!silencioso) this.cargandoChat = true;
+    this.api.getMensajes().subscribe({
+      next: (data: any[]) => {
+        this.mensajes    = data;
+        this.cargandoChat = false;
+        this.cdr.detectChanges();
+        setTimeout(() => this.scrollChat(), 100);
+      },
+      error: () => { this.cargandoChat = false; this.cdr.detectChanges(); }
+    });
   }
+
+  enviarMensaje() {
+    if (!this.textoMensaje.trim()) return;
+    this.enviandoMensaje = true;
+    this.api.enviarMensaje({ texto: this.textoMensaje, tipo: this.tipoMensaje }).subscribe({
+      next: (msg: any) => {
+        this.mensajes.push(msg);
+        this.textoMensaje    = '';
+        this.tipoMensaje     = 'GENERAL';
+        this.enviandoMensaje = false;
+        this.cdr.detectChanges();
+        setTimeout(() => this.scrollChat(), 100);
+      },
+      error: () => { this.enviandoMensaje = false; }
+    });
+  }
+
+  scrollChat() {
+    if (this.chatBottomRef) {
+      this.chatBottomRef.nativeElement.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+
+  esMio(msg: any): boolean {
+    return msg.autor === this.miNombre;
+  }
+
+  tipoBadge(tipo: string): string {
+    const map: Record<string, string> = {
+      'ALERTA':   'bg-red-900/40 text-red-300 border border-red-700/40',
+      'PREGUNTA': 'bg-blue-900/40 text-blue-300 border border-blue-700/40',
+      'OFERTA':   'bg-green-900/40 text-green-300 border border-green-700/40',
+      'GENERAL':  '',
+    };
+    return map[tipo] || '';
+  }
+
+  tipoEmoji(tipo: string): string {
+    const t = this.tiposMensaje.find(t => t.id === tipo);
+    return t ? t.emoji : '💬';
+  }
+
+  // =================== Shared ===================
 
   tiempoTranscurrido(fecha: string): string {
     const diffMs  = new Date().getTime() - new Date(fecha).getTime();
     const diffMin = Math.floor(diffMs / 60000);
     const diffHrs = Math.floor(diffMin / 60);
     const diffDias = Math.floor(diffHrs / 24);
-    if (diffMin < 1)  return 'hace un momento';
-    if (diffMin < 60) return `hace ${diffMin} min`;
+    if (diffMin < 1)  return 'ahora';
+    if (diffMin < 60) return `hace ${diffMin}m`;
     if (diffHrs < 24) return `hace ${diffHrs}h`;
     return `hace ${diffDias}d`;
   }
 
   especieColor(especie: string): string {
     const colores: Record<string, string> = {
-      'ANCHOVETA': 'bg-blue-100 text-blue-700',
-      'BONITO':    'bg-orange-100 text-orange-700',
-      'CABALLA':   'bg-green-100 text-green-700',
-      'JUREL':     'bg-purple-100 text-purple-700'
+      'ANCHOVETA': 'bg-blue-900/50 text-blue-300',
+      'BONITO':    'bg-orange-900/50 text-orange-300',
+      'CABALLA':   'bg-green-900/50 text-green-300',
+      'JUREL':     'bg-purple-900/50 text-purple-300'
     };
-    return colores[especie] ?? 'bg-slate-100 text-slate-700';
+    return colores[especie] ?? 'bg-slate-700 text-slate-300';
   }
 }

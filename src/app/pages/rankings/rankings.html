@@ -1,0 +1,163 @@
+<div class="h-screen flex overflow-hidden bg-slate-900 font-sans">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 overflow-y-auto">
+
+    <!-- Hero -->
+    <div class="bg-gradient-to-r from-amber-950/80 via-slate-900 to-slate-900 px-6 py-5 relative overflow-hidden border-b border-slate-800">
+      <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute -top-16 right-10 w-72 h-72 bg-amber-500/8 rounded-full blur-3xl"></div>
+      </div>
+      <div class="relative">
+        <p class="text-amber-400/70 text-xs font-bold uppercase tracking-widest mb-1">Comunidad · Temporada 2025</p>
+        <h1 class="text-white text-2xl font-black tracking-tight flex items-center gap-3">
+          <span class="w-9 h-9 bg-amber-500/20 rounded-xl flex items-center justify-center text-xl border border-amber-500/30">🏆</span>
+          Rankings y Logros
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">Los mejores pescadores de la costa peruana</p>
+      </div>
+    </div>
+
+    <div class="p-6">
+
+      <!-- Cargando -->
+      <div *ngIf="cargando" class="flex items-center justify-center h-64">
+        <div class="text-center animate-fade-in">
+          <div class="w-14 h-14 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p class="text-slate-400 text-sm font-medium">Cargando ranking...</p>
+        </div>
+      </div>
+
+      <div *ngIf="!cargando">
+
+        <!-- Sin datos -->
+        <div *ngIf="ranking.length === 0" class="text-center py-20">
+          <div class="text-6xl mb-4">🌊</div>
+          <p class="text-slate-300 font-bold text-lg">Aún no hay capturas registradas</p>
+          <p class="text-slate-500 text-sm mt-2">Registra tus capturas reales para aparecer en el ranking</p>
+        </div>
+
+        <!-- Podio Top 3 -->
+        <div *ngIf="ranking.length >= 3" class="flex items-end justify-center gap-3 mb-8 mt-2">
+
+          <!-- 2do lugar -->
+          <div class="flex flex-col items-center animate-slide-up" style="animation-delay:0.1s">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-400 to-slate-600 flex items-center justify-center text-white font-black text-lg shadow-lg mb-2 border-2 border-slate-400/40">
+              {{ getInitials(ranking[1].nombre) }}
+            </div>
+            <p class="text-slate-300 text-xs font-bold text-center max-w-[80px] truncate">{{ ranking[1].nombre.split(' ')[0] }}</p>
+            <p class="text-slate-400 text-[10px]">{{ ranking[1].total_capturas }} TM</p>
+            <div class="w-20 h-16 bg-slate-400/20 border border-slate-400/30 rounded-t-xl flex items-center justify-center mt-2">
+              <span class="text-3xl">🥈</span>
+            </div>
+          </div>
+
+          <!-- 1er lugar -->
+          <div class="flex flex-col items-center animate-slide-up" style="animation-delay:0s">
+            <div class="relative">
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 text-2xl animate-bounce-slow">👑</div>
+              <div class="w-18 h-18 w-[72px] h-[72px] rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-white font-black text-xl shadow-xl shadow-amber-500/30 mb-2 border-2 border-amber-400/60 mt-3">
+                {{ getInitials(ranking[0].nombre) }}
+              </div>
+            </div>
+            <p class="text-white text-sm font-black text-center max-w-[90px] truncate mt-2">{{ ranking[0].nombre.split(' ')[0] }}</p>
+            <p class="text-amber-400 text-xs font-bold">{{ ranking[0].total_capturas }} TM</p>
+            <div class="w-24 h-24 bg-amber-500/20 border border-amber-500/30 rounded-t-xl flex items-center justify-center mt-2">
+              <span class="text-4xl">🥇</span>
+            </div>
+          </div>
+
+          <!-- 3er lugar -->
+          <div class="flex flex-col items-center animate-slide-up" style="animation-delay:0.2s">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-700 to-orange-900 flex items-center justify-center text-white font-black text-lg shadow-lg mb-2 border-2 border-orange-700/40">
+              {{ getInitials(ranking[2].nombre) }}
+            </div>
+            <p class="text-slate-300 text-xs font-bold text-center max-w-[80px] truncate">{{ ranking[2].nombre.split(' ')[0] }}</p>
+            <p class="text-slate-400 text-[10px]">{{ ranking[2].total_capturas }} TM</p>
+            <div class="w-16 h-10 bg-orange-700/20 border border-orange-700/30 rounded-t-xl flex items-center justify-center mt-2">
+              <span class="text-2xl">🥉</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Lista completa -->
+        <div class="space-y-3">
+          <h2 class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-3">Tabla de posiciones</h2>
+
+          <div *ngFor="let pescador of ranking; let i = index"
+               class="bg-slate-800 border rounded-2xl p-4 flex items-center gap-4 hover:border-slate-600 transition-all animate-fade-in card-hover"
+               [ngClass]="{
+                 'border-amber-500/40 shadow-lg shadow-amber-500/10': i === 0,
+                 'border-slate-400/30': i === 1,
+                 'border-orange-700/30': i === 2,
+                 'border-slate-700': i > 2
+               }"
+               [style.animation-delay]="(i * 0.05) + 's'">
+
+            <!-- Posición -->
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+              <span *ngIf="i < 3" class="text-2xl">{{ MEDALLAS[i] }}</span>
+              <span *ngIf="i >= 3" class="text-slate-500 font-black text-lg">#{{ i + 1 }}</span>
+            </div>
+
+            <!-- Avatar -->
+            <div class="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center font-black text-sm text-white"
+                 [ngClass]="{
+                   'bg-gradient-to-br from-amber-400 to-amber-600': i === 0,
+                   'bg-gradient-to-br from-slate-400 to-slate-600': i === 1,
+                   'bg-gradient-to-br from-orange-700 to-orange-900': i === 2,
+                   'bg-gradient-to-br from-blue-600 to-blue-800': i > 2
+                 }">
+              {{ getInitials(pescador.nombre) }}
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <p class="text-white font-bold text-sm truncate">{{ pescador.nombre }}</p>
+              <div class="flex items-center gap-3 mt-0.5">
+                <span class="text-xs text-slate-400">{{ pescador.total_rutas }} salidas</span>
+                <span class="text-xs text-slate-600">·</span>
+                <span class="text-xs text-slate-400">{{ pescador.total_km }} km</span>
+              </div>
+              <!-- Logros -->
+              <div class="flex gap-1 mt-1.5 flex-wrap">
+                <span *ngFor="let logro of getLogros(pescador, i)"
+                      class="text-sm" [title]="logro.nombre">{{ logro.icono }}</span>
+              </div>
+            </div>
+
+            <!-- Captura total -->
+            <div class="text-right flex-shrink-0">
+              <p class="text-2xl font-black"
+                 [ngClass]="i === 0 ? 'text-amber-400' : 'text-white'">
+                {{ pescador.total_capturas }}
+              </p>
+              <p class="text-xs text-slate-500 font-medium">TM capturadas</p>
+              <p class="text-[10px] text-slate-600 mt-0.5">Mejor: {{ pescador.mejor_captura }} TM</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Leyenda de logros -->
+        <div class="mt-8 bg-slate-800/50 border border-slate-700 rounded-2xl p-5">
+          <h3 class="text-slate-300 font-bold text-sm mb-4 flex items-center gap-2">
+            <span>🏅</span> Insignias disponibles
+          </h3>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div *ngFor="let logro of LOGROS"
+                 class="flex items-center gap-3 bg-slate-900/50 rounded-xl p-3 border border-slate-700/50">
+              <span class="text-2xl">{{ logro.icono }}</span>
+              <div>
+                <p class="text-slate-300 text-xs font-bold">{{ logro.nombre }}</p>
+                <p class="text-slate-500 text-[10px]">{{ logro.desc }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>

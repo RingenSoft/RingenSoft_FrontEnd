@@ -135,6 +135,42 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
     window.print();
   }
 
+  exportarCSV() {
+    const filas = this.historialFiltrado;
+    if (!filas.length) { alert('No hay datos para exportar.'); return; }
+
+    const encabezado = ['ID', 'Fecha', 'Especie', 'Distancia (km)', 'Tiempo (h)', 'Carga Est. (TM)', 'Captura Real (TM)', 'FishScore', 'Olas (m)', 'Temp. Mar (°C)'];
+    const rows = filas.map((r: any) => [
+      r.id,
+      r.fecha ? new Date(r.fecha).toLocaleDateString('es-PE') : '',
+      r.especie || '',
+      r.distancia ?? '',
+      r.tiempo_horas ?? '',
+      r.carga ?? '',
+      r.captura_real ?? '',
+      r.fish_score ?? '',
+      r.olas ?? '',
+      r.temp_mar ?? '',
+    ]);
+
+    const csv = [encabezado, ...rows]
+      .map(row => row.map((v: any) => `"${v}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href     = url;
+    link.download = `fishroute_historial_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  formatFecha(iso: string): string {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('es-PE', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
   abrirModalCaptura(ruta: any) {
     this.capturaModal = ruta;
     this.capturaValor = ruta.captura_real || 0;

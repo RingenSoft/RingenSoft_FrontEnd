@@ -1,5 +1,263 @@
 @import 'leaflet/dist/leaflet.css';
 
+/* ===================================================================
+   DARK THEME GLOBAL — FishRoute Pro
+   Inspirado en MarineTraffic / Windy.com
+   =================================================================== */
+@media screen {
+
+  body {
+    background-color: #0f172a;
+    color: #e2e8f0;
+  }
+
+  /* --- Fondos principales --- */
+  .bg-slate-100  { background-color: #0f172a !important; }
+  .bg-slate-200  { background-color: #1e293b !important; }
+
+  /* --- Cards y paneles blancos --- */
+  .bg-white      { background-color: #1e293b !important; }
+  .bg-slate-50   { background-color: #162032 !important; }
+
+  /* Paneles semitransparentes del mapa */
+  .bg-white\/95  { background-color: rgba(15,23,42,0.96) !important; }
+  .bg-white\/80  { background-color: rgba(15,23,42,0.85) !important; }
+
+  /* --- Texto oscuro → claro --- */
+  .text-slate-800 { color: #f1f5f9 !important; }
+  .text-slate-700 { color: #e2e8f0 !important; }
+  .text-slate-600 { color: #cbd5e1 !important; }
+  .text-slate-500 { color: #94a3b8 !important; }
+
+  /* --- Bordes --- */
+  .border-slate-100 { border-color: #1e3a5f !important; }
+  .border-slate-200 { border-color: #1e3a5f !important; }
+  .border-slate-300 { border-color: #2d4a6b !important; }
+
+  /* --- Inputs, selects --- */
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+    border-color: #334155 !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #64748b !important;
+  }
+  option {
+    background-color: #1e293b;
+    color: #f1f5f9;
+  }
+
+  /* --- Alertas (bg-green-50, bg-amber-50, etc.) --- */
+  .bg-green-50   { background-color: #052e16 !important; }
+  .bg-amber-50   { background-color: #1c1200 !important; }
+  .bg-red-50     { background-color: #1c0000 !important; }
+  .bg-blue-50    { background-color: #0c1a2e !important; }
+  .bg-orange-50  { background-color: #1c0e00 !important; }
+  .bg-indigo-50  { background-color: #0c0d2e !important; }
+  .bg-violet-50  { background-color: #120c2e !important; }
+  .bg-teal-50    { background-color: #001c1a !important; }
+
+  /* --- Texto en badges de alerta --- */
+  .text-green-700  { color: #4ade80 !important; }
+  .text-green-600  { color: #4ade80 !important; }
+  .text-amber-700  { color: #fbbf24 !important; }
+  .text-amber-600  { color: #fbbf24 !important; }
+  .text-red-700    { color: #f87171 !important; }
+  .text-red-600    { color: #f87171 !important; }
+  .text-orange-700 { color: #fb923c !important; }
+  .text-orange-600 { color: #fb923c !important; }
+
+  /* --- Bordes de alerta --- */
+  .border-green-100  { border-color: #166534 !important; }
+  .border-blue-100   { border-color: #1e3a5f !important; }
+  .border-orange-100 { border-color: #7c2d12 !important; }
+
+  /* --- Hover states --- */
+  .hover\:bg-slate-800\/70:hover { background-color: rgba(15,23,42,0.9) !important; }
+  .hover\:shadow-md:hover         { box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important; }
+
+  /* --- Leaflet dark controls --- */
+  .leaflet-control-zoom a {
+    background-color: #1e293b !important;
+    color: #94a3b8 !important;
+    border-color: #334155 !important;
+  }
+  .leaflet-control-zoom a:hover {
+    background-color: #334155 !important;
+    color: #f1f5f9 !important;
+  }
+  .leaflet-control-attribution {
+    background-color: rgba(15,23,42,0.85) !important;
+    color: #475569 !important;
+  }
+  .leaflet-popup-content-wrapper {
+    background-color: #1e293b !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #334155;
+  }
+  .leaflet-popup-tip {
+    background-color: #1e293b !important;
+  }
+
+  /* --- Scrollbars --- */
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0f172a; }
+  ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+  /* Preservar gradientes de KPIs coloreados */
+  .from-blue-600.to-blue-700,
+  .from-teal-600.to-teal-700,
+  .from-green-600.to-green-700,
+  .from-violet-600.to-violet-700 {
+    background-color: unset !important;
+  }
+}
+
+/* ===================================================================
+   ANIMACIONES GLOBALES — FishRoute Pro
+   =================================================================== */
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseSlow {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+
+@keyframes bounceLight {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes pulseGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.5); }
+  50%       { box-shadow: 0 0 0 5px rgba(52, 211, 153, 0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes countUp {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Clases de animación */
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out both;
+}
+
+.animate-slide-right {
+  animation: slideInRight 0.35s ease-out both;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out both;
+}
+
+.animate-bounce-slow {
+  animation: bounceLight 2s ease-in-out infinite;
+}
+
+.animate-pulse-green {
+  animation: pulseGreen 2s ease-in-out infinite;
+}
+
+.animate-count-up {
+  animation: countUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Skeleton loader */
+.skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #263248 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+/* Hover suave en tarjetas */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Sidebar links */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  color: #94a3b8;
+  border-left: 2px solid transparent;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.sidebar-link:hover {
+  background: rgba(51, 65, 85, 0.5);
+  color: #e2e8f0;
+  transform: translateX(2px);
+}
+
+/* Scroll hidden */
+.scroll-hidden::-webkit-scrollbar { display: none; }
+.scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Modal backdrop */
+.modal-backdrop {
+  animation: fadeIn 0.2s ease-out both;
+}
+.modal-content {
+  animation: scaleIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Botón con efecto ripple suave */
+.btn-primary {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+/* Número KPI */
+.kpi-number {
+  animation: countUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
 /* ===== PRINT STYLES — Reportes PDF ===== */
 .print-only { display: none; }
 

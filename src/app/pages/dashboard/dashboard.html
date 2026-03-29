@@ -1,4 +1,4 @@
-<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+<div class="h-screen flex overflow-hidden bg-slate-900 font-sans">
   <app-sidebar></app-sidebar>
 
   <main class="flex-1 overflow-y-auto">
@@ -17,6 +17,20 @@
           </h1>
           <p class="text-slate-400 text-sm mt-1">Panel principal · Costa Peruana del Pacífico</p>
         </div>
+        <!-- Botón "Registrar Regreso" -->
+        <button (click)="abrirModalRegreso()"
+                class="hidden md:flex items-center gap-2.5 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 rounded-2xl px-4 py-2.5 transition-all relative">
+          <span class="text-xl">🛳️</span>
+          <div class="text-left">
+            <p class="text-white text-sm font-bold leading-tight">Registrar Regreso</p>
+            <p class="text-teal-300 text-xs leading-tight">Reporta tu captura real</p>
+          </div>
+          <span *ngIf="rutasPendientes.length > 0"
+                class="absolute -top-2 -right-2 bg-amber-400 text-slate-900 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
+            {{ rutasPendientes.length }}
+          </span>
+        </button>
+
         <div *ngIf="!cargando && condiciones" class="hidden md:flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5">
           <span class="text-2xl">
             {{ condiciones.clima?.alerta?.nivel === 'VERDE' ? '✅' : condiciones.clima?.alerta?.nivel === 'AMARILLO' ? '⚠️' : '⛔' }}
@@ -66,139 +80,269 @@
           </div>
         </div>
 
+        <!-- Banner rutas pendientes -->
+        <div *ngIf="rutasPendientes.length > 0"
+             class="mb-5 bg-amber-900/30 border border-amber-700/50 rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">⚓</span>
+            <div>
+              <p class="text-amber-300 font-bold text-sm">
+                {{ rutasPendientes.length }} {{ rutasPendientes.length === 1 ? 'salida sin' : 'salidas sin' }} captura reportada
+              </p>
+              <p class="text-amber-400/70 text-xs">Reporta tu captura real para mejorar las predicciones de la IA</p>
+            </div>
+          </div>
+          <button (click)="abrirModalRegreso()"
+                  class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm px-4 py-2 rounded-xl transition-all whitespace-nowrap">
+            Registrar regreso →
+          </button>
+        </div>
+
         <!-- KPIs condiciones actuales -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.05s">
             <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
-                <i class="fas fa-water text-blue-500 text-xs"></i>
+              <div class="w-7 h-7 bg-blue-900/50 rounded-lg flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12c1.5-3 4-4.5 6-4.5S11.5 9 13.5 9s4.5-1.5 6-4.5"/><path d="M2 18c1.5-3 4-4.5 6-4.5S11.5 15 13.5 15s4.5-1.5 6-4.5"/><path d="M2 6c1.5-3 4-4.5 6-4.5S11.5 3 13.5 3s4.5-1.5 6-4.5"/></svg>
               </div>
               <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Olas</p>
             </div>
-            <p class="text-2xl font-black text-slate-800">{{ condiciones.clima?.mar?.altura_olas_m }}<span class="text-sm font-semibold text-slate-400 ml-1">m</span></p>
-            <p class="text-xs text-slate-400 mt-0.5">período {{ condiciones.clima?.mar?.periodo_olas_s }}s</p>
+            <p class="text-2xl font-black text-white kpi-number">{{ condiciones.clima?.mar?.altura_olas_m }}<span class="text-sm font-semibold text-slate-400 ml-1">m</span></p>
+            <p class="text-xs text-slate-500 mt-0.5">período {{ condiciones.clima?.mar?.periodo_olas_s }}s</p>
           </div>
 
-          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.1s">
             <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-slate-50 rounded-lg flex items-center justify-center">
-                <i class="fas fa-wind text-slate-500 text-xs"></i>
+              <div class="w-7 h-7 bg-slate-700 rounded-lg flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
               </div>
               <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Viento</p>
             </div>
-            <p class="text-2xl font-black text-slate-800">{{ condiciones.clima?.viento?.velocidad_kmh }}<span class="text-sm font-semibold text-slate-400 ml-1">km/h</span></p>
-            <p class="text-xs text-slate-400 mt-0.5">ráf. {{ condiciones.clima?.viento?.rafagas_kmh }} km/h</p>
+            <p class="text-2xl font-black text-white kpi-number">{{ condiciones.clima?.viento?.velocidad_kmh }}<span class="text-sm font-semibold text-slate-400 ml-1">km/h</span></p>
+            <p class="text-xs text-slate-500 mt-0.5">ráf. {{ condiciones.clima?.viento?.rafagas_kmh }} km/h</p>
           </div>
 
-          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.15s">
             <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-blue-50 rounded-lg flex items-center justify-center">
-                <i class="fas fa-thermometer-half text-blue-600 text-xs"></i>
+              <div class="w-7 h-7 bg-blue-900/50 rounded-lg flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
               </div>
               <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Temp. Mar</p>
             </div>
-            <p class="text-2xl font-black text-blue-600">{{ condiciones.oceanografia?.temperatura?.temperatura_c }}<span class="text-sm font-semibold ml-1">°C</span></p>
-            <p class="text-xs text-slate-400 mt-0.5">NASA MUR SST</p>
+            <p class="text-2xl font-black text-blue-400 kpi-number">{{ condiciones.oceanografia?.temperatura?.temperatura_c }}<span class="text-sm font-semibold ml-1">°C</span></p>
+            <p class="text-xs text-slate-500 mt-0.5">NASA MUR SST</p>
           </div>
 
-          <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.2s">
             <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-green-50 rounded-lg flex items-center justify-center">
-                <i class="fas fa-leaf text-green-600 text-xs"></i>
+              <div class="w-7 h-7 bg-emerald-900/50 rounded-lg flex items-center justify-center">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.06A2 2 0 0 0 5.6 22a2 2 0 0 0 1.54-.73C8.8 19.16 10.7 18 12 18c3 0 5-2 7-5"/><path d="M12 14c-2 0-3.5-1.5-3.5-3.5S10 7 12 7s3.5 1.5 3.5 3.5S14 14 12 14z" fill="currentColor" opacity=".2"/></svg>
               </div>
               <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Clorofila-a</p>
             </div>
-            <p class="text-2xl font-black text-green-600">{{ condiciones.oceanografia?.clorofila?.clorofila_mg_m3 }}<span class="text-xs font-normal text-slate-400 ml-1">mg/m³</span></p>
-            <p class="text-xs text-slate-400 mt-0.5">{{ condiciones.oceanografia?.clorofila?.nivel }}</p>
+            <p class="text-2xl font-black text-emerald-400 kpi-number">{{ condiciones.oceanografia?.clorofila?.clorofila_mg_m3 }}<span class="text-xs font-normal text-slate-400 ml-1">mg/m³</span></p>
+            <p class="text-xs text-slate-500 mt-0.5">{{ condiciones.oceanografia?.clorofila?.nivel }}</p>
           </div>
         </div>
 
         <!-- KPIs historial -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white shadow-lg shadow-blue-200/60 hover:-translate-y-0.5 transition-all">
-            <i class="fas fa-route text-blue-300 text-xs mb-3 block"></i>
-            <p class="text-4xl font-black leading-none">{{ estadisticas?.total ?? '—' }}</p>
+          <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white shadow-lg shadow-blue-900/40 card-hover animate-slide-up" style="animation-delay:0.1s">
+            <svg class="w-4 h-4 text-blue-300 mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6l5 6-5 6M21 6l-5 6 5 6"/></svg>
+            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.total ?? '—' }}</p>
             <p class="text-blue-200 text-xs font-semibold mt-2 uppercase tracking-wide">Rutas calculadas</p>
           </div>
-          <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 text-white shadow-lg shadow-teal-200/60 hover:-translate-y-0.5 transition-all">
-            <i class="fas fa-location-dot text-teal-300 text-xs mb-3 block"></i>
-            <p class="text-4xl font-black leading-none">{{ estadisticas?.km_total ?? '—' }}</p>
+          <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 text-white shadow-lg shadow-teal-900/40 card-hover animate-slide-up" style="animation-delay:0.15s">
+            <svg class="w-4 h-4 text-teal-300 mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.km_total ?? '—' }}</p>
             <p class="text-teal-200 text-xs font-semibold mt-2 uppercase tracking-wide">Km navegados</p>
           </div>
-          <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-5 text-white shadow-lg shadow-green-200/60 hover:-translate-y-0.5 transition-all">
-            <i class="fas fa-fish text-green-300 text-xs mb-3 block"></i>
-            <p class="text-4xl font-black leading-none">{{ estadisticas?.carga_total_tm ?? '—' }}</p>
+          <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-5 text-white shadow-lg shadow-green-900/40 card-hover animate-slide-up" style="animation-delay:0.2s">
+            <svg class="w-4 h-4 text-green-300 mb-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 12c0 4.4-3.6 8-8 8S4 16.4 4 12c0-2 .8-3.9 2-5.2M17 3.3A9 9 0 0 0 6 7.5"/><path d="M6 3l1 4-4 1"/></svg>
+            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.carga_total_tm ?? '—' }}</p>
             <p class="text-green-200 text-xs font-semibold mt-2 uppercase tracking-wide">TM acumuladas</p>
           </div>
-          <div class="bg-gradient-to-br from-violet-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-violet-200/60 hover:-translate-y-0.5 transition-all">
-            <i class="fas fa-check-circle text-violet-300 text-xs mb-3 block"></i>
-            <p class="text-4xl font-black leading-none">{{ estadisticas?.capturas_reales ?? '—' }}</p>
+          <div class="bg-gradient-to-br from-violet-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-violet-900/40 card-hover animate-slide-up" style="animation-delay:0.25s">
+            <svg class="w-4 h-4 text-violet-300 mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.capturas_reales ?? '—' }}</p>
             <p class="text-violet-200 text-xs font-semibold mt-2 uppercase tracking-wide">Capturas confirmadas</p>
           </div>
         </div>
 
         <!-- Resumen de flota -->
         <div *ngIf="embarcaciones.length > 0"
-             class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-5">
+             class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5 mb-5">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
-              <i class="fas fa-ship text-slate-500 text-sm"></i>
-              <p class="text-sm font-bold text-slate-700">Estado de flota</p>
+              <i class="fas fa-ship text-slate-400 text-sm"></i>
+              <p class="text-sm font-bold text-slate-200">Estado de flota</p>
             </div>
-            <span class="bg-slate-100 text-slate-500 text-xs font-semibold px-2.5 py-1 rounded-full">{{ embarcaciones.length }} embarcaciones</span>
+            <span class="bg-slate-700 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-full">{{ embarcaciones.length }} embarcaciones</span>
           </div>
           <div class="grid grid-cols-3 gap-3">
-            <div class="bg-green-50 rounded-xl p-3.5 text-center border border-green-100/80">
-              <p class="text-3xl font-black text-green-700 leading-none">{{ fleetCounts.enPuerto }}</p>
-              <p class="text-xs text-green-600 font-semibold mt-1.5">En puerto</p>
+            <div class="bg-emerald-900/30 rounded-xl p-3.5 text-center border border-emerald-800/50">
+              <p class="text-3xl font-black text-emerald-400 leading-none">{{ fleetCounts.enPuerto }}</p>
+              <p class="text-xs text-emerald-400 font-semibold mt-1.5">En puerto</p>
             </div>
-            <div class="bg-blue-50 rounded-xl p-3.5 text-center border border-blue-100/80">
-              <p class="text-3xl font-black text-blue-700 leading-none">{{ fleetCounts.enMar }}</p>
-              <p class="text-xs text-blue-600 font-semibold mt-1.5">En mar</p>
+            <div class="bg-blue-900/30 rounded-xl p-3.5 text-center border border-blue-800/50">
+              <p class="text-3xl font-black text-blue-400 leading-none">{{ fleetCounts.enMar }}</p>
+              <p class="text-xs text-blue-400 font-semibold mt-1.5">En mar</p>
             </div>
-            <div class="bg-orange-50 rounded-xl p-3.5 text-center border border-orange-100/80">
-              <p class="text-3xl font-black text-orange-700 leading-none">{{ fleetCounts.mantenimiento }}</p>
-              <p class="text-xs text-orange-600 font-semibold mt-1.5">Mantenimiento</p>
+            <div class="bg-orange-900/30 rounded-xl p-3.5 text-center border border-orange-800/50">
+              <p class="text-3xl font-black text-orange-400 leading-none">{{ fleetCounts.mantenimiento }}</p>
+              <p class="text-xs text-orange-400 font-semibold mt-1.5">Mantenimiento</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pronóstico próximas horas -->
+        <div *ngIf="pronostico?.horas?.length > 0"
+             class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5 mb-5 animate-fade-in">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🔮</span>
+              <div>
+                <p class="text-sm font-bold text-white">Pronóstico próximas 24 horas</p>
+                <p class="text-xs text-slate-500">Olas y viento · Open-Meteo Marine</p>
+              </div>
+            </div>
+            <span *ngIf="pronostico?.mejor_ventana_salida"
+                  class="text-xs bg-teal-600/20 border border-teal-600/40 text-teal-300 px-3 py-1 rounded-full font-bold">
+              ✅ Mejor hora: {{ pronostico.mejor_ventana_salida }}
+            </span>
+          </div>
+          <div class="flex gap-2 overflow-x-auto pb-2 scroll-hidden">
+            <div *ngFor="let h of (pronostico.horas | slice:0:12)"
+                 class="flex-shrink-0 flex flex-col items-center bg-slate-900/60 rounded-xl px-3 py-3 min-w-[72px] border border-slate-700/60 hover:border-slate-500 transition-colors">
+              <p class="text-[10px] text-slate-500 font-bold mb-2">{{ h.hora }}</p>
+              <span class="text-xl mb-1">
+                {{ h.olas_m < 1.5 ? '🌊' : h.olas_m < 2.5 ? '🌬️' : '⛈️' }}
+              </span>
+              <p class="text-white font-black text-sm leading-none">{{ h.olas_m }}m</p>
+              <p class="text-slate-500 text-[10px] mt-1">{{ h.viento_kmh }} km/h</p>
+              <div class="mt-1.5 w-full h-1 rounded-full"
+                   [ngClass]="h.olas_m < 1.5 ? 'bg-teal-500' : h.olas_m < 2.5 ? 'bg-amber-500' : 'bg-red-500'"></div>
             </div>
           </div>
         </div>
 
         <!-- Gráficos -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+          <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5">
             <div class="flex items-center gap-2 mb-4">
-              <i class="fas fa-chart-bar text-blue-500 text-sm"></i>
-              <p class="text-sm font-bold text-slate-700">Últimas 10 rutas</p>
+              <i class="fas fa-chart-bar text-blue-400 text-sm"></i>
+              <p class="text-sm font-bold text-slate-200">Últimas 10 rutas</p>
             </div>
             <div *ngIf="estadisticas?.ultimas_rutas?.length > 0; else sinDatos1">
               <canvas #chartRutas style="max-height:200px"></canvas>
             </div>
             <ng-template #sinDatos1>
               <div class="flex flex-col items-center justify-center h-40 gap-2">
-                <i class="fas fa-chart-bar text-slate-200 text-4xl"></i>
-                <p class="text-slate-400 text-sm">Calcula rutas para ver estadísticas</p>
+                <i class="fas fa-chart-bar text-slate-600 text-4xl"></i>
+                <p class="text-slate-500 text-sm">Calcula rutas para ver estadísticas</p>
               </div>
             </ng-template>
           </div>
-          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+          <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5">
             <div class="flex items-center gap-2 mb-4">
-              <i class="fas fa-chart-pie text-teal-500 text-sm"></i>
-              <p class="text-sm font-bold text-slate-700">Rutas por especie</p>
+              <i class="fas fa-chart-pie text-teal-400 text-sm"></i>
+              <p class="text-sm font-bold text-slate-200">Rutas por especie</p>
             </div>
             <div *ngIf="estadisticas?.por_especie?.length > 0; else sinDatos2">
               <canvas #chartEspecies style="max-height:200px"></canvas>
             </div>
             <ng-template #sinDatos2>
               <div class="flex flex-col items-center justify-center h-40 gap-2">
-                <i class="fas fa-fish text-slate-200 text-4xl"></i>
-                <p class="text-slate-400 text-sm">Sin datos de especies aún</p>
+                <i class="fas fa-fish text-slate-600 text-4xl"></i>
+                <p class="text-slate-500 text-sm">Sin datos de especies aún</p>
               </div>
             </ng-template>
           </div>
         </div>
 
+        <!-- Panel IA Pesquera -->
+        <div class="bg-gradient-to-br from-slate-800 to-blue-950/40 rounded-2xl border border-blue-900/40 p-5 mb-5">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-blue-600/20 rounded-xl flex items-center justify-center">
+                <span class="text-lg">🧠</span>
+              </div>
+              <div>
+                <p class="text-white font-bold text-sm">IA Pesquera</p>
+                <p class="text-slate-500 text-xs">Predicción de captura por ML</p>
+              </div>
+            </div>
+            <button (click)="cargarEstadoML()" [disabled]="cargandoML"
+                    class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors">
+              {{ cargandoML ? 'Consultando...' : '↻ Actualizar' }}
+            </button>
+          </div>
+
+          <!-- Sin datos del modelo -->
+          <div *ngIf="!estadoML" class="text-center py-4">
+            <p class="text-slate-500 text-sm">Consultando estado del modelo...</p>
+          </div>
+
+          <!-- Modelo no entrenado -->
+          <div *ngIf="estadoML && !estadoML.activo" class="flex items-start gap-3 bg-slate-700/40 rounded-xl p-4">
+            <span class="text-2xl flex-shrink-0">💤</span>
+            <div class="flex-1">
+              <p class="text-slate-300 font-semibold text-sm">Modelo sin entrenar</p>
+              <p class="text-slate-500 text-xs mt-0.5">{{ estadoML.mensaje }}</p>
+              <div class="mt-2 bg-slate-800 rounded-lg px-3 py-2">
+                <p class="text-slate-400 text-xs">
+                  Para activar la IA: registra al menos
+                  <span class="text-amber-400 font-bold">10 capturas reales</span>
+                  usando el botón "Registrar Regreso" y luego ejecuta el entrenamiento.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modelo activo -->
+          <div *ngIf="estadoML?.activo" class="space-y-3">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="bg-slate-900/50 rounded-xl p-3 text-center">
+                <p class="text-2xl font-black text-blue-400">{{ estadoML.samples }}</p>
+                <p class="text-slate-500 text-[10px] uppercase font-bold mt-0.5">Viajes aprendidos</p>
+              </div>
+              <div class="bg-slate-900/50 rounded-xl p-3 text-center">
+                <p class="text-2xl font-black"
+                   [ngClass]="estadoML.r2_cv >= 0.7 ? 'text-teal-400' : estadoML.r2_cv >= 0.4 ? 'text-amber-400' : 'text-red-400'">
+                  {{ estadoML.r2_cv != null ? (estadoML.r2_cv * 100 | number:'1.0-0') + '%' : 'N/D' }}
+                </p>
+                <p class="text-slate-500 text-[10px] uppercase font-bold mt-0.5">Precisión (R²)</p>
+              </div>
+              <div class="bg-slate-900/50 rounded-xl p-3 text-center">
+                <p class="text-xs font-bold text-slate-300 leading-tight">
+                  {{ estadoML.fecha_entrenamiento ? (estadoML.fecha_entrenamiento | date:'dd MMM') : '—' }}
+                </p>
+                <p class="text-slate-500 text-[10px] uppercase font-bold mt-0.5">Último entreno</p>
+              </div>
+            </div>
+
+            <!-- Barra de precisión -->
+            <div>
+              <div class="flex justify-between text-[10px] text-slate-500 mb-1">
+                <span>Precisión del modelo</span>
+                <span>{{ estadoML.r2_cv != null ? (estadoML.r2_cv * 100 | number:'1.0-0') + '%' : '—' }}</span>
+              </div>
+              <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-700"
+                     [ngClass]="estadoML.r2_cv >= 0.7 ? 'bg-teal-400' : estadoML.r2_cv >= 0.4 ? 'bg-amber-400' : 'bg-red-400'"
+                     [style.width]="(estadoML.r2_cv != null ? estadoML.r2_cv * 100 : 0) + '%'"></div>
+              </div>
+            </div>
+
+            <p class="text-slate-500 text-xs">
+              🎯 Activo — las estimaciones de captura en el planificador de rutas usan este modelo.
+              Mejora registrando más capturas reales.
+            </p>
+          </div>
+        </div>
+
         <!-- Fuentes -->
-        <div class="bg-slate-50 rounded-xl border border-slate-200 p-4 text-xs text-slate-400">
+        <div class="bg-slate-800/50 rounded-xl border border-slate-700 p-4 text-xs text-slate-400">
           <p class="font-semibold text-slate-500 mb-1.5 flex items-center gap-1.5">
             <i class="fas fa-satellite-dish text-slate-400"></i> Fuentes de datos en tiempo real
           </p>
@@ -209,5 +353,148 @@
 
       </div>
     </div>
+  <!-- =====================================================
+       MODAL "REGRESÉ DEL MAR"
+       ===================================================== -->
+  <div *ngIf="mostrarModalRegreso"
+       class="fixed inset-0 z-50 flex items-center justify-center"
+       style="background:rgba(0,0,0,0.7)">
+    <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 w-full max-w-lg mx-4 overflow-hidden">
+
+      <!-- Header del modal -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-700">
+        <div class="flex items-center gap-3">
+          <span class="text-2xl">🛳️</span>
+          <div>
+            <h3 class="text-white font-black text-lg leading-tight">Registrar Regreso</h3>
+            <div class="flex items-center gap-1 mt-0.5">
+              <div *ngFor="let paso of [1,2,3]"
+                   class="h-1 w-8 rounded-full transition-all"
+                   [ngClass]="pasoRegreso >= paso ? 'bg-teal-400' : 'bg-slate-600'"></div>
+            </div>
+          </div>
+        </div>
+        <button (click)="cerrarModalRegreso()" class="text-slate-400 hover:text-white text-xl font-bold">✕</button>
+      </div>
+
+      <!-- PASO 1 — Seleccionar ruta -->
+      <div *ngIf="pasoRegreso === 1" class="p-6">
+        <p class="text-slate-400 text-sm mb-4">Selecciona la salida que completaste:</p>
+
+        <div *ngIf="rutasPendientes.length === 0" class="text-center py-10">
+          <p class="text-slate-500 text-4xl mb-3">✅</p>
+          <p class="text-slate-300 font-semibold">No hay salidas pendientes de reporte</p>
+          <p class="text-slate-500 text-sm mt-1">Todas tus rutas tienen captura registrada</p>
+        </div>
+
+        <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+          <button *ngFor="let ruta of rutasPendientes"
+                  (click)="seleccionarRuta(ruta)"
+                  class="w-full text-left bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-teal-500 rounded-xl p-4 transition-all group">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs font-black px-2 py-0.5 rounded-full"
+                        [ngClass]="{
+                          'bg-blue-900/60 text-blue-300':   ruta.especie === 'ANCHOVETA',
+                          'bg-teal-900/60 text-teal-300':   ruta.especie === 'BONITO',
+                          'bg-amber-900/60 text-amber-300': ruta.especie === 'CABALLA',
+                          'bg-purple-900/60 text-purple-300': ruta.especie === 'JUREL'
+                        }">
+                    {{ ruta.especie }}
+                  </span>
+                  <span class="text-slate-400 text-xs">{{ formatFecha(ruta.fecha) }}</span>
+                </div>
+                <div class="flex items-center gap-4 text-xs text-slate-400">
+                  <span *ngIf="ruta.distancia_km">📏 {{ ruta.distancia_km }} km</span>
+                  <span *ngIf="ruta.tiempo_horas">⏱️ {{ ruta.tiempo_horas }} h</span>
+                  <span *ngIf="ruta.carga_estimada">🎣 ~{{ ruta.carga_estimada }} TM est.</span>
+                </div>
+              </div>
+              <span class="text-slate-500 group-hover:text-teal-400 text-lg transition-colors">→</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- PASO 2 — Ingresar captura real -->
+      <div *ngIf="pasoRegreso === 2 && rutaSeleccionada" class="p-6">
+        <div class="bg-slate-700/50 rounded-xl p-4 mb-5 border border-slate-600">
+          <p class="text-slate-400 text-xs uppercase font-bold mb-1">Salida seleccionada</p>
+          <p class="text-white font-bold">{{ rutaSeleccionada.especie }} · {{ formatFecha(rutaSeleccionada.fecha) }}</p>
+          <p class="text-slate-400 text-xs mt-0.5">
+            Carga estimada: <span class="text-teal-400 font-bold">{{ rutaSeleccionada.carga_estimada }} TM</span>
+          </p>
+        </div>
+
+        <div class="mb-5">
+          <label class="block text-slate-300 text-sm font-bold mb-2">
+            ¿Cuánto pescaste realmente? (TM)
+          </label>
+          <input type="number"
+                 [(ngModel)]="capturaForm.captura_real_tm"
+                 min="0" step="0.1"
+                 class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 rounded-xl px-4 py-3 text-white text-2xl font-black text-center outline-none transition-colors"/>
+          <p class="text-slate-500 text-xs mt-1.5 text-center">
+            1 TM = 1,000 kg · Ingresa 0 si no hubo captura
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <button (click)="pasoRegreso = 1"
+                  class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-3 rounded-xl text-sm transition-all">
+            ← Volver
+          </button>
+          <button (click)="registrarCaptura()"
+                  [disabled]="guardandoCaptura || capturaForm.captura_real_tm < 0"
+                  class="flex-1 bg-teal-500 hover:bg-teal-400 disabled:bg-slate-600 text-slate-900 font-black py-3 rounded-xl text-sm transition-all">
+            <span *ngIf="!guardandoCaptura">Registrar captura</span>
+            <span *ngIf="guardandoCaptura">Guardando...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- PASO 3 — Éxito + opción ML -->
+      <div *ngIf="pasoRegreso === 3" class="p-6 text-center">
+
+        <div class="w-16 h-16 bg-teal-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <span class="text-3xl">✅</span>
+        </div>
+        <h4 class="text-white font-black text-xl mb-1">¡Captura registrada!</h4>
+        <p class="text-slate-400 text-sm mb-2">
+          <span class="text-teal-400 font-bold">{{ capturaForm.captura_real_tm }} TM</span>
+          de {{ rutaSeleccionada?.especie }} guardadas correctamente.
+        </p>
+
+        <!-- Resultado ML si ya entrenó -->
+        <div *ngIf="mlResultado" class="my-4 rounded-xl p-4 border text-sm"
+             [ngClass]="mlResultado.ok ? 'bg-blue-900/30 border-blue-700 text-blue-300' : 'bg-slate-700 border-slate-600 text-slate-400'">
+          <p *ngIf="mlResultado.ok" class="font-bold">
+            🧠 IA entrenada con {{ mlResultado.samples }} muestras
+            <span *ngIf="mlResultado.r2_cv"> · Precisión R² = {{ mlResultado.r2_cv }}</span>
+          </p>
+          <p *ngIf="!mlResultado.ok">{{ mlResultado.mensaje }}</p>
+        </div>
+
+        <!-- Botón entrenar IA (si no entrenó aún) -->
+        <div *ngIf="!mlResultado" class="my-4 bg-slate-700/50 rounded-xl p-4 border border-slate-600">
+          <p class="text-slate-300 text-sm font-semibold mb-1">🧠 ¿Mejorar la IA ahora?</p>
+          <p class="text-slate-500 text-xs mb-3">Re-entrena el modelo con tu nueva captura para que las próximas predicciones sean más precisas.</p>
+          <button (click)="entrenarML()" [disabled]="mlEntrenando"
+                  class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all">
+            <span *ngIf="!mlEntrenando">🚀 Entrenar IA</span>
+            <span *ngIf="mlEntrenando">⏳ Entrenando modelo...</span>
+          </button>
+        </div>
+
+        <button (click)="cerrarModalRegreso()"
+                class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-3 rounded-xl text-sm transition-all mt-2">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   </main>
 </div>

@@ -198,7 +198,7 @@ export class FlotaComponent implements OnInit {
   optimizar(id: string, nombre: string) {
     this.mensaje = `Calculando ruta óptima para ${nombre}...`;
     this.cdr.detectChanges();
-    this.api.optimizarRuta({ id_embarcacion: id, puerto_salida_id: 'CHIMBOTE' }).subscribe({
+    this.api.optimizarRuta({ id_embarcacion: id, id_puerto: 'CHIMBOTE' }).subscribe({
       next: (res) => {
         this.mensaje = `✅ Ruta generada: ${res.distancia_total_km} km`;
         this.cdr.detectChanges();
@@ -216,12 +216,13 @@ export class FlotaComponent implements OnInit {
   // ========================
 
   cargarMantenimientos() {
-    const data = localStorage.getItem('fishroute_mantenimientos');
-    this.mantenimientos = data ? JSON.parse(data) : [];
-  }
-
-  private guardarMantenimientos() {
-    localStorage.setItem('fishroute_mantenimientos', JSON.stringify(this.mantenimientos));
+    this.api.getMantenimientos().subscribe({
+      next: (data: any[]) => {
+        this.mantenimientos = data;
+        this.cdr.detectChanges();
+      },
+      error: () => this.cdr.detectChanges()
+    });
   }
 
   agregarMantenimiento() {
@@ -229,22 +230,27 @@ export class FlotaComponent implements OnInit {
     if (!this.nuevoMant.descripcion.trim()) { alert('La descripción es obligatoria'); return; }
 
     const barco = this.embarcaciones.find(b => b.id_embarcacion === this.nuevoMant.id_embarcacion);
-    const registro: Mantenimiento = {
-      id:                 Date.now().toString(),
-      id_embarcacion:     this.nuevoMant.id_embarcacion,
+    const payload = {
+      ...this.nuevoMant,
       nombre_embarcacion: barco?.nombre ?? this.nuevoMant.id_embarcacion,
-      fecha:              this.nuevoMant.fecha,
-      tipo:               this.nuevoMant.tipo,
-      descripcion:        this.nuevoMant.descripcion.trim(),
-      costo:              this.nuevoMant.costo,
-      proxima_revision:   this.nuevoMant.proxima_revision
     };
 
-    this.mantenimientos.unshift(registro);
-    this.guardarMantenimientos();
-    this.nuevoMant = { id_embarcacion: '', fecha: new Date().toISOString().split('T')[0], tipo: 'PREVENTIVO', descripcion: '', costo: 0, proxima_revision: '' };
-    this.mostrarFormMant = false;
-    this.cdr.detectChanges();
+    this.api.crearMantenimiento(payload).subscribe({
+      next: () => {
+        this.nuevoMant = { id_embarcacion: '', fecha: new Date().toISOString().split('T')[0], tipo: 'PREVENTIVO', descripcion: '', costo: 0, proxima_revision: '' };
+        this.mostrarFormMant = false;
+        this.cargarMantenimientos();
+      },
+      error: () => alert('Error al registrar mantenimiento.')
+    });
+  }
+
+  eliminarMantenimiento(id: any) {
+    if (!confirm('¿Eliminar este registro de mantenimiento?')) return;
+    this.api.eliminarMantenimiento(Number(id)).subscribe({
+      next: () => this.cargarMantenimientos(),
+      error: () => alert('Error al eliminar.')
+    });
   }
 
   proximasRevisiones(): Mantenimiento[] {
