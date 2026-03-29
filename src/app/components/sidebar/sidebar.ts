@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-sidebar',
@@ -9,10 +10,9 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: 'sidebar.css'
 })
 export class SidebarComponent {
-  constructor(private router: Router) {}
+  constructor(private authService: AuthService) {}
 
   logout() {
-    // Aquí podrías limpiar tokens si los tuvieras
-    this.router.navigate(['/login']);
+    this.authService.logout();
   }
 }
