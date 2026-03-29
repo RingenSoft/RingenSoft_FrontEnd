@@ -1,130 +1,169 @@
 <div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
   <app-sidebar></app-sidebar>
 
-  <main class="flex-1 p-6 overflow-y-auto">
+  <main class="flex-1 overflow-y-auto">
 
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">
-          <i class="fas fa-users text-teal-500 mr-2"></i>Zona de Pescadores
+        <h1 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+          <span class="w-8 h-8 bg-teal-600 rounded-lg flex items-center justify-center">
+            <i class="fas fa-users text-white text-xs"></i>
+          </span>
+          Zona de Pescadores
         </h1>
-        <p class="text-slate-500 text-sm">Comparte y descubre avistamientos de cardúmenes</p>
+        <p class="text-slate-500 text-xs mt-0.5">Comunidad pesquera · Comparte avistamientos de cardúmenes</p>
       </div>
       <button (click)="mostrarFormulario = !mostrarFormulario"
-              class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-teal-200 transition-all flex items-center gap-2">
+              class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all"
+              [ngClass]="mostrarFormulario
+                ? 'bg-slate-100 text-slate-600 shadow-none hover:bg-slate-200'
+                : 'bg-teal-600 hover:bg-teal-700 text-white shadow-teal-200'">
         <i class="fas" [ngClass]="mostrarFormulario ? 'fa-times' : 'fa-plus'"></i>
         <span>{{ mostrarFormulario ? 'Cancelar' : 'Reportar avistamiento' }}</span>
       </button>
     </div>
 
-    <!-- Formulario nuevo avistamiento -->
-    <div *ngIf="mostrarFormulario"
-         class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6">
-      <h2 class="text-lg font-bold text-slate-800 mb-1">Nuevo avistamiento</h2>
-      <p class="text-slate-400 text-xs mb-5">Reporta un cardumen para ayudar a la comunidad pesquera</p>
+    <div class="p-6">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Especie</label>
-          <select [(ngModel)]="nuevoAvistamiento.especie"
-                  class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-teal-400 outline-none">
-            <option *ngFor="let e of especies" [value]="e">{{ e }}</option>
-          </select>
+      <!-- Formulario nuevo avistamiento -->
+      <div *ngIf="mostrarFormulario"
+           class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6 ring-1 ring-teal-100">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 bg-teal-100 rounded-xl flex items-center justify-center">
+            <i class="fas fa-fish text-teal-600"></i>
+          </div>
+          <div>
+            <h2 class="font-bold text-slate-900 text-base leading-tight">Nuevo avistamiento</h2>
+            <p class="text-slate-400 text-xs">Reporta un cardumen para ayudar a la comunidad</p>
+          </div>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Zona aproximada</label>
-          <select [(ngModel)]="nuevoAvistamiento.zona"
-                  class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-teal-400 outline-none">
-            <option *ngFor="let p of puertos" [value]="p">{{ p }}</option>
-          </select>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Especie</label>
+            <select [(ngModel)]="nuevoAvistamiento.especie"
+                    class="w-full border border-slate-200 rounded-xl py-2.5 px-3.5 text-slate-700 text-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none bg-slate-50 focus:bg-white">
+              <option *ngFor="let e of especies" [value]="e">{{ e }}</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Zona aproximada</label>
+            <select [(ngModel)]="nuevoAvistamiento.zona"
+                    class="w-full border border-slate-200 rounded-xl py-2.5 px-3.5 text-slate-700 text-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none bg-slate-50 focus:bg-white">
+              <option *ngFor="let p of puertos" [value]="p">{{ p }}</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Descripción <span class="text-red-400">*</span></label>
+            <textarea [(ngModel)]="nuevoAvistamiento.descripcion" rows="3"
+                      placeholder="Ej: Cardumen denso a 15 millas de la costa, temperatura del agua 18°C, buena visibilidad..."
+                      class="w-full border border-slate-200 rounded-xl py-2.5 px-3.5 text-slate-700 text-sm focus:ring-2 focus:ring-teal-400 focus:border-teal-400 outline-none resize-none bg-slate-50 focus:bg-white"></textarea>
+          </div>
         </div>
 
-        <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
-          <textarea [(ngModel)]="nuevoAvistamiento.descripcion" rows="3"
-                    placeholder="Ej: Cardumen denso a 15 millas de la costa, temperatura del agua 18°C, buena visibilidad..."
-                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-teal-400 outline-none resize-none transition-all"></textarea>
-        </div>
-
+        <button (click)="reportarAvistamiento()" [disabled]="enviando"
+                class="w-full bg-teal-600 hover:bg-teal-700 active:scale-[0.99] text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-teal-100 disabled:opacity-50 flex items-center justify-center gap-2">
+          <i *ngIf="enviando" class="fas fa-spinner fa-spin"></i>
+          <span>{{ enviando ? 'Publicando...' : 'Publicar avistamiento' }}</span>
+        </button>
       </div>
 
-      <button (click)="reportarAvistamiento()"
-              class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-teal-100 transition-all">
-        Publicar avistamiento
-      </button>
-    </div>
+      <!-- Estado vacío -->
+      <div *ngIf="avistamientos.length === 0 && !cargando && !mostrarFormulario"
+           class="bg-white rounded-2xl border border-slate-200 p-14 text-center shadow-sm">
+        <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-fish text-teal-400 text-3xl"></i>
+        </div>
+        <p class="text-slate-700 font-bold text-lg mb-1">Sin avistamientos reportados</p>
+        <p class="text-slate-400 text-sm mb-6 max-w-xs mx-auto">Sé el primero en compartir un avistamiento con la comunidad pesquera</p>
+        <button (click)="mostrarFormulario = true"
+                class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-teal-100">
+          Reportar primer avistamiento
+        </button>
+      </div>
 
-    <!-- Estado vacío -->
-    <div *ngIf="avistamientos.length === 0 && !mostrarFormulario"
-         class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-      <div class="text-5xl mb-4">🌊</div>
-      <p class="text-slate-600 font-bold text-lg mb-1">Sin avistamientos reportados</p>
-      <p class="text-slate-400 text-sm mb-6">Sé el primero en compartir un avistamiento con la comunidad</p>
-      <button (click)="mostrarFormulario = true"
-              class="bg-teal-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
-        Reportar primer avistamiento
-      </button>
-    </div>
-
-    <!-- Feed de avistamientos -->
-    <div *ngIf="avistamientos.length > 0" class="space-y-4">
-
-      <!-- Contador -->
-      <p class="text-xs text-slate-400 font-medium">
-        {{ avistamientos.length }} avistamiento{{ avistamientos.length !== 1 ? 's' : '' }} reportado{{ avistamientos.length !== 1 ? 's' : '' }}
-      </p>
-
-      <div *ngFor="let a of avistamientos"
-           class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5">
-
-        <!-- Cabecera del card -->
-        <div class="flex items-start justify-between mb-3">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-teal-100 rounded-xl flex items-center justify-center text-xl">🐠</div>
-            <div>
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-bold text-slate-800 text-sm">{{ a.zona }}</span>
-                <span class="text-xs px-2.5 py-0.5 rounded-full font-bold" [ngClass]="especieColor(a.especie)">
-                  {{ a.especie }}
-                </span>
-              </div>
-              <p class="text-xs text-slate-400 mt-0.5">
-                <i class="fas fa-map-marker-alt mr-1"></i>Zona {{ a.zona }}
-              </p>
+      <!-- Cargando -->
+      <div *ngIf="cargando" class="space-y-3">
+        <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 bg-slate-200 rounded-xl"></div>
+            <div class="flex-1">
+              <div class="h-3.5 bg-slate-200 rounded w-1/3 mb-1.5"></div>
+              <div class="h-2.5 bg-slate-100 rounded w-1/4"></div>
             </div>
           </div>
-          <!-- Badge de tiempo -->
-          <span class="text-xs bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg font-medium whitespace-nowrap">
-            {{ tiempoTranscurrido(a.fecha) }}
-          </span>
+          <div class="h-3 bg-slate-100 rounded w-full mb-1.5"></div>
+          <div class="h-3 bg-slate-100 rounded w-4/5"></div>
         </div>
-
-        <!-- Descripción -->
-        <p class="text-slate-600 text-sm mb-4 leading-relaxed">{{ a.descripcion }}</p>
-
-        <!-- Footer con votos -->
-        <div class="flex items-center justify-between border-t border-slate-100 pt-3">
-          <button (click)="votar(a)"
-                  [disabled]="a.votado"
-                  [ngClass]="a.votado
-                    ? 'bg-teal-50 text-teal-700 border-teal-200 cursor-default'
-                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200'"
-                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all">
-            <i class="fas fa-thumbs-up"></i>
-            <span>{{ a.votado ? 'Marcado útil' : 'Marcar útil' }}</span>
-          </button>
-
-          <span class="text-xs font-bold px-2.5 py-1 rounded-full"
-                [ngClass]="a.votos > 0 ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-400'">
-            {{ a.votos }} {{ a.votos === 1 ? 'voto' : 'votos' }}
-          </span>
-        </div>
-
       </div>
-    </div>
 
+      <!-- Feed de avistamientos -->
+      <div *ngIf="avistamientos.length > 0" class="space-y-3">
+
+        <!-- Contador -->
+        <div class="flex items-center justify-between">
+          <p class="text-xs text-slate-400 font-medium">
+            <span class="font-bold text-slate-600">{{ avistamientos.length }}</span>
+            avistamiento{{ avistamientos.length !== 1 ? 's' : '' }} reportado{{ avistamientos.length !== 1 ? 's' : '' }}
+          </p>
+        </div>
+
+        <div *ngFor="let a of avistamientos"
+             class="bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5">
+
+          <!-- Cabecera -->
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black flex-shrink-0"
+                   [ngClass]="especieColor(a.especie)">
+                <i class="fas fa-fish"></i>
+              </div>
+              <div>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="font-bold text-slate-900 text-sm">{{ a.zona }}</p>
+                  <span class="text-xs px-2 py-0.5 rounded-full font-bold" [ngClass]="especieColor(a.especie)">
+                    {{ a.especie }}
+                  </span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-0.5">
+                  <i class="fas fa-map-pin mr-1"></i>Zona {{ a.zona }}
+                </p>
+              </div>
+            </div>
+            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-lg font-medium whitespace-nowrap flex-shrink-0">
+              {{ tiempoTranscurrido(a.fecha) }}
+            </span>
+          </div>
+
+          <!-- Descripción -->
+          <p class="text-slate-600 text-sm leading-relaxed mb-4">{{ a.descripcion }}</p>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+            <button (click)="votar(a)"
+                    [disabled]="yaVotado(a.id)"
+                    [ngClass]="yaVotado(a.id)
+                      ? 'bg-teal-50 text-teal-700 border-teal-200 cursor-default'
+                      : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300'"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all">
+              <i class="fas fa-thumbs-up text-xs"></i>
+              <span>{{ yaVotado(a.id) ? 'Útil' : 'Marcar útil' }}</span>
+            </button>
+
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-full"
+                    [ngClass]="a.votos > 0 ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-400'">
+                <i class="fas fa-thumbs-up text-xs mr-1"></i>{{ a.votos }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
   </main>
 </div>

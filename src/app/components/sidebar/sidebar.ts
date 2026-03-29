@@ -17,6 +17,25 @@ export class SidebarComponent {
     public alertaBadge: AlertaBadgeService
   ) {}
 
+  getNombreCorto(): string {
+    const nombre = localStorage.getItem('usuario') || 'Usuario';
+    return nombre.split(' ')[0];
+  }
+
+  getIniciales(): string {
+    const nombre = localStorage.getItem('usuario') || 'U';
+    return nombre
+      .split(' ')
+      .map((n: string) => n[0] || '')
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  }
+
+  getRol(): string {
+    return (localStorage.getItem('rol') || 'pescador').toLowerCase();
+  }
+
   logout() {
     this.authService.logout();
   }

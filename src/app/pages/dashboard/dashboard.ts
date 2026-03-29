@@ -23,11 +23,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewInit {
   embarcaciones: any[] = [];
   cargando             = true;
   errorCarga           = false;
+  saludo               = '';
+  nombreUsuario        = '';
+  fechaHoy             = '';
   private charts: any[] = [];
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit()       { this.cargarDatos(); }
+  ngOnInit() {
+    const h = new Date().getHours();
+    this.saludo       = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+    this.nombreUsuario = (localStorage.getItem('usuario') || '').split(' ')[0];
+    this.fechaHoy     = new Date().toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'long' });
+    this.cargarDatos();
+  }
   ngAfterViewInit() {}
   ngOnDestroy()    { this.charts.forEach(c => c.destroy()); }
 

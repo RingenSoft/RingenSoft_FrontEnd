@@ -1,53 +1,140 @@
-<div class="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700 font-sans">
-  <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition hover:scale-[1.01] duration-300">
-    <!-- Logo y Título -->
-    <div class="flex justify-center mb-6">
-      <div class="bg-blue-100 p-4 rounded-full">
-        <i class="fas fa-fish text-4xl text-blue-600"></i>
-      </div>
-    </div>
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Ringensoft</h2>
-    <p class="text-center text-gray-500 mb-6 text-sm">Optimización de Rutas de Acopio</p>
+<div class="h-screen flex font-sans overflow-hidden">
 
-    <!-- Mensaje de Error -->
-    <div *ngIf="errorMsg" class="mb-4 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-xs font-bold text-center animate-pulse">
-      {{ errorMsg }}
+  <!-- Left panel — branding (solo en desktop) -->
+  <div class="hidden lg:flex lg:w-[52%] bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+
+    <!-- Decoración de fondo -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden">
+      <div class="absolute -top-32 -right-32 w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-3xl"></div>
+      <div class="absolute -bottom-40 -left-32 w-[500px] h-[500px] bg-indigo-600/8 rounded-full blur-3xl"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/4 rounded-full blur-3xl"></div>
+      <!-- Ondas decorativas -->
+      <svg class="absolute bottom-0 left-0 right-0 opacity-10" viewBox="0 0 1200 120" preserveAspectRatio="none" style="height:120px">
+        <path d="M0,60 C200,100 400,20 600,60 C800,100 1000,20 1200,60 L1200,120 L0,120 Z" fill="#3B82F6"/>
+      </svg>
     </div>
 
-    <!-- Formulario -->
-    <form (ngSubmit)="ingresar()">
-      <div class="mb-4">
-        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">ID Flota / Usuario</label>
-        <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                        <i class="fas fa-user"></i>
-                    </span>
-          <input [(ngModel)]="usuario" name="usuario" class="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" type="text" placeholder="Usuario" required>
+    <!-- Logo y título -->
+    <div class="relative z-10">
+      <div class="flex items-center gap-3 mb-14">
+        <div class="w-11 h-11 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-900/50">
+          <i class="fas fa-fish text-white text-lg"></i>
+        </div>
+        <div>
+          <p class="text-white font-bold text-lg leading-tight tracking-tight">Ringensoft</p>
+          <p class="text-blue-400/60 text-[10px] tracking-widest uppercase">Logística Pesquera</p>
         </div>
       </div>
-      <div class="mb-6">
-        <label class="block text-gray-700 text-xs font-bold mb-2 uppercase">Contraseña</label>
-        <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                        <i class="fas fa-lock"></i>
-                    </span>
-          <input [(ngModel)]="password" name="password" class="w-full border border-gray-300 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm" type="password" placeholder="•••••••" required>
-        </div>
-      </div>
-      <button [disabled]="cargando" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center" type="submit">
-        <span *ngIf="!cargando">Ingresar al Sistema</span>
-        <span *ngIf="cargando"><i class="fas fa-spinner fa-spin mr-2"></i> Validando...</span>
-      </button>
-    </form>
 
-    <!-- Footer: Enlace a Registro (NUEVO) -->
-    <div class="text-center mt-6 border-t border-gray-100 pt-4">
-      <p class="text-xs text-gray-500 mb-1">¿Nuevo en Ringensoft?</p>
-      <a routerLink="/registro" class="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer">
-        Crea tu cuenta aquí
-      </a>
+      <h1 class="text-[2.6rem] font-black text-white leading-[1.1] mb-5 tracking-tight">
+        Optimiza tus rutas<br>
+        con <span class="text-blue-400">datos satelitales</span><br>
+        en tiempo real
+      </h1>
+      <p class="text-slate-400 text-[15px] leading-relaxed max-w-sm">
+        Conecta NASA ERDDAP, Open-Meteo y tu flota para llevar siempre a tu barco al mejor cardumen del Pacífico peruano.
+      </p>
     </div>
 
-    <p class="text-center text-[10px] text-gray-400 mt-6">&copy; 2025 Ringensoft Analytics</p>
+    <!-- Feature bullets -->
+    <div class="relative z-10 space-y-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 bg-blue-500/15 border border-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-satellite text-blue-400 text-xs"></i>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold leading-tight">Datos satelitales NASA</p>
+          <p class="text-slate-500 text-xs">Temperatura del mar y clorofila cada 30 min</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 bg-teal-500/15 border border-teal-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-route text-teal-400 text-xs"></i>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold leading-tight">Rutas VRP optimizadas</p>
+          <p class="text-slate-500 text-xs">Algoritmo greedy + 2-opt, respeta autonomía del barco</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3.5">
+        <div class="w-9 h-9 bg-green-500/15 border border-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-fish text-green-400 text-xs"></i>
+        </div>
+        <div>
+          <p class="text-white text-sm font-semibold leading-tight">FishScore™ por zona</p>
+          <p class="text-slate-500 text-xs">Índice 0–100 de probabilidad de captura por especie</p>
+        </div>
+      </div>
+      <p class="text-slate-700 text-xs pt-2 font-medium">&copy; 2025 Ringensoft Analytics · 16 puertos del Perú</p>
+    </div>
   </div>
+
+  <!-- Right panel — formulario -->
+  <div class="flex-1 flex items-center justify-center p-8 bg-white">
+    <div class="w-full max-w-[360px]">
+
+      <!-- Logo móvil -->
+      <div class="lg:hidden flex items-center gap-3 justify-center mb-10">
+        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
+          <i class="fas fa-fish text-white"></i>
+        </div>
+        <p class="font-bold text-slate-800 text-xl">Ringensoft</p>
+      </div>
+
+      <h2 class="text-2xl font-black text-slate-900 mb-1 tracking-tight">Iniciar sesión</h2>
+      <p class="text-slate-400 text-sm mb-8">Accede a tu panel de control pesquero</p>
+
+      <!-- Error -->
+      <div *ngIf="errorMsg"
+           class="mb-5 p-3.5 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-medium flex items-center gap-2.5">
+        <i class="fas fa-exclamation-circle text-red-400 shrink-0"></i>
+        {{ errorMsg }}
+      </div>
+
+      <form (ngSubmit)="ingresar()" class="space-y-4">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Usuario</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+              <i class="fas fa-user text-sm"></i>
+            </span>
+            <input [(ngModel)]="usuario" name="usuario" type="text" placeholder="Tu usuario o ID de flota"
+                   class="w-full border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all bg-slate-50 focus:bg-white"
+                   required autocomplete="username">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Contraseña</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+              <i class="fas fa-lock text-sm"></i>
+            </span>
+            <input [(ngModel)]="password" name="password" type="password" placeholder="••••••••"
+                   class="w-full border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all bg-slate-50 focus:bg-white"
+                   required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button [disabled]="cargando" type="submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-1">
+          <i *ngIf="cargando" class="fas fa-spinner fa-spin"></i>
+          <span>{{ cargando ? 'Verificando...' : 'Ingresar al sistema' }}</span>
+        </button>
+
+      </form>
+
+      <div class="text-center mt-6 pt-6 border-t border-slate-100">
+        <p class="text-sm text-slate-400">
+          ¿Primera vez aquí?&nbsp;
+          <a routerLink="/registro" class="text-blue-600 font-bold hover:text-blue-700">
+            Crea tu cuenta
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
 </div>

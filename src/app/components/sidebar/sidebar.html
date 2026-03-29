@@ -1,92 +1,125 @@
-<aside class="w-64 bg-slate-900 text-white flex flex-col shadow-xl h-full z-50">
-  <div class="p-6 flex items-center border-b border-slate-800 bg-slate-950">
-    <i class="fas fa-fish text-3xl mr-3 text-blue-500 animate-bounce"></i>
-    <div>
-      <span class="font-bold text-xl tracking-wide block">Ringensoft</span>
-      <span class="text-[10px] text-slate-400 uppercase tracking-widest">Logística Pesquera</span>
+<aside class="w-64 bg-slate-950 text-white flex flex-col h-full z-50 border-r border-slate-800/70 flex-shrink-0">
+
+  <!-- Logo -->
+  <div class="px-5 py-4 flex items-center gap-3 border-b border-slate-800/60">
+    <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/50 flex-shrink-0">
+      <i class="fas fa-fish text-white text-base"></i>
+    </div>
+    <div class="min-w-0">
+      <p class="font-bold text-sm leading-tight text-white">Ringensoft</p>
+      <p class="text-[9px] text-slate-500 uppercase tracking-widest leading-tight">Logística Pesquera</p>
     </div>
   </div>
 
-  <nav class="flex-1 p-4 space-y-2 mt-4">
-    <a routerLink="/dashboard" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-tachometer-alt"></i>
+  <!-- User info -->
+  <div class="px-4 py-3 border-b border-slate-800/60">
+    <div class="flex items-center gap-2.5">
+      <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-black flex-shrink-0 shadow-md shadow-blue-900/30">
+        {{ getIniciales() }}
       </div>
-      <span class="font-medium">Dashboard</span>
+      <div class="min-w-0 flex-1">
+        <p class="text-sm font-semibold text-white leading-tight truncate">{{ getNombreCorto() }}</p>
+        <p class="text-[10px] text-slate-400 capitalize leading-tight">{{ getRol() }}</p>
+      </div>
+      <div class="w-2 h-2 bg-green-400 rounded-full flex-shrink-0 shadow shadow-green-400/50" title="En línea"></div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="flex-1 px-2 py-3 space-y-px overflow-y-auto scroll-hidden">
+
+    <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest px-3 pt-1 pb-2">Principal</p>
+
+    <a routerLink="/dashboard"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-tachometer-alt text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Dashboard</span>
     </a>
 
-    <a routerLink="/mapa" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-map-marked-alt"></i>
-      </div>
-      <span class="font-medium">Mapa de Rutas</span>
+    <a routerLink="/mapa"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-map-marked-alt text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Mapa de Rutas</span>
     </a>
 
-    <a routerLink="/flota" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-ship"></i>
-      </div>
-      <span class="font-medium">Gestión de Flota</span>
+    <a routerLink="/mapa-calor"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-fire text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Mapa de Calor</span>
     </a>
 
-        <a routerLink="/alertas" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-bell"></i>
-      </div>
-      <span class="font-medium flex-1">Alertas Marinas</span>
+    <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest px-3 pt-4 pb-2">Operaciones</p>
+
+    <a routerLink="/flota"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-ship text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Gestión de Flota</span>
+    </a>
+
+    <a routerLink="/planificador"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-calendar-alt text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Planificador</span>
+    </a>
+
+    <p class="text-[9px] font-bold text-slate-600 uppercase tracking-widest px-3 pt-4 pb-2">Información</p>
+
+    <a routerLink="/alertas"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-bell text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium flex-1">Alertas Marinas</span>
       <span *ngIf="alertaBadge.alertasRojas > 0"
-            class="ml-auto bg-red-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-tight">
+            class="bg-red-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full min-w-[18px] text-center leading-none">
         {{ alertaBadge.alertasRojas }}
       </span>
     </a>
-    
-    <a routerLink="/mapa-calor" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-  <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-    <i class="fas fa-fire"></i>
-  </div>
-  <span class="font-medium">Mapa de Calor</span>
-</a>
 
-
-    <a routerLink="/reportes" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-chart-pie"></i>
-      </div>
-      <span class="font-medium">Reportes</span>
+    <a routerLink="/condiciones"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-water text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Condiciones</span>
     </a>
 
-    <a routerLink="/planificador" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-  <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-    <i class="fas fa-calendar-alt"></i>
-  </div>
-  <span class="font-medium">Planificador</span>
-</a>
-
-    <a routerLink="/condiciones" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-water"></i>
-      </div>
-      <span class="font-medium">Condiciones</span>
+    <a routerLink="/reportes"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-chart-pie text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Reportes</span>
     </a>
 
-    <a routerLink="/zona-pescadores" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-        <i class="fas fa-users"></i>
-      </div>
-      <span class="font-medium">Zona Pescadores</span>
+    <a routerLink="/zona-pescadores"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent group">
+      <i class="fas fa-users text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Zona Pescadores</span>
     </a>
 
   </nav>
-  <a routerLink="/perfil" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
-  <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
-    <i class="fas fa-user"></i>
-  </div>
-  <span class="font-medium">Mi Perfil</span>
-</a>
-  <div class="p-4 border-t border-slate-800 bg-slate-950">
-    <button (click)="logout()" class="flex items-center text-slate-400 hover:text-red-400 transition w-full text-left group p-2 rounded-lg hover:bg-slate-900">
-      <i class="fas fa-sign-out-alt mr-3 group-hover:-translate-x-1 transition-transform"></i>
-      <span class="font-medium">Cerrar Sesión</span>
+
+  <!-- Bottom: Perfil + Logout -->
+  <div class="border-t border-slate-800/60 px-2 py-3 space-y-px">
+
+    <a routerLink="/perfil"
+       routerLinkActive="bg-blue-600/15 text-white !border-l-blue-500"
+       class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-slate-800/70 hover:text-slate-200 border-l-2 border-transparent">
+      <i class="fas fa-user text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Mi Perfil</span>
+    </a>
+
+    <button (click)="logout()"
+            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:bg-red-500/10 hover:text-red-400 border-l-2 border-transparent">
+      <i class="fas fa-sign-out-alt text-sm w-4 text-center shrink-0"></i>
+      <span class="text-sm font-medium">Cerrar Sesión</span>
     </button>
+
+    <p class="text-[9px] text-slate-700 text-center px-3 pt-2 font-medium">v2.1 · FishRoute Pro</p>
   </div>
+
 </aside>
