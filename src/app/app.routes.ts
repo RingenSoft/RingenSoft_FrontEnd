@@ -11,6 +11,7 @@ import { PerfilComponent } from './pages/perfil/perfil';
 import { PlanificadorComponent } from './pages/planificador/planificador';
 import { MapaCalorComponent } from './pages/mapa-calor/mapa-calor';
 import { ZonaPescadoresComponent } from './pages/zona-pescadores/zona-pescadores';
+import { CondicionesComponent } from './pages/condiciones/condiciones';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -29,5 +30,6 @@ export const routes: Routes = [
   { path: 'flota', component: FlotaComponent, canActivate: [authGuard] },
   { path: 'reportes', component: ReportesComponent, canActivate: [authGuard] },
   { path: 'alertas', component: AlertasComponent, canActivate: [authGuard] },
-  { path: 'zona-pescadores', component: ZonaPescadoresComponent, canActivate: [authGuard] }
+  { path: 'zona-pescadores', component: ZonaPescadoresComponent, canActivate: [authGuard] },
+  { path: 'condiciones', component: CondicionesComponent, canActivate: [authGuard] }
 ];

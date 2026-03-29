@@ -17,21 +17,22 @@ export class PlanificadorComponent implements OnInit {
   planes:        any[] = [];
   cargando       = false;
   mostrarForm    = false;
+  guardando      = false;
 
   form = {
-    nombre_viaje:     '',
-    puerto_id:        'CHIMBOTE',
-    especie:          'ANCHOVETA',
-    fecha_salida:     '',
-    hora_salida:      '06:00',
-    id_embarcacion:   '',
-    combustible_pct:  0.9,
-    notas:            '',
+    nombre_viaje:    '',
+    puerto_id:       'CHIMBOTE',
+    especie:         'ANCHOVETA',
+    fecha_salida:    '',
+    hora_salida:     '06:00',
+    id_embarcacion:  '',
+    combustible_pct: 0.9,
+    notas:           '',
   };
 
   condicionesFecha: any = null;
   cargandoCondiciones   = false;
-  especies = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+  readonly especies     = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
@@ -43,6 +44,7 @@ export class PlanificadorComponent implements OnInit {
     this.api.getPuertos().subscribe({
       next: (d: any) => { this.puertos = d.puertos; this.cdr.detectChanges(); }
     });
+
     this.api.getEmbarcaciones().subscribe({
       next: (d: any) => {
         this.embarcaciones = d;
@@ -51,10 +53,27 @@ export class PlanificadorComponent implements OnInit {
       }
     });
 
-    const guardados = localStorage.getItem('planes_viaje');
-    if (guardados) this.planes = JSON.parse(guardados);
-
+    this.cargarPlanes();
     this.verificarCondiciones();
+  }
+
+  cargarPlanes() {
+    this.cargando = true;
+    this.api.getPlanes().subscribe({
+      next: (data: any[]) => {
+        this.planes   = data.map(p => ({
+          ...p,
+          condiciones: p.condiciones_json ? this.tryParseJSON(p.condiciones_json) : null,
+        }));
+        this.cargando = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.cargando = false; this.cdr.detectChanges(); }
+    });
+  }
+
+  private tryParseJSON(s: string): any {
+    try { return JSON.parse(s); } catch { return null; }
   }
 
   verificarCondiciones() {
@@ -67,7 +86,7 @@ export class PlanificadorComponent implements OnInit {
         this.cargandoCondiciones = false;
         this.cdr.detectChanges();
       },
-      error: () => { this.cargandoCondiciones = false; }
+      error: () => { this.cargandoCondiciones = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -76,29 +95,42 @@ export class PlanificadorComponent implements OnInit {
       alert('Completa nombre y fecha del viaje');
       return;
     }
-    const plan = {
-      id:           Date.now(),
+    this.guardando = true;
+    const payload = {
       ...this.form,
-      condiciones:  this.condicionesFecha,
-      fecha_creado: new Date().toISOString(),
-      estado:       'PLANIFICADO',
+      condiciones_json: this.condicionesFecha ? JSON.stringify(this.condicionesFecha) : null,
     };
-    this.planes.unshift(plan);
-    localStorage.setItem('planes_viaje', JSON.stringify(this.planes));
-    this.mostrarForm = false;
-    this.cdr.detectChanges();
+    this.api.crearPlan(payload).subscribe({
+      next: (nuevo: any) => {
+        this.planes.unshift({
+          ...nuevo,
+          condiciones: this.condicionesFecha,
+        });
+        this.mostrarForm = false;
+        this.guardando   = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.guardando = false; alert('Error al guardar el plan.'); }
+    });
   }
 
   eliminarPlan(id: number) {
-    this.planes = this.planes.filter((p: any) => p.id !== id);
-    localStorage.setItem('planes_viaje', JSON.stringify(this.planes));
-    this.cdr.detectChanges();
+    if (!confirm('¿Eliminar este plan de viaje?')) return;
+    this.api.eliminarPlan(id).subscribe({
+      next: () => {
+        this.planes = this.planes.filter((p: any) => p.id !== id);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   cambiarEstadoPlan(plan: any, estado: string) {
-    plan.estado = estado;
-    localStorage.setItem('planes_viaje', JSON.stringify(this.planes));
-    this.cdr.detectChanges();
+    this.api.actualizarEstadoPlan(plan.id, estado).subscribe({
+      next: () => {
+        plan.estado = estado;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   getColorEstado(estado: string): string {

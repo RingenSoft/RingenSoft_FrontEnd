@@ -92,4 +92,34 @@ export class ApiService {
   getReportesAvanzados(): Observable<any> {
     return this.http.get(`${this.apiUrl}/condiciones?lat=-12.05&lon=-77.15&especie=ANCHOVETA`);
   }
+
+  // AVISTAMIENTOS
+  getAvistamientos(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/avistamientos`);
+  }
+
+  crearAvistamiento(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/avistamientos`, datos);
+  }
+
+  votarAvistamiento(id: number): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/avistamientos/${id}/votar`, {});
+  }
+
+  // PLANES DE VIAJE
+  getPlanes(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/planes`);
+  }
+
+  crearPlan(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/planes`, datos);
+  }
+
+  actualizarEstadoPlan(id: number, estado: string): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/planes/${id}/estado`, { estado });
+  }
+
+  eliminarPlan(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/planes/${id}`);
+  }
 }

@@ -1,17 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
-
-interface Avistamiento {
-  id: string;
-  especie: string;
-  zona: string;
-  descripcion: string;
-  fecha: string;
-  votos: number;
-  votado: boolean;
-}
 
 @Component({
   selector: 'app-zona-pescadores',
@@ -22,8 +13,12 @@ interface Avistamiento {
 })
 export class ZonaPescadoresComponent implements OnInit {
 
-  avistamientos: Avistamiento[] = [];
+  avistamientos:    any[] = [];
   mostrarFormulario = false;
+  cargando          = true;
+  enviando          = false;
+  // IDs votados en esta sesión (evita doble voto visual)
+  private votados   = new Set<number>();
 
   puertos = [
     'PAITA', 'TALARA', 'CHICAMA', 'SALAVERRY', 'CHIMBOTE',
@@ -34,24 +29,27 @@ export class ZonaPescadoresComponent implements OnInit {
   especies = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
 
   nuevoAvistamiento = {
-    especie: 'ANCHOVETA',
-    zona: 'CHIMBOTE',
+    especie:     'ANCHOVETA',
+    zona:        'CHIMBOTE',
     descripcion: ''
   };
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarAvistamientos();
   }
 
   cargarAvistamientos() {
-    const data = localStorage.getItem('fishroute_avistamientos');
-    this.avistamientos = data ? JSON.parse(data) : [];
-  }
-
-  private guardarAvistamientos() {
-    localStorage.setItem('fishroute_avistamientos', JSON.stringify(this.avistamientos));
+    this.cargando = true;
+    this.api.getAvistamientos().subscribe({
+      next: (data: any[]) => {
+        this.avistamientos = data;
+        this.cargando      = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.cargando = false; this.cdr.detectChanges(); }
+    });
   }
 
   reportarAvistamiento() {
@@ -59,38 +57,39 @@ export class ZonaPescadoresComponent implements OnInit {
       alert('La descripción es obligatoria');
       return;
     }
-
-    const avistamiento: Avistamiento = {
-      id: Date.now().toString(),
-      especie: this.nuevoAvistamiento.especie,
-      zona: this.nuevoAvistamiento.zona,
-      descripcion: this.nuevoAvistamiento.descripcion.trim(),
-      fecha: new Date().toISOString(),
-      votos: 0,
-      votado: false
-    };
-
-    this.avistamientos.unshift(avistamiento);
-    this.guardarAvistamientos();
-    this.nuevoAvistamiento = { especie: 'ANCHOVETA', zona: 'CHIMBOTE', descripcion: '' };
-    this.mostrarFormulario = false;
-    this.cdr.detectChanges();
+    this.enviando = true;
+    this.api.crearAvistamiento(this.nuevoAvistamiento).subscribe({
+      next: (nuevo: any) => {
+        this.avistamientos.unshift(nuevo);
+        this.nuevoAvistamiento = { especie: 'ANCHOVETA', zona: 'CHIMBOTE', descripcion: '' };
+        this.mostrarFormulario = false;
+        this.enviando          = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.enviando = false; alert('Error al publicar avistamiento.'); }
+    });
   }
 
-  votar(avistamiento: Avistamiento) {
-    if (avistamiento.votado) return;
-    avistamiento.votos++;
-    avistamiento.votado = true;
-    this.guardarAvistamientos();
-    this.cdr.detectChanges();
+  votar(avistamiento: any) {
+    if (this.votados.has(avistamiento.id)) return;
+    this.api.votarAvistamiento(avistamiento.id).subscribe({
+      next: (res: any) => {
+        avistamiento.votos = res.votos;
+        this.votados.add(avistamiento.id);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  yaVotado(id: number): boolean {
+    return this.votados.has(id);
   }
 
   tiempoTranscurrido(fecha: string): string {
-    const diffMs = new Date().getTime() - new Date(fecha).getTime();
+    const diffMs  = new Date().getTime() - new Date(fecha).getTime();
     const diffMin = Math.floor(diffMs / 60000);
     const diffHrs = Math.floor(diffMin / 60);
     const diffDias = Math.floor(diffHrs / 24);
-
     if (diffMin < 1)  return 'hace un momento';
     if (diffMin < 60) return `hace ${diffMin} min`;
     if (diffHrs < 24) return `hace ${diffHrs}h`;
