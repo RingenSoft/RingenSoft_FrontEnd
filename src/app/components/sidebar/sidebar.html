@@ -29,14 +29,49 @@
       <span class="font-medium">Gestión de Flota</span>
     </a>
 
+        <a routerLink="/alertas" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
+      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
+        <i class="fas fa-bell"></i>
+      </div>
+      <span class="font-medium">Alertas Marinas</span>
+    </a>
+    
+    <a routerLink="/mapa-calor" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
+  <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
+    <i class="fas fa-fire"></i>
+  </div>
+  <span class="font-medium">Mapa de Calor</span>
+</a>
+
+
     <a routerLink="/reportes" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
       <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
         <i class="fas fa-chart-pie"></i>
       </div>
       <span class="font-medium">Reportes</span>
     </a>
-  </nav>
 
+    <a routerLink="/planificador" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
+  <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
+    <i class="fas fa-calendar-alt"></i>
+  </div>
+  <span class="font-medium">Planificador</span>
+</a>
+
+    <a routerLink="/zona-pescadores" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
+      <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
+        <i class="fas fa-users"></i>
+      </div>
+      <span class="font-medium">Zona Pescadores</span>
+    </a>
+
+  </nav>
+  <a routerLink="/perfil" routerLinkActive="bg-blue-600 text-white shadow-lg shadow-blue-900/50" class="block p-3 rounded-xl transition-all duration-200 text-slate-400 hover:bg-slate-800 hover:text-white group flex items-center">
+  <div class="w-8 h-8 rounded-lg bg-slate-800 group-[.bg-blue-600]:bg-blue-500 flex items-center justify-center mr-3 transition-colors">
+    <i class="fas fa-user"></i>
+  </div>
+  <span class="font-medium">Mi Perfil</span>
+</a>
   <div class="p-4 border-t border-slate-800 bg-slate-950">
     <button (click)="logout()" class="flex items-center text-slate-400 hover:text-red-400 transition w-full text-left group p-2 rounded-lg hover:bg-slate-900">
       <i class="fas fa-sign-out-alt mr-3 group-hover:-translate-x-1 transition-transform"></i>

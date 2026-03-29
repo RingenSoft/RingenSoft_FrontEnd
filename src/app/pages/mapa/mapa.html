@@ -3,127 +3,279 @@
 
   <main class="flex-1 flex relative">
 
+    <!-- Panel izquierdo: configuración -->
     <div class="absolute top-4 left-4 z-40 bg-white/95 backdrop-blur p-5 rounded-xl shadow-2xl border border-slate-200 w-80 max-h-[90vh] overflow-y-auto">
+
       <h2 class="font-bold text-slate-800 text-lg mb-4 flex items-center border-b pb-3 border-slate-100">
-        <i class="fas fa-sliders-h text-blue-600 mr-2"></i> Configuración VRP
+        🐟 Calcular Ruta Óptima
       </h2>
 
-      <div class="mb-4">
-        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Unidad Naval</label>
-        <div class="relative">
-          <select [(ngModel)]="barcoSeleccionadoId" (change)="onBarcoChange()"
-                  class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-2 px-3 rounded-lg text-sm font-bold focus:ring-2 focus:ring-blue-500 outline-none">
-            <option value="" disabled selected>-- Seleccionar --</option>
-            <option *ngFor="let b of listaBarcos" [value]="b.id_embarcacion">{{ b.nombre }}</option>
-          </select>
+      <!-- Puerto -->
+      <div class="mb-3">
+        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Puerto de salida</label>
+        <select [(ngModel)]="form.id_puerto" (change)="onPuertoChange()"
+                class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-2 px-3 rounded-lg text-sm font-bold">
+          <option *ngFor="let p of puertos" [value]="p.id">⚓ {{ p.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Especie -->
+      <div class="mb-3">
+        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Especie objetivo</label>
+        <select [(ngModel)]="form.especie"
+                class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-2 px-3 rounded-lg text-sm font-bold">
+          <option *ngFor="let e of especies" [value]="e">🐠 {{ e }}</option>
+        </select>
+      </div>
+
+      <!-- Embarcación -->
+      <div class="mb-3">
+        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Embarcación</label>
+        <select (change)="seleccionarEmbarcacion(embarcaciones[$any($event.target).selectedIndex])"
+                class="w-full bg-slate-50 border border-slate-300 text-slate-700 py-2 px-3 rounded-lg text-sm font-bold">
+          <option *ngFor="let e of embarcaciones" [value]="e.id_embarcacion">
+            🚢 {{ e.nombre }}
+          </option>
+        </select>
+        <div *ngIf="embarcaciones.length === 0" class="text-xs text-amber-600 mt-1">
+          ⚠️ No tienes embarcaciones. Ve a Gestión de Flota para crear una.
         </div>
       </div>
 
-      <div *ngIf="barcoSeleccionadoId" class="space-y-4 animate-[fadeIn_0.3s]">
-        <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-          <div class="flex justify-between text-xs mb-1">
-            <span class="text-slate-500">Material:</span>
-            <span class="font-bold text-slate-700">{{ formDatos.material }}</span>
+      
+      <!-- Combustible -->
+      <div class="mb-3">
+        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">
+          Combustible disponible: {{ (form.combustible_pct * 100).toFixed(0) }}%
+        </label>
+        <input type="range" min="0.1" max="1" step="0.05" [(ngModel)]="form.combustible_pct"
+               class="w-full accent-blue-600"/>
+      </div>
+
+      <!-- Datos embarcación -->
+      <div class="bg-slate-50 rounded-lg p-3 mb-4 space-y-2 border border-slate-200">
+        <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Datos de la embarcación</p>
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="text-[9px] text-slate-400">Velocidad (nudos)</label>
+            <input type="number" [(ngModel)]="form.velocidad_nudos"
+                   class="w-full border border-slate-200 rounded p-1 text-xs text-center font-bold"/>
           </div>
-          <div class="flex justify-between text-xs">
-            <span class="text-slate-500">Tripulación:</span>
-            <span class="font-bold text-slate-700">{{ formDatos.tripulacion }} pax</span>
+          <div class="flex-1">
+            <label class="text-[9px] text-slate-400">Autonomía (horas)</label>
+            <input type="number" [(ngModel)]="form.autonomia_horas"
+                   class="w-full border border-slate-200 rounded p-1 text-xs text-center font-bold"/>
           </div>
         </div>
-
-        <div class="space-y-2">
-          <label class="block text-[10px] font-bold text-slate-400 uppercase">Puerto Base (Salida y Retorno)</label>
-          <div class="flex items-center gap-2">
-            <div class="w-8 flex flex-col items-center justify-center">
-              <div class="w-3 h-3 rounded-full bg-blue-600 ring-2 ring-blue-200"></div>
-            </div>
-            <div class="flex-1">
-              <select [(ngModel)]="formDatos.puertoSalida" class="w-full bg-white border border-slate-200 rounded p-2 text-xs font-bold text-slate-700 focus:border-blue-500 outline-none">
-                <option *ngFor="let p of listaPuertos" [value]="p.id">{{ p.nombre }}</option>
-              </select>
-            </div>
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="text-[9px] text-slate-400">Consumo (L/h)</label>
+            <input type="number" [(ngModel)]="form.consumo_hora"
+                   class="w-full border border-slate-200 rounded p-1 text-xs text-center font-bold"/>
           </div>
-          <p class="text-[9px] text-slate-400 pl-10 italic">La ruta retornará automáticamente a este puerto.</p>
+          <div class="flex-1">
+            <label class="text-[9px] text-slate-400">Bodega (TM)</label>
+            <input type="number" [(ngModel)]="form.capacidad_bodega"
+                   class="w-full border border-slate-200 rounded p-1 text-xs text-center font-bold"/>
+          </div>
         </div>
-
-        <button (click)="calcularRutaPersonalizada()" [disabled]="cargandoRuta"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all flex justify-center items-center mt-4">
-          <span *ngIf="!cargandoRuta">CALCULAR RUTA</span>
-          <span *ngIf="cargandoRuta"><i class="fas fa-spinner fa-spin"></i></span>
-        </button>
-      </div>
-    </div>
-
-    <div class="flex-1 bg-[#a5bfdd] relative overflow-hidden flex justify-center items-center">
-
-      <div id="full-map-area"
-           class="relative h-[95vh] aspect-[0.82] bg-slate-300 shadow-2xl border-4 border-white transition-transform duration-1000 ease-in-out will-change-transform"
-           [style.transform]="transformStyle"
-           [style.transform-origin]="transformOrigin"
-           [style.backgroundImage]="'url(' + mapaUrl + ')'"
-           style="background-size: 100% 100%;">
+        <div class="flex gap-2">
+          <div class="flex-1">
+            <label class="text-[9px] text-slate-400">Año fabricación</label>
+            <input type="number" [(ngModel)]="form.anio_fabricacion"
+                   class="w-full border border-slate-200 rounded p-1 text-xs text-center font-bold"/>
+          </div>
+          <div class="flex-1">
+            <label class="text-[9px] text-slate-400">Tripulación</label>
+            <input type="number" [(ngModel)]="form.tripulacion"
+                   class="w-full border border-slate-200 rounded p-1 text-xs text-center font-bold"/>
+          </div>
+        </div>
       </div>
 
-      <div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-3 py-2 rounded text-[10px] flex gap-3 pointer-events-none shadow-sm z-50">
-        <div class="flex items-center"><span class="w-2 h-2 bg-blue-600 mr-1"></span> Puerto</div>
-        <div class="flex items-center"><span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span> Banco</div>
-      </div>
-
-      <button *ngIf="isZoomed" (click)="resetZoom()"
-              class="absolute bottom-4 right-4 bg-white hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg shadow-lg border border-slate-200 text-xs font-bold transition-all z-50 flex items-center animate-[fadeIn_0.3s]">
-        <i class="fas fa-expand mr-2"></i> Ver Mapa Completo
+      <!-- Botón calcular -->
+      <button (click)="calcularRuta()" [disabled]="cargandoRuta"
+              class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white py-3 rounded-xl text-sm font-bold shadow-lg transition-all">
+        <span *ngIf="!cargandoRuta">🧭 CALCULAR RUTA ÓPTIMA</span>
+        <span *ngIf="cargandoRuta">⏳ Consultando satélites NASA...</span>
       </button>
     </div>
 
-    <div *ngIf="datosRuta" class="w-80 bg-white border-l border-slate-200 shadow-xl z-40 flex flex-col animate-[slideInRight_0.4s]">
-      <div class="p-5 bg-slate-50 border-b border-slate-200">
-        <h3 class="font-bold text-slate-800 text-sm flex items-center mb-1">
-          <i class="fas fa-clipboard-list text-emerald-500 mr-2"></i> Plan de Ruta
-        </h3>
-        <p class="text-[10px] text-slate-500">Algoritmo VRP-2OPT completado.</p>
-      </div>
+    <!-- Mapa Leaflet -->
+    <div id="mapa-leaflet" class="flex-1 z-0"></div>
 
-      <div class="grid grid-cols-2 gap-1 p-2 bg-slate-100 text-center">
-        <div class="bg-white p-2 rounded border border-slate-200">
-          <div class="text-[10px] text-slate-400 font-bold uppercase">Distancia</div>
-          <div class="text-sm font-black text-slate-700">{{ datosRuta.distancia_total_km }} km</div>
+    <!-- Panel condiciones (esquina superior derecha) -->
+    <div *ngIf="condiciones" class="absolute top-4 right-4 z-40 bg-white/95 backdrop-blur rounded-xl shadow-xl border p-4 w-64"
+         [style.border-color]="alertaColor">
+      <div class="flex items-center gap-2 mb-3">
+        <div class="w-3 h-3 rounded-full" [style.background]="alertaColor"></div>
+        <span class="font-bold text-sm text-slate-700">{{ condiciones.clima?.alerta?.nivel }}</span>
+        <span class="text-[10px] text-slate-400 ml-auto">Tiempo real</span>
+      </div>
+      <div class="space-y-1 text-xs text-slate-600">
+        <div class="flex justify-between">
+          <span>🌊 Olas</span>
+          <span class="font-bold">{{ condiciones.clima?.mar?.altura_olas_m }} m</span>
         </div>
-        <div class="bg-white p-2 rounded border border-slate-200">
-          <div class="text-[10px] text-slate-400 font-bold uppercase">Carga Total</div>
-          <div class="text-sm font-black text-blue-600">{{ datosRuta.carga_total_tm }} TM</div>
+        <div class="flex justify-between">
+          <span>💨 Viento</span>
+          <span class="font-bold">{{ condiciones.clima?.viento?.velocidad_kmh }} km/h</span>
+        </div>
+        <div class="flex justify-between">
+          <span>🌡️ Temperatura mar</span>
+          <span class="font-bold">{{ condiciones.oceanografia?.temperatura?.temperatura_c }}°C</span>
+        </div>
+        <div class="flex justify-between">
+          <span>🟢 Clorofila-a</span>
+          <span class="font-bold">{{ condiciones.oceanografia?.clorofila?.clorofila_mg_m3 }} mg/m³</span>
+        </div>
+        <div class="flex justify-between">
+          <span>🐟 FishScore zona</span>
+          <span class="font-bold text-blue-600">{{ condiciones.fish_score_preliminar }}/100</span>
         </div>
       </div>
+      <p class="text-[9px] text-slate-400 mt-2 italic">{{ condiciones.clima?.alerta?.mensaje }}</p>
+    </div>
 
-      <div class="flex-1 overflow-y-auto p-0">
-        <table class="w-full text-left border-collapse">
-          <thead class="bg-slate-50 sticky top-0 z-10">
-          <tr>
-            <th class="text-[10px] font-bold text-slate-500 p-3 border-b">#</th>
-            <th class="text-[10px] font-bold text-slate-500 p-3 border-b">Nodo</th>
-            <th class="text-[10px] font-bold text-slate-500 p-3 border-b text-right">Carga</th>
-          </tr>
-          </thead>
-          <tbody class="text-xs text-slate-700">
-          <tr *ngFor="let nodo of datosRuta.secuencia_ruta; let i = index" class="border-b border-slate-50 hover:bg-blue-50">
-            <td class="p-3 font-mono text-slate-400">{{ i + 1 }}</td>
-            <td class="p-3">
-              <div class="font-bold">
-                <span *ngIf="nodo.tipo === 'PUERTO'" class="text-blue-600">⚓ {{ nodo.id_nodo }}</span>
-                <span *ngIf="nodo.tipo === 'BANCO'">🐟 Banco {{ nodo.id_nodo }}</span>
-              </div>
-            </td>
-            <td class="p-3 text-right font-medium">
-              {{ nodo.carga_acumulada }} TM
-            </td>
-          </tr>
-          </tbody>
-        </table>
+    <!-- Resultado ruta (panel inferior) -->
+    <div *ngIf="datosRuta?.status === 'OK'" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-white/95 backdrop-blur rounded-xl shadow-xl border border-slate-200 px-6 py-3 flex gap-6 items-center">
+      <div class="text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Zonas</div>
+        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.zonas_visitadas }}</div>
       </div>
-
-      <div class="p-4 bg-slate-50 border-t border-slate-200 text-[10px] text-slate-600 leading-relaxed h-32 overflow-y-auto">
-        <strong class="block mb-1 text-slate-700">Detalle Técnico:</strong>
-        <span class="whitespace-pre-line">{{ datosRuta.resumen_texto }}</span>
+      <div class="text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Distancia</div>
+        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.distancia_total_km }} km</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Tiempo</div>
+        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.tiempo_total_horas }} h</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Carga est.</div>
+        <div class="text-lg font-black text-blue-600">{{ datosRuta.resultado.carga_estimada_tm }} TM</div>
+      </div>
+      <div class="text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">FishScore</div>
+        <div class="text-lg font-black" [style.color]="colorPorScore(datosRuta.resultado.fish_score_promedio)">
+          {{ datosRuta.resultado.fish_score_promedio }}
+        </div>
+      </div>
+      <div class="text-center">
+        <div class="text-[10px] text-slate-400 uppercase font-bold">Combustible</div>
+        <div class="text-lg font-black text-slate-700">{{ datosRuta.resultado.combustible_usado_l }} L</div>
       </div>
     </div>
+
+    <!-- Botón calculadora -->
+    <div *ngIf="datosRuta?.status === 'OK'"
+        class="absolute bottom-20 right-4 z-40">
+      <button (click)="abrirCalculadora()"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-lg flex items-center gap-2 transition-all">
+        💰 Calcular Rentabilidad
+      </button>
+    </div>
+
+
+    <!-- Alerta bloqueado -->
+    <div *ngIf="datosRuta?.status === 'BLOQUEADO'" class="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 bg-red-50 border border-red-300 rounded-xl px-6 py-3 shadow-xl">
+      <p class="text-red-700 font-bold text-sm">⛔ {{ datosRuta.mensaje }}</p>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="absolute bottom-4 left-4 bg-white/80 backdrop-blur px-3 py-2 rounded text-[10px] flex gap-3 shadow-sm z-40" *ngIf="!datosRuta">
+      <div class="flex items-center gap-1"><span style="background:#1D9E75" class="w-2 h-2 rounded-full inline-block"></span> Score alto</div>
+      <div class="flex items-center gap-1"><span style="background:#F59E0B" class="w-2 h-2 rounded-full inline-block"></span> Score medio</div>
+      <div class="flex items-center gap-1"><span style="background:#E24B4A" class="w-2 h-2 rounded-full inline-block"></span> Score bajo</div>
+    </div>
+
+
+
+
+    <!-- Modal calculadora de rentabilidad -->
+<div *ngIf="mostrarCalculadora"
+     class="absolute inset-0 z-50 flex items-center justify-center"
+     style="background:rgba(0,0,0,0.5)">
+  <div class="bg-white rounded-2xl shadow-2xl p-6 w-96 max-h-[90vh] overflow-y-auto">
+
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-bold text-slate-800 text-lg">💰 Calculadora de Rentabilidad</h3>
+      <button (click)="mostrarCalculadora = false"
+              class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+    </div>
+
+    <div *ngIf="datosRuta?.resultado" class="bg-blue-50 rounded-xl p-3 mb-4 text-xs text-blue-700">
+      Basado en ruta calculada: {{ datosRuta.resultado.carga_estimada_tm }} TM estimadas · {{ datosRuta.resultado.combustible_usado_l }}L combustible
+    </div>
+
+    <div class="space-y-3 mb-4">
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Precio de venta (S/. por kg)</label>
+        <input type="number" [(ngModel)]="calcRentabilidad.precio_kg" step="0.1"
+               class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:ring-2 focus:ring-green-400 outline-none"/>
+        <p class="text-[10px] text-slate-400 mt-1">Precio actual anchoveta: S/. 0.80 · Bonito: S/. 3.50 · Caballa: S/. 2.00</p>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Captura estimada (TM)</label>
+        <input type="number" [(ngModel)]="calcRentabilidad.captura_estimada" step="0.1"
+               class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:ring-2 focus:ring-green-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Precio combustible (S/. por litro)</label>
+        <input type="number" [(ngModel)]="calcRentabilidad.costo_combustible_sol" step="0.1"
+               class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:ring-2 focus:ring-green-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Costo tripulación (S/.)</label>
+        <input type="number" [(ngModel)]="calcRentabilidad.costo_tripulacion"
+               class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:ring-2 focus:ring-green-400 outline-none"/>
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Otros costos (S/. hielo, víveres, etc.)</label>
+        <input type="number" [(ngModel)]="calcRentabilidad.otros_costos"
+               class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-sm focus:ring-2 focus:ring-green-400 outline-none"/>
+      </div>
+    </div>
+
+    <button (click)="calcularRentabilidad()"
+            class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold text-sm mb-4 transition-all">
+      Calcular
+    </button>
+
+    <!-- Resultado -->
+    <div *ngIf="resultadoRentabilidad" class="space-y-2">
+      <div class="flex justify-between text-sm py-2 border-b border-slate-100">
+        <span class="text-slate-500">Ingreso bruto</span>
+        <span class="font-bold text-slate-700">S/. {{ resultadoRentabilidad.ingreso_bruto | number }}</span>
+      </div>
+      <div class="flex justify-between text-sm py-2 border-b border-slate-100">
+        <span class="text-slate-500">Combustible</span>
+        <span class="text-red-500 font-medium">- S/. {{ resultadoRentabilidad.costo_combustible | number }}</span>
+      </div>
+      <div class="flex justify-between text-sm py-2 border-b border-slate-100">
+        <span class="text-slate-500">Tripulación</span>
+        <span class="text-red-500 font-medium">- S/. {{ resultadoRentabilidad.costo_tripulacion | number }}</span>
+      </div>
+      <div class="flex justify-between text-sm py-2 border-b border-slate-100">
+        <span class="text-slate-500">Otros costos</span>
+        <span class="text-red-500 font-medium">- S/. {{ resultadoRentabilidad.otros_costos | number }}</span>
+      </div>
+      <div class="flex justify-between py-3 rounded-xl px-3 mt-2"
+           [ngClass]="resultadoRentabilidad.rentable ? 'bg-green-50' : 'bg-red-50'">
+        <span class="font-bold text-sm"
+              [ngClass]="resultadoRentabilidad.rentable ? 'text-green-700' : 'text-red-700'">
+          {{ resultadoRentabilidad.rentable ? '✅ Ganancia neta' : '❌ Pérdida neta' }}
+        </span>
+        <span class="font-black text-lg"
+              [ngClass]="resultadoRentabilidad.rentable ? 'text-green-700' : 'text-red-700'">
+          S/. {{ resultadoRentabilidad.ganancia_neta | number }}
+        </span>
+      </div>
+      <p class="text-center text-xs text-slate-400">
+        Margen: {{ resultadoRentabilidad.margen_pct }}%
+      </p>
+    </div>
+  </div>
+</div>
   </main>
 </div>

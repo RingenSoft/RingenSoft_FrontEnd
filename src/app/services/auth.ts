@@ -3,31 +3,24 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  // URL base para autenticación
-  private apiUrl = 'http://127.0.0.1:8000/auth';
 
-  constructor(private http: HttpClient, private router: Router) { }
+  private apiUrl = 'http://127.0.0.1:8000/api/v2/auth';
 
-  // Login (Existente)
+  constructor(private http: HttpClient, private router: Router) {}
+
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
         localStorage.setItem('token', response.access_token);
-        localStorage.setItem('usuario', response.nombre_usuario);
+        localStorage.setItem('usuario', response.nombre);
         localStorage.setItem('rol', response.rol);
-        if (response.id_embarcacion) {
-          localStorage.setItem('mi_barco', response.id_embarcacion);
-        }
+        localStorage.setItem('id_usuario', response.id_usuario);
       })
     );
   }
 
-  // NUEVO: Registro de usuario
-  // Conecta con @app.post("/auth/registro") en Python
   registro(datos: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/registro`, datos);
   }

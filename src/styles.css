@@ -1,1 +1,63 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'leaflet/dist/leaflet.css';
+
+/* ===== PRINT STYLES — Reportes PDF ===== */
+.print-only { display: none; }
+
+@media print {
+  /* Ocultar elementos de navegación y UI interactiva */
+  app-sidebar,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Mostrar elementos solo para impresión */
+  .print-only {
+    display: block !important;
+  }
+
+  /* Layout: ocupar todo el ancho */
+  body {
+    background: white !important;
+  }
+
+  .h-screen {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  main {
+    flex: none !important;
+    width: 100% !important;
+    padding: 16px !important;
+    overflow: visible !important;
+  }
+
+  /* Tarjetas y tablas: bordes legibles en B&N */
+  .bg-white,
+  .bg-slate-50 {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Asegurar que la tabla no se corte */
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  /* Gráficos: preservar colores */
+  canvas {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Salto de página antes del historial */
+  .print-page-break {
+    page-break-before: always;
+  }
+}

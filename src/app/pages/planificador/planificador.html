@@ -1,0 +1,162 @@
+<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 p-6 overflow-y-auto">
+
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">🗓️ Planificador de Viajes</h1>
+        <p class="text-slate-500 text-sm">Programa tus salidas con pronóstico del tiempo incluido</p>
+      </div>
+      <button (click)="mostrarForm = !mostrarForm"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all">
+        {{ mostrarForm ? '✕ Cancelar' : '+ Nuevo Viaje' }}
+      </button>
+    </div>
+
+    <!-- Formulario nuevo viaje -->
+    <div *ngIf="mostrarForm" class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6">
+      <h2 class="font-bold text-slate-800 mb-4">Planificar nuevo viaje</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre del viaje</label>
+          <input [(ngModel)]="form.nombre_viaje" type="text" placeholder="Ej: Salida anchoveta norte"
+                 class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400"/>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Puerto de salida</label>
+          <select [(ngModel)]="form.puerto_id" (change)="verificarCondiciones()"
+                  class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+            <option *ngFor="let p of puertos" [value]="p.id">⚓ {{ p.nombre }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Especie objetivo</label>
+          <select [(ngModel)]="form.especie" (change)="verificarCondiciones()"
+                  class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+            <option *ngFor="let e of especies" [value]="e">🐠 {{ e }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Fecha de salida</label>
+          <input [(ngModel)]="form.fecha_salida" type="date"
+                 class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400"/>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Hora de salida</label>
+          <input [(ngModel)]="form.hora_salida" type="time"
+                 class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400"/>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Embarcación</label>
+          <select [(ngModel)]="form.id_embarcacion"
+                  class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+            <option *ngFor="let e of embarcaciones" [value]="e.id_embarcacion">🚢 {{ e.nombre }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">
+            Combustible: {{ (form.combustible_pct * 100).toFixed(0) }}%
+          </label>
+          <input type="range" min="0.1" max="1" step="0.05" [(ngModel)]="form.combustible_pct"
+                 class="w-full accent-blue-600 mt-2"/>
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Notas</label>
+          <textarea [(ngModel)]="form.notas" rows="2" placeholder="Observaciones adicionales..."
+                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-sm outline-none focus:ring-2 focus:ring-blue-400 resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Preview condiciones -->
+      <div *ngIf="condicionesFecha && !cargandoCondiciones"
+           class="rounded-xl p-4 mb-4 border"
+           [ngClass]="{
+             'bg-green-50 border-green-200': condicionesFecha.clima?.alerta?.nivel === 'VERDE',
+             'bg-yellow-50 border-yellow-200': condicionesFecha.clima?.alerta?.nivel === 'AMARILLO',
+             'bg-red-50 border-red-200': condicionesFecha.clima?.alerta?.nivel === 'ROJO'
+           }">
+        <p class="text-xs font-bold text-slate-500 uppercase mb-2">Condiciones actuales en zona</p>
+        <div class="flex gap-6 text-sm flex-wrap">
+          <span [ngClass]="getColorAlerta(condicionesFecha.clima?.alerta?.nivel)" class="font-bold">
+            {{ condicionesFecha.clima?.alerta?.nivel === 'VERDE' ? '✅' : condicionesFecha.clima?.alerta?.nivel === 'AMARILLO' ? '⚠️' : '⛔' }}
+            {{ condicionesFecha.clima?.alerta?.nivel }}
+          </span>
+          <span class="text-slate-600">🌊 {{ condicionesFecha.clima?.mar?.altura_olas_m }}m</span>
+          <span class="text-slate-600">💨 {{ condicionesFecha.clima?.viento?.velocidad_kmh }} km/h</span>
+          <span class="text-slate-600">🌡️ {{ condicionesFecha.oceanografia?.temperatura?.temperatura_c }}°C</span>
+          <span class="text-slate-600">🐟 Score: {{ condicionesFecha.fish_score_preliminar }}/100</span>
+        </div>
+      </div>
+
+      <button (click)="guardarPlan()"
+              class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-200">
+        💾 Guardar plan de viaje
+      </button>
+    </div>
+
+    <!-- Lista de planes -->
+    <div *ngIf="planes.length === 0 && !mostrarForm"
+         class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+      <div class="text-5xl mb-4">🗓️</div>
+      <p class="text-slate-600 font-bold text-lg mb-1">Sin viajes planificados</p>
+      <p class="text-slate-400 text-sm mb-6">Planifica tu próxima salida con pronóstico incluido</p>
+      <button (click)="mostrarForm = true"
+              class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
+        + Planificar primer viaje
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div *ngFor="let plan of planes"
+           class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5">
+
+        <div class="flex items-start justify-between mb-3">
+          <div>
+            <p class="font-bold text-slate-800">{{ plan.nombre_viaje }}</p>
+            <p class="text-xs text-slate-400 mt-0.5">
+              📅 {{ plan.fecha_salida }} · 🕐 {{ plan.hora_salida }}
+            </p>
+          </div>
+          <span class="text-xs font-bold px-2 py-1 rounded-full"
+                [ngClass]="getColorEstado(plan.estado)">
+            {{ plan.estado }}
+          </span>
+        </div>
+
+        <div class="space-y-1 text-xs text-slate-500 mb-3">
+          <p>⚓ {{ plan.puerto_id }} · 🐠 {{ plan.especie }}</p>
+          <p>⛽ Combustible: {{ (plan.combustible_pct * 100).toFixed(0) }}%</p>
+          <p *ngIf="plan.notas" class="italic text-slate-400">📝 {{ plan.notas }}</p>
+        </div>
+
+        <div *ngIf="plan.condiciones"
+             class="text-xs p-2 rounded-lg mb-3"
+             [ngClass]="{
+               'bg-green-50 text-green-700': plan.condiciones.clima?.alerta?.nivel === 'VERDE',
+               'bg-yellow-50 text-yellow-700': plan.condiciones.clima?.alerta?.nivel === 'AMARILLO',
+               'bg-red-50 text-red-700': plan.condiciones.clima?.alerta?.nivel === 'ROJO'
+             }">
+          {{ plan.condiciones.clima?.alerta?.nivel === 'VERDE' ? '✅' : plan.condiciones.clima?.alerta?.nivel === 'AMARILLO' ? '⚠️' : '⛔' }}
+          {{ plan.condiciones.clima?.alerta?.mensaje }}
+        </div>
+
+        <div class="flex gap-2">
+          <select (change)="cambiarEstadoPlan(plan, $any($event.target).value)"
+                  [value]="plan.estado"
+                  class="flex-1 border border-slate-200 rounded-lg py-1.5 px-2 text-xs outline-none">
+            <option value="PLANIFICADO">Planificado</option>
+            <option value="COMPLETADO">Completado</option>
+            <option value="CANCELADO">Cancelado</option>
+          </select>
+          <button (click)="eliminarPlan(plan.id)"
+                  class="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>

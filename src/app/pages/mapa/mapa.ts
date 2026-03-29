@@ -1,259 +1,273 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import * as L from 'leaflet';
 
 @Component({
   selector: 'app-mapa',
   standalone: true,
   imports: [CommonModule, SidebarComponent, FormsModule],
   templateUrl: 'mapa.html',
-  styleUrl: 'mapa.css'
 })
-export class MapaComponent implements OnInit {
+export class MapaComponent implements OnInit, OnDestroy {
 
-  cargandoRuta: boolean = false;
+  private mapa!: L.Map;
+  private rutaLayer?: L.LayerGroup;
+  private fishScoreLayer?: L.LayerGroup;
+  mostrarCalculadora = false;
+  calcRentabilidad = {
+  precio_kg: 2.5,
+  captura_estimada: 0,
+  costo_combustible_sol: 14.5,
+  costo_tripulacion: 500,
+  otros_costos: 200,
+  };
+resultadoRentabilidad: any = null;
+  cargandoRuta   = false;
+  cargandoClima  = false;
   datosRuta: any = null;
-  mapaUrl = 'https://upload.wikimedia.org/wikipedia/commons/7/7b/Peru_location_map.svg';
+  condiciones: any = null;
+  alertaColor    = '#1D9E75';
+  embarcaciones: any[] = [];
+  embarcacionSeleccionada: any = null;
+  puertos: any[]  = [];
+  especies        = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
 
-  // --- [NUEVO] PEGAR ESTO AQUÍ DEBAJO ---
-  transformStyle: string = 'scale(1)';
-  transformOrigin: string = 'center center';
-  isZoomed: boolean = false;
-  // --------------------------------------
+  form = {
+    id_puerto:        'CHIMBOTE',
+    especie:          'ANCHOVETA',
+    combustible_pct:  0.8,
+    velocidad_nudos:  10,
+    autonomia_horas:  24,
+    consumo_hora:     20,
+    capacidad_bodega: 15,
+    anio_fabricacion: 2015,
+    tripulacion:      6,
+  };
 
-  listaBarcos: any[] = [];
-  listaPuertos: any[] = [];
-  barcoSeleccionadoId: string = '';
-
-  formDatos = {
-    capacidad: 0,
-    combustible: 100,
-    velocidad: 12,
-    material: '-',
-    tripulacion: 0,
-    puertoSalida: 'CHIMBOTE' // Solo Salida
+  // Coordenadas de puertos para centrar el mapa
+  private coordsPuertos: Record<string, [number, number]> = {
+    PAITA:    [-5.09,  -81.11],
+    CHICAMA:  [-7.70,  -79.45],
+    CHIMBOTE: [-9.07,  -78.59],
+    HUACHO:   [-11.11, -77.61],
+    CALLAO:   [-12.05, -77.15],
+    PISCO:    [-13.71, -76.22],
+    ILO:      [-17.64, -71.34],
   };
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit() {
-    this.cargarMapaBase();
-    this.cargarListaBarcos();
+ngOnInit() {
+  // Esperar al siguiente ciclo para que Angular renderice el div#mapa-leaflet
+  setTimeout(() => {
+    this.iniciarMapa();
+    this.cargarPuertos();
+    this.cargarCondicionesIniciales();
+    this.cargarEmbarcaciones();
+  }, 100);
+}
+  ngOnDestroy() {
+    if (this.mapa) this.mapa.remove();
   }
 
-  cargarListaBarcos() {
-    this.api.getEmbarcaciones().subscribe({
+  iniciarMapa() {
+    this.mapa = L.map('mapa-leaflet', {
+      center: [-9.0, -78.5],
+      zoom: 7,
+      zoomControl: true,
+    });
+
+    // Capa base OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 18,
+    }).addTo(this.mapa);
+
+    // Capa náutica OpenSeaMap (puertos, boyas, profundidades)
+    L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+      attribution: '© OpenSeaMap',
+      opacity: 0.7,
+    }).addTo(this.mapa);
+
+    this.rutaLayer      = L.layerGroup().addTo(this.mapa);
+    this.fishScoreLayer = L.layerGroup().addTo(this.mapa);
+  }
+
+  cargarPuertos() {
+    this.api.getPuertos().subscribe({
       next: (data) => {
-        this.listaBarcos = data;
+        this.puertos = data.puertos;
+        this.puertos.forEach(p => this.agregarMarcadorPuerto(p));
         this.cdr.detectChanges();
       }
     });
   }
-
-  onBarcoChange() {
-    const barco = this.listaBarcos.find(b => b.id_embarcacion === this.barcoSeleccionadoId);
-    if (barco) {
-      this.formDatos.capacidad = barco.capacidad_bodega;
-      this.formDatos.velocidad = barco.velocidad_promedio || 12;
-      this.formDatos.material = barco.material || 'ACERO';
-      this.formDatos.tripulacion = barco.tripulacion || 10;
-      this.formDatos.combustible = 100;
+cargarEmbarcaciones() {
+  this.api.getEmbarcaciones().subscribe({
+    next: (data: any) => {
+      this.embarcaciones = data;
+      if (data.length > 0) {
+        this.seleccionarEmbarcacion(data[0]);
+      }
       this.cdr.detectChanges();
     }
+  });
+}
+
+seleccionarEmbarcacion(emb: any) {
+  this.embarcacionSeleccionada = emb;
+  this.form.velocidad_nudos   = emb.velocidad_promedio;
+  this.form.consumo_hora      = emb.consumo_hora;
+  this.form.capacidad_bodega  = emb.capacidad_bodega;
+  this.form.autonomia_horas   = emb.autonomia_horas;
+  this.form.anio_fabricacion  = emb.anio_fabricacion;
+  this.form.tripulacion       = emb.tripulacion_max;
+  this.cdr.detectChanges();
+}
+  agregarMarcadorPuerto(puerto: any) {
+    const icono = L.divIcon({
+      html: `<div style="background:#1A3C6B;color:white;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;white-space:nowrap;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">⚓ ${puerto.nombre}</div>`,
+      className: '',
+      iconAnchor: [0, 10],
+    });
+    L.marker([puerto.lat, puerto.lon], { icon: icono })
+      .addTo(this.mapa)
+      .bindPopup(`<b>⚓ ${puerto.nombre}</b><br>Puerto pesquero`);
   }
 
-  cargarMapaBase() {
-    this.api.getDatosMapa().subscribe({
-      next: ({ puertos, bancos }) => {
-        this.listaPuertos = puertos;
-        const bancosValidos = bancos.filter((b: any) => b.x > 0 && b.y > 0);
-        setTimeout(() => {
-          this.dibujarNodosBase(puertos, bancosValidos);
-          this.cdr.detectChanges();
-        }, 100);
+  calcularRentabilidad() {
+  const ingreso = this.calcRentabilidad.precio_kg * 
+                  this.calcRentabilidad.captura_estimada * 1000;
+  const costo_combustible = this.datosRuta?.resultado?.combustible_usado_l 
+                            * this.calcRentabilidad.costo_combustible_sol || 0;
+  const total_costos = costo_combustible + 
+                       this.calcRentabilidad.costo_tripulacion + 
+                       this.calcRentabilidad.otros_costos;
+  const ganancia = ingreso - total_costos;
+
+  this.resultadoRentabilidad = {
+    ingreso_bruto:    Math.round(ingreso),
+    costo_combustible: Math.round(costo_combustible),
+    costo_tripulacion: this.calcRentabilidad.costo_tripulacion,
+    otros_costos:      this.calcRentabilidad.otros_costos,
+    total_costos:      Math.round(total_costos),
+    ganancia_neta:     Math.round(ganancia),
+    rentable:          ganancia > 0,
+    margen_pct:        ingreso > 0 ? Math.round((ganancia / ingreso) * 100) : 0,
+  };
+  this.cdr.detectChanges();
+}
+
+abrirCalculadora() {
+  if (this.datosRuta?.resultado) {
+    this.calcRentabilidad.captura_estimada = 
+      this.datosRuta.resultado.carga_estimada_tm;
+  }
+  this.mostrarCalculadora = true;
+  this.resultadoRentabilidad = null;
+  this.cdr.detectChanges();
+}
+
+  cargarCondicionesIniciales() {
+    const coords = this.coordsPuertos[this.form.id_puerto] || [-9.07, -78.59];
+    this.cargandoClima = true;
+    this.api.getCondiciones(coords[0], coords[1], this.form.especie).subscribe({
+      next: (data) => {
+        this.condiciones  = data;
+        this.alertaColor  = data.clima?.alerta?.color || '#1D9E75';
+        this.cargandoClima = false;
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error("Error cargando mapa:", err)
+      error: () => { this.cargandoClima = false; }
     });
   }
 
-  dibujarNodosBase(puertos: any[], bancos: any[]) {
-    const mapArea = document.getElementById('full-map-area');
-    if (!mapArea) return;
-    mapArea.querySelectorAll('.nodo-punto').forEach(n => n.remove());
-    const fragment = document.createDocumentFragment();
-
-    bancos.forEach((b: any) => {
-      const el = document.createElement('div');
-      el.className = `nodo-punto absolute w-1.5 h-1.5 bg-red-500/60 rounded-full z-10`;
-      el.style.left = b.x + '%';
-      el.style.top = b.y + '%';
-      fragment.appendChild(el);
-    });
-
-    puertos.forEach((p: any) => {
-      const el = document.createElement('div');
-      el.className = `nodo-punto absolute w-4 h-4 bg-blue-600 border-2 border-white rounded-sm shadow-lg z-20 flex items-center justify-center`;
-      el.style.left = p.x + '%';
-      el.style.top = p.y + '%';
-      el.innerHTML = `<i class="fas fa-anchor text-[8px] text-white"></i>`;
-      const label = document.createElement('div');
-      label.className = `absolute -top-5 left-1/2 -translate-x-1/2 bg-white/80 px-1.5 rounded text-[9px] font-bold text-slate-700 whitespace-nowrap shadow border border-slate-200`;
-      label.innerText = p.nombre;
-      el.appendChild(label);
-      fragment.appendChild(el);
-    });
-
-    mapArea.appendChild(fragment);
+  onPuertoChange() {
+    const coords = this.coordsPuertos[this.form.id_puerto];
+    if (coords) this.mapa.setView(coords, 7);
+    this.cargarCondicionesIniciales();
   }
 
-  calcularRutaPersonalizada() {
-    if (!this.barcoSeleccionadoId) {
-      alert("Por favor selecciona una embarcación.");
-      return;
-    }
-
+  calcularRuta() {
     this.cargandoRuta = true;
-    this.datosRuta = null;
-    this.resetZoom();
+    this.datosRuta    = null;
+    this.rutaLayer?.clearLayers();
+    this.fishScoreLayer?.clearLayers();
     this.cdr.detectChanges();
 
-    const payload = {
-      id_embarcacion: this.barcoSeleccionadoId,
-      capacidad_actual: this.formDatos.capacidad,
-      combustible_actual: this.formDatos.combustible,
-      velocidad_personalizada: this.formDatos.velocidad,
-      puerto_salida_id: this.formDatos.puertoSalida
-      // Ya no enviamos puertoLlegada
-    };
-
-    this.api.optimizarRuta(payload).subscribe({
+    this.api.calcularRutaOptima(this.form).subscribe({
       next: (res) => {
-        this.datosRuta = res;
-        this.dibujarRutaEnMapa(res.secuencia_ruta);
-
-        setTimeout(() => this.aplicarZoomARuta(res.secuencia_ruta), 100);
-
+        this.datosRuta    = res;
+        this.alertaColor  = res.alerta?.color || '#1D9E75';
         this.cargandoRuta = false;
+        if (res.status === 'OK') this.dibujarRuta(res.resultado.ruta);
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.cargandoRuta = false;
         this.cdr.detectChanges();
-        alert("Error al calcular ruta.");
       }
     });
   }
 
-  // AQUÍ VA LA FUNCIÓN DE DIBUJO MEJORADA CON NEÓN Y FLECHAS
-  dibujarRutaEnMapa(ruta: any[]) {
-    const mapArea = document.getElementById('full-map-area');
-    if (!mapArea) return;
+  dibujarRuta(ruta: any[]) {
+  if (!ruta || ruta.length < 2) return;
+  if (!this.mapa) return;
 
-    const oldSvg = mapArea.querySelector('svg');
-    if (oldSvg) oldSvg.remove();
+  this.rutaLayer?.clearLayers();
 
-    if (!ruta || ruta.length < 2) return;
+  const coordenadas: L.LatLngExpression[] = ruta.map(n => [n.lat, n.lon]);
 
-    let pathD = `M ${ruta[0].x}% ${ruta[0].y}%`;
-    for (let i = 1; i < ruta.length; i++) {
-      pathD += ` L ${ruta[i].x}% ${ruta[i].y}%`;
+  L.polyline(coordenadas, {
+    color: '#F59E0B',
+    weight: 3,
+    opacity: 0.9,
+    dashArray: '8, 4',
+  }).addTo(this.rutaLayer!);
+
+  ruta.forEach((nodo, i) => {
+    const esPuerto = nodo.tipo === 'SALIDA' || nodo.tipo === 'RETORNO';
+    const color    = esPuerto ? '#1A3C6B' : this.colorPorScore(nodo.fish_score);
+    const icono    = L.divIcon({
+      html: `<div style="background:${color};color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4)">${i + 1}</div>`,
+      className: '',
+      iconAnchor: [14, 14],
+    });
+
+    const popup = esPuerto
+      ? `<b>${nodo.nombre}</b>`
+      : `<b>Zona ${i}</b><br>
+         FishScore: <b>${nodo.fish_score}</b><br>
+         Clorofila: ${nodo.clorofila ?? 'N/D'} mg/m³<br>
+         Temperatura: ${nodo.temperatura_c ?? 'N/D'} °C<br>
+         Carga acum.: ${nodo.carga_acumulada_tm} TM`;
+
+    L.marker([nodo.lat, nodo.lon], { icon: icono })
+      .addTo(this.rutaLayer!)
+      .bindPopup(popup);
+  });
+
+  // Centrar con verificación
+  try {
+    const bounds = L.latLngBounds(coordenadas);
+    if (bounds.isValid()) {
+      setTimeout(() => {
+        this.mapa.fitBounds(bounds, { padding: [40, 40] });
+      }, 100);
     }
-
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute('class', 'absolute inset-0 w-full h-full pointer-events-none z-30');
-
-    svg.innerHTML = `
-        <defs>
-            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <marker id="arrow" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto" markerUnits="strokeWidth">
-              <path d="M0,0 L0,6 L9,3 z" fill="#fbbf24" />
-            </marker>
-        </defs>
-        <path d="${pathD}"
-              stroke="#fbbf24"
-              stroke-width="4"
-              fill="none"
-              stroke-dasharray="8,4"
-              filter="url(#glow)"
-              marker-end="url(#arrow)">
-            <animate attributeName="stroke-dashoffset" from="100" to="0" dur="3s" repeatCount="indefinite" />
-        </path>
-    `;
-
-    ruta.forEach((p, index) => {
-      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-      const colorFill = index === 0 ? "#2563eb" : (index === ruta.length-1 ? "#dc2626" : "white");
-      const radio = index === 0 || index === ruta.length-1 ? "12" : "8";
-
-      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      circle.setAttribute("cx", p.x + "%");
-      circle.setAttribute("cy", p.y + "%");
-      circle.setAttribute("r", radio);
-      circle.setAttribute("fill", colorFill);
-      circle.setAttribute("stroke", "#fbbf24");
-      circle.setAttribute("stroke-width", "2");
-
-      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-      text.setAttribute("x", p.x + "%");
-      text.setAttribute("y", p.y + "%");
-      text.setAttribute("dy", ".3em");
-      text.setAttribute("text-anchor", "middle");
-      text.setAttribute("fill", index === 0 || index === ruta.length-1 ? "white" : "#1e293b");
-      text.setAttribute("font-size", "10");
-      text.setAttribute("font-weight", "bold");
-      text.textContent = (index + 1).toString();
-
-      g.appendChild(circle);
-      g.appendChild(text);
-      svg.appendChild(g);
-    });
-
-    mapArea.appendChild(svg);
+  } catch (e) {
+    console.warn('fitBounds error:', e);
   }
-  aplicarZoomARuta(ruta: any[]) {
-    if (!ruta || ruta.length < 2) return;
+}
 
-    // 1. Encontrar los límites (Caja que encierra la ruta)
-    let minX = 100, maxX = 0, minY = 100, maxY = 0;
-
-    ruta.forEach(p => {
-      if (p.x < minX) minX = p.x;
-      if (p.x > maxX) maxX = p.x;
-      if (p.y < minY) minY = p.y;
-      if (p.y > maxY) maxY = p.y;
-    });
-
-    // 2. Calcular centro
-    const centerX = (minX + maxX) / 2;
-    const centerY = (minY + maxY) / 2;
-    const width = maxX - minX;
-    const height = maxY - minY;
-
-    // 3. Calcular escala (con margen para que no quede pegado)
-    const scaleX = 80 / (width || 1);
-    const scaleY = 80 / (height || 1);
-    let scale = Math.min(scaleX, scaleY);
-
-    if (scale > 3.5) scale = 3.5; // Máximo zoom permitido
-    if (scale < 1) scale = 1;     // No alejar
-
-    // 4. Aplicar al HTML
-    this.transformOrigin = `${centerX}% ${centerY}%`;
-    this.transformStyle = `scale(${scale})`;
-    this.isZoomed = true;
-    this.cdr.detectChanges();
-  }
-
-  resetZoom() {
-    this.transformStyle = 'scale(1)';
-    this.transformOrigin = 'center center';
-    this.isZoomed = false;
-    this.cdr.detectChanges();
+  colorPorScore(score: number): string {
+    if (score >= 70) return '#1D9E75';  // verde — excelente
+    if (score >= 50) return '#F59E0B';  // amarillo — bueno
+    if (score >= 30) return '#E97316';  // naranja — moderado
+    return '#E24B4A';                   // rojo — bajo
   }
 }

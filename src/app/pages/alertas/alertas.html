@@ -1,0 +1,127 @@
+<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 p-6 overflow-y-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">🌊 Alertas Marinas</h1>
+        <p class="text-slate-500 text-sm">Condiciones en tiempo real por puerto — actualización automática cada minuto</p>
+      </div>
+      <div class="text-xs text-slate-400 bg-white border border-slate-200 px-3 py-2 rounded-lg">
+        🕐 Última actualización: {{ ultimaActualizacion || 'Cargando...' }}
+      </div>
+    </div>
+
+    <!-- Cargando -->
+    <div *ngIf="cargando" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div *ngFor="let i of [1,2,3,4,5,6]"
+           class="bg-white rounded-2xl border border-slate-200 p-5 animate-pulse h-48">
+        <div class="h-4 bg-slate-200 rounded w-1/2 mb-3"></div>
+        <div class="h-3 bg-slate-100 rounded w-3/4 mb-2"></div>
+        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+      </div>
+    </div>
+
+    <!-- Grid de puertos -->
+    <div *ngIf="!cargando" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <div *ngFor="let item of condicionesPorPuerto"
+           class="bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all p-5"
+           [ngClass]="getBgAlerta(item.cond.clima?.alerta?.nivel)">
+
+        <!-- Puerto header -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">{{ getIconoAlerta(item.cond.clima?.alerta?.nivel) }}</span>
+            <div>
+              <p class="font-bold text-slate-800 text-sm">⚓ {{ item.puerto.nombre }}</p>
+              <p class="text-[10px] text-slate-400">{{ item.puerto.lat }}, {{ item.puerto.lon }}</p>
+            </div>
+          </div>
+          <span class="text-xs font-bold px-3 py-1 rounded-full border"
+                [ngClass]="getTextAlerta(item.cond.clima?.alerta?.nivel)"
+                [class.border-red-200]="item.cond.clima?.alerta?.nivel === 'ROJO'"
+                [class.border-yellow-200]="item.cond.clima?.alerta?.nivel === 'AMARILLO'"
+                [class.border-green-200]="item.cond.clima?.alerta?.nivel === 'VERDE'">
+            {{ item.cond.clima?.alerta?.nivel }}
+          </span>
+        </div>
+
+        <!-- Stats en grid -->
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <div class="bg-white/70 rounded-xl p-2 text-center border border-white">
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Olas</p>
+            <p class="text-lg font-black text-slate-700">{{ item.cond.clima?.mar?.altura_olas_m }}m</p>
+            <p class="text-[9px] text-slate-400">período {{ item.cond.clima?.mar?.periodo_olas_s }}s</p>
+          </div>
+          <div class="bg-white/70 rounded-xl p-2 text-center border border-white">
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Viento</p>
+            <p class="text-lg font-black text-slate-700">{{ item.cond.clima?.viento?.velocidad_kmh }}</p>
+            <p class="text-[9px] text-slate-400">km/h · ráf. {{ item.cond.clima?.viento?.rafagas_kmh }}</p>
+          </div>
+          <div class="bg-white/70 rounded-xl p-2 text-center border border-white">
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Temp. Mar</p>
+            <p class="text-lg font-black text-blue-600">{{ item.cond.oceanografia?.temperatura?.temperatura_c }}°C</p>
+            <p class="text-[9px] text-slate-400">NASA MUR SST</p>
+          </div>
+          <div class="bg-white/70 rounded-xl p-2 text-center border border-white">
+            <p class="text-[10px] text-slate-400 font-bold uppercase">Clorofila</p>
+            <p class="text-lg font-black text-green-600">{{ item.cond.oceanografia?.clorofila?.clorofila_mg_m3 }}</p>
+            <p class="text-[9px] text-slate-400">mg/m³ · {{ item.cond.oceanografia?.clorofila?.nivel }}</p>
+          </div>
+        </div>
+
+        <!-- FishScore bar -->
+        <div class="mb-3">
+          <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+            <span>🐟 FishScore zona</span>
+            <span class="font-bold">{{ item.cond.fish_score_preliminar }}/100</span>
+          </div>
+          <div class="w-full bg-white/60 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all"
+                 [style.width]="item.cond.fish_score_preliminar + '%'"
+                 [ngClass]="{
+                   'bg-green-500': item.cond.fish_score_preliminar >= 60,
+                   'bg-yellow-500': item.cond.fish_score_preliminar >= 30 && item.cond.fish_score_preliminar < 60,
+                   'bg-red-400': item.cond.fish_score_preliminar < 30
+                 }"></div>
+          </div>
+        </div>
+
+        <!-- Mensaje alerta -->
+        <p class="text-[11px] font-medium italic"
+           [ngClass]="getTextAlerta(item.cond.clima?.alerta?.nivel)">
+          {{ item.cond.clima?.alerta?.mensaje }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Leyenda -->
+    <div class="mt-6 bg-white rounded-xl border border-slate-200 p-4 flex gap-6 flex-wrap">
+      <p class="text-xs font-bold text-slate-500 uppercase w-full mb-1">Leyenda de alertas</p>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-lg">✅</span>
+        <div>
+          <p class="font-bold text-green-700 text-xs">Verde — Condiciones favorables</p>
+          <p class="text-[10px] text-slate-400">Olas &lt;1.5m · Viento &lt;40 km/h</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-lg">⚠️</span>
+        <div>
+          <p class="font-bold text-yellow-700 text-xs">Amarillo — Navegar con precaución</p>
+          <p class="text-[10px] text-slate-400">Olas 1.5-3m · Viento 40-60 km/h</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-sm">
+        <span class="text-lg">⛔</span>
+        <div>
+          <p class="font-bold text-red-700 text-xs">Rojo — No salir al mar</p>
+          <p class="text-[10px] text-slate-400">Olas &gt;3m · Viento &gt;60 km/h</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>

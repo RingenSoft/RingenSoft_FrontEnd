@@ -1,0 +1,69 @@
+<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 flex flex-col relative">
+
+    <!-- Toolbar superior -->
+    <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-4 flex-wrap z-10">
+      <h1 class="font-bold text-slate-800">🗺️ Mapa de Calor de Pesca</h1>
+
+      <select [(ngModel)]="filtro.puerto_id"
+              class="border border-slate-200 rounded-lg py-1.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+        <option *ngFor="let p of puertos" [value]="p.id">⚓ {{ p.nombre }}</option>
+      </select>
+
+      <select [(ngModel)]="filtro.especie"
+              class="border border-slate-200 rounded-lg py-1.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+        <option *ngFor="let e of especies" [value]="e">🐠 {{ e }}</option>
+      </select>
+
+      <button (click)="cargarZonas()" [disabled]="cargando"
+              class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all">
+        {{ cargando ? '⏳ Consultando satélites...' : '🔄 Actualizar' }}
+      </button>
+
+      <!-- Stats inline -->
+      <div *ngIf="estadisticas.total > 0" class="flex gap-4 ml-auto text-xs text-slate-500">
+        <span>Zonas evaluadas: <b class="text-slate-700">{{ estadisticas.total }}</b></span>
+        <span>Score promedio: <b class="text-slate-700">{{ estadisticas.promedio }}</b></span>
+        <span>Score máximo: <b class="text-green-600">{{ estadisticas.maximo }}</b></span>
+      </div>
+    </div>
+
+    <!-- Mapa -->
+    <div id="mapa-calor-leaflet" class="flex-1 z-0"></div>
+
+    <!-- Leyenda inferior -->
+    <div class="absolute bottom-4 left-4 z-40 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 px-4 py-3">
+      <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">FishScore</p>
+      <div class="flex gap-3 text-[11px]">
+        <div class="flex items-center gap-1">
+          <div class="w-3 h-3 rounded-full" style="background:#1D9E75"></div>
+          <span>70+ Excelente</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-3 h-3 rounded-full" style="background:#F59E0B"></div>
+          <span>35-69 Bueno</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <div class="w-3 h-3 rounded-full" style="background:#E24B4A"></div>
+          <span>&lt;35 Bajo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel zona caliente -->
+    <div *ngIf="estadisticas.zona_caliente"
+         class="absolute bottom-4 right-4 z-40 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-green-200 p-4 w-56">
+      <p class="text-[10px] font-bold text-green-600 uppercase mb-2">🔥 Zona más caliente</p>
+      <p class="text-2xl font-black text-green-600 mb-1">{{ estadisticas.zona_caliente.fish_score }}</p>
+      <p class="text-xs text-slate-500">FishScore</p>
+      <div class="mt-2 text-xs text-slate-500 space-y-0.5">
+        <p>🌡️ {{ estadisticas.zona_caliente.temperatura ?? 'N/D' }}°C</p>
+        <p>🟢 {{ estadisticas.zona_caliente.clorofila ?? 'N/D' }} mg/m³</p>
+        <p>📍 {{ estadisticas.zona_caliente.lat }}, {{ estadisticas.zona_caliente.lon }}</p>
+      </div>
+    </div>
+
+  </main>
+</div>

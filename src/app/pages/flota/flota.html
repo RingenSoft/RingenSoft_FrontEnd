@@ -1,155 +1,352 @@
-<div class="h-screen flex overflow-hidden bg-slate-50 font-sans">
+<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
   <app-sidebar></app-sidebar>
 
-  <main class="flex-1 flex flex-col overflow-y-auto relative">
-    <div class="bg-white p-8 border-b border-slate-200 flex justify-between items-center">
+  <main class="flex-1 p-6 overflow-y-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4">
       <div>
         <h1 class="text-2xl font-bold text-slate-800">Gestión de Flota</h1>
-        <p class="text-slate-500">Administración de mis unidades navales.</p>
+        <p class="text-slate-500 text-sm">Administra tus embarcaciones pesqueras</p>
       </div>
-
-      <button (click)="mostrarFormulario = true"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg flex items-center transition-all transform hover:scale-105">
-        <i class="fas fa-plus mr-2"></i> Registrar Nueva
+      <button *ngIf="tabActiva === 'embarcaciones'"
+              (click)="mostrarFormulario = !mostrarFormulario"
+              class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2">
+        <span>{{ mostrarFormulario ? '✕ Cancelar' : '+ Nueva Embarcación' }}</span>
+      </button>
+      <button *ngIf="tabActiva === 'mantenimiento'"
+              (click)="mostrarFormMant = !mostrarFormMant"
+              class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 transition-all flex items-center gap-2">
+        <i class="fas" [ngClass]="mostrarFormMant ? 'fa-times' : 'fa-wrench'"></i>
+        <span>{{ mostrarFormMant ? 'Cancelar' : '+ Registrar mantenimiento' }}</span>
       </button>
     </div>
 
-    <div *ngIf="mensaje" class="mx-8 mt-4 p-3 bg-emerald-100 text-emerald-800 rounded-lg border border-emerald-200 flex items-center animate-pulse">
-      <i class="fas fa-check-circle mr-2"></i> {{ mensaje }}
+    <!-- Mensaje de éxito -->
+    <div *ngIf="mensaje" class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2">
+      ✅ {{ mensaje }}
     </div>
 
-    <div *ngIf="mostrarFormulario" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center backdrop-blur-sm animate-[fadeIn_0.2s]">
-      <div class="bg-white rounded-xl shadow-2xl w-[500px] p-6 transform transition-all scale-100 border border-slate-200">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-xl font-bold text-slate-800 flex items-center">
-            <i class="fas fa-ship text-blue-600 mr-2"></i> Nueva Embarcación
-          </h2>
-          <button (click)="mostrarFormulario = false" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+    <!-- Tabs -->
+    <div class="flex gap-1 mb-6 bg-slate-200 p-1 rounded-xl w-fit">
+      <button (click)="tabActiva = 'embarcaciones'"
+              [ngClass]="tabActiva === 'embarcaciones' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+              class="px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2">
+        <i class="fas fa-ship"></i> Embarcaciones
+      </button>
+      <button (click)="tabActiva = 'mantenimiento'"
+              [ngClass]="tabActiva === 'mantenimiento' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+              class="px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2">
+        <i class="fas fa-wrench"></i> Mantenimiento
+      </button>
+    </div>
+
+    <!-- ===================== TAB: EMBARCACIONES ===================== -->
+    <div *ngIf="tabActiva === 'embarcaciones'">
+
+      <!-- Formulario nueva embarcación -->
+      <div *ngIf="mostrarFormulario"
+           class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar nueva embarcación</h2>
+        <p class="text-slate-400 text-xs mb-5">Completa los datos técnicos de tu embarcación para calcular rutas precisas.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre de la embarcación</label>
+            <input [(ngModel)]="nuevoBarco.nombre" type="text" placeholder="Ej: San Pedro I"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Capacidad de bodega (TM)</label>
+            <input [(ngModel)]="nuevoBarco.capacidad_bodega" type="number"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+            <p class="text-[10px] text-slate-400 mt-1">Toneladas métricas máximas de carga</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Velocidad promedio (nudos)</label>
+            <input [(ngModel)]="nuevoBarco.velocidad_promedio" type="number"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+            <p class="text-[10px] text-slate-400 mt-1">1 nudo = 1.852 km/h</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Consumo de combustible (L/h)</label>
+            <input [(ngModel)]="nuevoBarco.consumo_hora" type="number"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+            <p class="text-[10px] text-slate-400 mt-1">Litros por hora a velocidad crucero</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Autonomía (horas)</label>
+            <input [(ngModel)]="nuevoBarco.autonomia_horas" type="number"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+            <p class="text-[10px] text-slate-400 mt-1">Horas de navegación con tanque lleno</p>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Material del casco</label>
+            <select [(ngModel)]="nuevoBarco.material_casco"
+                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+              <option value="FIBRA">Fibra de vidrio</option>
+              <option value="ACERO">Acero naval</option>
+              <option value="MADERA">Madera</option>
+              <option value="ALUMINIO">Aluminio</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo de motor</label>
+            <select [(ngModel)]="nuevoBarco.tipo_motor"
+                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+              <option value="DIESEL">Diesel</option>
+              <option value="GASOLINA">Gasolina</option>
+              <option value="ELECTRICO">Eléctrico</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tripulación máxima</label>
+            <input [(ngModel)]="nuevoBarco.tripulacion_max" type="number"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Año de fabricación</label>
+            <input [(ngModel)]="nuevoBarco.anio_fabricacion" type="number"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+          </div>
         </div>
 
-        <form (ngSubmit)="registrarBarco()">
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre de la Nave</label>
-              <input [(ngModel)]="nuevoBarco.nombre" name="nombre" type="text"
-                     class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Capacidad (TM)</label>
-                <input [(ngModel)]="nuevoBarco.capacidad_bodega" name="capacidad" type="number"
-                       class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Velocidad (kn)</label>
-                <input [(ngModel)]="nuevoBarco.velocidad_promedio" name="velocidad" type="number"
-                       class="w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 outline-none" required>
-              </div>
-            </div>
-            <div class="grid grid-cols-3 gap-3">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Material</label>
-                <select [(ngModel)]="nuevoBarco.material" name="material" class="w-full border border-slate-300 rounded-lg p-2 text-sm outline-none">
-                  <option value="ACERO NAVAL">Acero</option>
-                  <option value="MADERA">Madera</option>
-                  <option value="FIBRA DE VIDRIO">Fibra</option>
-                  <option value="ALUMINIO">Aluminio</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tripulación</label>
-                <input [(ngModel)]="nuevoBarco.tripulacion" name="tripulacion" type="number" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Año Fab.</label>
-                <input [(ngModel)]="nuevoBarco.anio_fabricacion" name="anio" type="number" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
-              </div>
-            </div>
+        <!-- Preview de autonomía -->
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5 flex gap-4">
+          <div class="text-center flex-1">
+            <p class="text-[10px] text-blue-400 uppercase font-bold">Radio estimado</p>
+            <p class="text-xl font-black text-blue-700">
+              {{ ((nuevoBarco.velocidad_promedio * 1.852) * (nuevoBarco.autonomia_horas * 0.6)) | number:'1.0-0' }} km
+            </p>
           </div>
-          <div class="mt-6 flex gap-3 pt-4 border-t border-slate-100">
-            <button type="button" (click)="mostrarFormulario = false" class="flex-1 bg-slate-100 text-slate-600 py-2 rounded-lg hover:bg-slate-200 font-medium">Cancelar</button>
-            <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-medium shadow-md">Guardar Barco</button>
+          <div class="text-center flex-1">
+            <p class="text-[10px] text-blue-400 uppercase font-bold">Combustible total</p>
+            <p class="text-xl font-black text-blue-700">
+              {{ (nuevoBarco.autonomia_horas * nuevoBarco.consumo_hora) | number:'1.0-0' }} L
+            </p>
           </div>
-        </form>
+          <div class="text-center flex-1">
+            <p class="text-[10px] text-blue-400 uppercase font-bold">Capacidad</p>
+            <p class="text-xl font-black text-blue-700">{{ nuevoBarco.capacidad_bodega }} TM</p>
+          </div>
+        </div>
+
+        <button (click)="registrarBarco()"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all">
+          Registrar Embarcación
+        </button>
       </div>
+
+      <!-- Cargando -->
+      <div *ngIf="cargando" class="flex items-center justify-center h-40">
+        <div class="text-center">
+          <div class="text-3xl mb-2">⚓</div>
+          <p class="text-slate-400 text-sm">Cargando flota...</p>
+        </div>
+      </div>
+
+      <!-- Lista vacía -->
+      <div *ngIf="!cargando && embarcaciones.length === 0 && !mostrarFormulario"
+           class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="text-5xl mb-4">🚢</div>
+        <p class="text-slate-600 font-bold text-lg mb-1">Sin embarcaciones registradas</p>
+        <p class="text-slate-400 text-sm mb-6">Registra tu primera embarcación para comenzar a calcular rutas óptimas.</p>
+        <button (click)="mostrarFormulario = true"
+                class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
+          + Agregar mi primera embarcación
+        </button>
+      </div>
+
+      <!-- Grid de embarcaciones -->
+      <div *ngIf="!cargando && embarcaciones.length > 0"
+           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div *ngFor="let b of embarcaciones"
+             class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5">
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">🚢</div>
+              <div>
+                <p class="font-bold text-slate-800">{{ b.nombre }}</p>
+                <p class="text-xs text-slate-400">{{ b.id_embarcacion }}</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold px-3 py-1 rounded-full"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700': b.estado === 'EN_PUERTO',
+                    'bg-blue-100 text-blue-700': b.estado === 'EN_MAR',
+                    'bg-red-100 text-red-700': b.estado === 'MANTENIMIENTO'
+                  }">
+              {{ b.estado === 'EN_PUERTO' ? '⚓ En puerto' : b.estado === 'EN_MAR' ? '🌊 En mar' : '🔧 Mantenimiento' }}
+            </span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 mb-4">
+            <div class="bg-slate-50 rounded-lg p-2 text-center">
+              <p class="text-[10px] text-slate-400 uppercase font-bold">Bodega</p>
+              <p class="text-base font-black text-slate-700">{{ b.capacidad_bodega }} TM</p>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-2 text-center">
+              <p class="text-[10px] text-slate-400 uppercase font-bold">Velocidad</p>
+              <p class="text-base font-black text-slate-700">{{ b.velocidad_promedio }} kt</p>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-2 text-center">
+              <p class="text-[10px] text-slate-400 uppercase font-bold">Autonomía</p>
+              <p class="text-base font-black text-slate-700">{{ b.autonomia_horas }}h</p>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-2 text-center">
+              <p class="text-[10px] text-slate-400 uppercase font-bold">Tripulación</p>
+              <p class="text-base font-black text-slate-700">{{ b.tripulacion_max }} pax</p>
+            </div>
+          </div>
+          <div class="text-xs text-slate-400 flex justify-between border-t border-slate-100 pt-3">
+            <span>{{ b.material_casco }} · {{ b.tipo_motor }}</span>
+            <span>Año {{ b.anio_fabricacion }}</span>
+          </div>
+        </div>
+      </div>
+
     </div>
+    <!-- fin tab embarcaciones -->
 
-    <div class="p-8">
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+
+    <!-- ===================== TAB: MANTENIMIENTO ===================== -->
+    <div *ngIf="tabActiva === 'mantenimiento'">
+
+      <!-- Formulario nuevo mantenimiento -->
+      <div *ngIf="mostrarFormMant"
+           class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6">
+        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar mantenimiento</h2>
+        <p class="text-slate-400 text-xs mb-5">Lleva el control de los servicios realizados a tu flota</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Embarcación</label>
+            <select [(ngModel)]="nuevoMant.id_embarcacion"
+                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none">
+              <option value="">— Seleccionar embarcación —</option>
+              <option *ngFor="let b of embarcaciones" [value]="b.id_embarcacion">{{ b.nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Fecha de mantenimiento</label>
+            <input [(ngModel)]="nuevoMant.fecha" type="date"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo</label>
+            <select [(ngModel)]="nuevoMant.tipo"
+                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none">
+              <option *ngFor="let t of tiposMantenimiento" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Costo (S/.)</label>
+            <input [(ngModel)]="nuevoMant.costo" type="number" min="0" step="0.01"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Próxima revisión</label>
+            <input [(ngModel)]="nuevoMant.proxima_revision" type="date"
+                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
+            <p class="text-[10px] text-slate-400 mt-1">Opcional — genera un recordatorio</p>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
+            <textarea [(ngModel)]="nuevoMant.descripcion" rows="3"
+                      placeholder="Describe el trabajo realizado..."
+                      class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none resize-none"></textarea>
+          </div>
+        </div>
+
+        <button (click)="agregarMantenimiento()"
+                class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-orange-100 transition-all">
+          Guardar registro
+        </button>
+      </div>
+
+      <!-- Recordatorios de próxima revisión -->
+      <div *ngIf="proximasRevisiones().length > 0"
+           class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
+        <p class="text-sm font-bold text-amber-800 mb-3">
+          <i class="fas fa-bell mr-2"></i>Próximas revisiones programadas
+        </p>
+        <div class="space-y-2">
+          <div *ngFor="let m of proximasRevisiones()"
+               class="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold px-2 py-0.5 rounded-full" [ngClass]="tipoColor(m.tipo)">{{ m.tipo }}</span>
+              <span class="text-sm text-slate-700 font-medium">{{ m.nombre_embarcacion }}</span>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-slate-500">{{ m.proxima_revision | date:'dd/MM/yyyy' }}</p>
+              <p class="text-xs font-bold"
+                 [ngClass]="diasParaRevision(m.proxima_revision) <= 7 ? 'text-red-600' : 'text-amber-600'">
+                {{ diasParaRevision(m.proxima_revision) <= 0
+                   ? 'Vencido'
+                   : 'En ' + diasParaRevision(m.proxima_revision) + ' días' }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado vacío de mantenimiento -->
+      <div *ngIf="mantenimientos.length === 0 && !mostrarFormMant"
+           class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
+        <div class="text-5xl mb-4">🔧</div>
+        <p class="text-slate-600 font-bold text-lg mb-1">Sin registros de mantenimiento</p>
+        <p class="text-slate-400 text-sm mb-6">Registra el primer mantenimiento para llevar un historial de tu flota</p>
+        <button (click)="mostrarFormMant = true"
+                class="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold text-sm">
+          + Registrar primer mantenimiento
+        </button>
+      </div>
+
+      <!-- Historial de mantenimientos -->
+      <div *ngIf="mantenimientos.length > 0"
+           class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+          <p class="font-bold text-slate-700">Historial de mantenimientos</p>
+          <span class="text-xs text-slate-400">{{ mantenimientos.length }} registros</span>
+        </div>
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-            <tr class="bg-slate-50 text-slate-500 text-xs uppercase font-bold tracking-wider border-b border-slate-200">
-              <th class="p-4">Nombre / ID</th>
-              <th class="p-4">Estado Operativo</th> <th class="p-4">Capacidad</th>
-              <th class="p-4">Año</th>
-              <th class="p-4 text-right">Acciones</th>
-            </tr>
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Embarcación</th>
+                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
+                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Descripción</th>
+                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Fecha</th>
+                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Costo</th>
+                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Próx. revisión</th>
+              </tr>
             </thead>
-            <tbody class="text-sm text-slate-700">
-
-            <tr *ngIf="cargando">
-              <td colspan="6" class="p-12 text-center text-blue-500">
-                <i class="fas fa-circle-notch fa-spin text-3xl mb-2"></i>
-                <p class="font-medium">Cargando flota...</p>
-              </td>
-            </tr>
-
-            <ng-container *ngIf="!cargando">
-              <tr *ngFor="let barco of embarcaciones" class="hover:bg-blue-50 transition border-b border-slate-100 group animate-[fadeIn_0.3s]">
-
-                <td class="p-4">
-                  <div class="font-bold text-slate-800 text-base">{{ barco.nombre }}</div>
-                  <div class="font-mono text-xs text-slate-400 group-hover:text-blue-400">{{ barco.id_embarcacion }}</div>
+            <tbody>
+              <tr *ngFor="let m of mantenimientos"
+                  class="border-b border-slate-50 hover:bg-orange-50 transition-colors">
+                <td class="p-3 font-bold text-slate-700">{{ m.nombre_embarcacion }}</td>
+                <td class="p-3">
+                  <span class="text-xs px-2.5 py-1 rounded-full font-bold" [ngClass]="tipoColor(m.tipo)">{{ m.tipo }}</span>
                 </td>
-
-                <td class="p-4">
-                  <div class="relative w-40">
-                    <select (change)="cambiarEstado(barco, $event)"
-                            class="w-full appearance-none px-3 py-1.5 rounded-full text-xs font-bold border shadow-sm cursor-pointer outline-none transition-colors text-center"
-                            [ngClass]="{
-                                'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200': barco.estado === 'EN_PUERTO',
-                                'bg-green-100 text-green-700 border-green-200 hover:bg-green-200': barco.estado === 'EN_RUTA',
-                                'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200': barco.estado === 'EN_ALTAMAR',
-                                'bg-red-100 text-red-700 border-red-200 hover:bg-red-200': barco.estado === 'MANTENIMIENTO'
-                              }">
-                      <option value="EN_PUERTO" [selected]="barco.estado === 'EN_PUERTO'">⚓ EN PUERTO</option>
-                      <option value="EN_RUTA" [selected]="barco.estado === 'EN_RUTA'">🚢 EN RUTA</option>
-                      <option value="EN_ALTAMAR" [selected]="barco.estado === 'EN_ALTAMAR'">🎣 PESCANDO</option>
-                      <option value="MANTENIMIENTO" [selected]="barco.estado === 'MANTENIMIENTO'">🔧 TALLER</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-slate-500">
-                      <i class="fas fa-chevron-down text-[10px]"></i>
-                    </div>
-                  </div>
+                <td class="p-3 text-slate-500 text-xs max-w-xs truncate">{{ m.descripcion }}</td>
+                <td class="p-3 text-right text-slate-500 text-xs">{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+                <td class="p-3 text-right font-bold text-slate-700">
+                  {{ m.costo > 0 ? ('S/. ' + (m.costo | number:'1.2-2')) : '—' }}
                 </td>
-
-                <td class="p-4 font-medium">{{ barco.capacidad_bodega }} TM</td>
-                <td class="p-4 text-slate-500">{{ barco.anio_fabricacion }}</td>
-
-                <td class="p-4 text-right">
-                  <button (click)="optimizar(barco.id_embarcacion, barco.nombre)"
-                          [disabled]="barco.estado === 'MANTENIMIENTO'"
-                          class="bg-white border border-slate-200 text-blue-600 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="fas fa-route mr-1.5"></i> Ruta VRP
-                  </button>
+                <td class="p-3 text-right text-xs">
+                  <span *ngIf="m.proxima_revision"
+                        [ngClass]="diasParaRevision(m.proxima_revision) <= 7 ? 'text-red-600 font-bold' : 'text-slate-500'">
+                    {{ m.proxima_revision | date:'dd/MM/yyyy' }}
+                  </span>
+                  <span *ngIf="!m.proxima_revision" class="text-slate-300">—</span>
                 </td>
               </tr>
-            </ng-container>
-
-            <tr *ngIf="embarcaciones.length === 0 && !cargando">
-              <td colspan="5" class="p-12 text-center">
-                <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <i class="fas fa-ship text-slate-300 text-3xl"></i>
-                </div>
-                <p class="text-slate-500 font-medium">No tienes embarcaciones registradas.</p>
-                <button (click)="mostrarFormulario = true" class="text-blue-600 font-bold hover:underline">Crear ahora</button>
-              </td>
-            </tr>
             </tbody>
           </table>
         </div>
       </div>
+
     </div>
+    <!-- fin tab mantenimiento -->
+
   </main>
 </div>
