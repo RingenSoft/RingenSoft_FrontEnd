@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api/v2',
+  apiUrl: 'https://ringensoft-backend.onrender.com/api/v2',
 };
