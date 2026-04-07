@@ -19,6 +19,12 @@ export class PlanificadorComponent implements OnInit {
   mostrarForm    = false;
   guardando      = false;
 
+  // --- Comparador de rutas ---
+  comparando       = false;
+  rutasComparadas: any[] | null = null;
+  errorComparador  = '';
+  rutaElegida: any = null;
+
   form = {
     nombre_viaje:    '',
     puerto_id:       'CHIMBOTE',
@@ -42,7 +48,11 @@ export class PlanificadorComponent implements OnInit {
     this.form.fecha_salida = manana.toISOString().split('T')[0];
 
     this.api.getPuertos().subscribe({
-      next: (d: any) => { this.puertos = d.puertos; this.cdr.detectChanges(); }
+      next: (d: any) => {
+        this.puertos = d.puertos;
+        this.cdr.detectChanges();
+        this.verificarCondiciones();
+      }
     });
 
     this.api.getEmbarcaciones().subscribe({
@@ -54,7 +64,6 @@ export class PlanificadorComponent implements OnInit {
     });
 
     this.cargarPlanes();
-    this.verificarCondiciones();
   }
 
   cargarPlanes() {
@@ -90,6 +99,81 @@ export class PlanificadorComponent implements OnInit {
     });
   }
 
+  // ---- Comparador de rutas ----
+  compararRutas() {
+    this.comparando      = true;
+    this.rutasComparadas = null;
+    this.errorComparador = '';
+    this.rutaElegida     = null;
+
+    const emb = this.embarcaciones.find((e: any) => e.id_embarcacion === this.form.id_embarcacion);
+
+    const payload = {
+      id_puerto:        this.form.puerto_id,
+      especie:          this.form.especie,
+      combustible_pct:  this.form.combustible_pct,
+      velocidad_nudos:  emb?.velocidad_promedio  ?? null,
+      autonomia_horas:  emb?.autonomia_horas     ?? null,
+      consumo_hora:     emb?.consumo_hora        ?? null,
+      capacidad_bodega: emb?.capacidad_bodega    ?? null,
+      anio_fabricacion: emb?.anio_fabricacion    ?? null,
+      top_zonas:        5,
+      id_embarcacion:   this.form.id_embarcacion || null,
+    };
+
+    this.api.calcularRutasComparadas(payload).subscribe({
+      next: (data: any) => {
+        this.comparando = false;
+        if (data.status === 'BLOQUEADO') {
+          this.errorComparador = `No se puede navegar — ${data.alerta?.mensaje ?? 'Condiciones peligrosas'}`;
+        } else {
+          this.rutasComparadas = data.rutas ?? [];
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.comparando      = false;
+        this.errorComparador = 'Error al calcular rutas. Intenta de nuevo en unos momentos.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  elegirRuta(ruta: any) {
+    this.rutaElegida = ruta;
+    if (!this.form.nombre_viaje) {
+      this.form.nombre_viaje = `Viaje ${this.getModoLabel(ruta.modo)} — ${this.form.especie}`;
+    }
+    this.rutasComparadas = null;
+    this.guardarPlan();
+  }
+
+  getModoLabel(modo: string): string {
+    if (modo === 'max_captura')      return 'Máxima Captura';
+    if (modo === 'min_combustible')  return 'Mínimo Combustible';
+    return 'Equilibrada';
+  }
+
+  getModoIcon(modo: string): string {
+    if (modo === 'max_captura')      return 'fa-fish';
+    if (modo === 'min_combustible')  return 'fa-gas-pump';
+    return 'fa-balance-scale';
+  }
+
+  getModoAccent(modo: string): string {
+    if (modo === 'max_captura')      return 'green';
+    if (modo === 'min_combustible')  return 'blue';
+    return 'purple';
+  }
+
+  getMejorRuta(): any {
+    if (!this.rutasComparadas?.length) return null;
+    return this.rutasComparadas.reduce((a, b) =>
+      (a.fish_score_promedio ?? 0) >= (b.fish_score_promedio ?? 0) ? a : b
+    );
+  }
+  // ---- fin comparador ----
+
   guardarPlan() {
     if (!this.form.nombre_viaje || !this.form.fecha_salida) {
       alert('Completa nombre y fecha del viaje');
@@ -108,6 +192,7 @@ export class PlanificadorComponent implements OnInit {
         });
         this.mostrarForm = false;
         this.guardando   = false;
+        this.rutaElegida = null;
         this.cdr.detectChanges();
       },
       error: () => { this.guardando = false; alert('Error al guardar el plan.'); }

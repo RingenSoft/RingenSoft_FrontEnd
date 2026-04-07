@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, switchMap } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
 import * as L from 'leaflet';
@@ -34,6 +36,9 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
     zona_caliente: null as any,
   };
 
+  private filtroChange$ = new Subject<void>();
+  private filtroSub?: Subscription;
+
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
@@ -43,6 +48,27 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+
+    // Debounce para evitar múltiples requests cuando el usuario cambia filtros rápido
+    this.filtroSub = this.filtroChange$.pipe(
+      debounceTime(400),
+      switchMap(() => {
+        this.cargando = true;
+        this.capaZonas?.clearLayers();
+        this.cdr.detectChanges();
+        return this.api.getZonasCalor(this.filtro.puerto_id, this.filtro.especie);
+      })
+    ).subscribe({
+      next: (data: any) => {
+        this.zonas    = data.zonas || [];
+        this.cargando = false;
+        this.calcularEstadisticas();
+        this.dibujarZonas(data.puerto);
+        this.cdr.detectChanges();
+      },
+      error: () => { this.cargando = false; this.cdr.detectChanges(); }
+    });
+
     setTimeout(() => {
       this.iniciarMapa();
       this.cargarZonas();
@@ -51,6 +77,7 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.mapa) this.mapa.remove();
+    this.filtroSub?.unsubscribe();
   }
 
   iniciarMapa() {
@@ -73,6 +100,12 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
     this.cargandoMapa = false;
   }
 
+  // Llamado desde la UI al cambiar filtros — pasa por debounce
+  aplicarFiltros() {
+    this.filtroChange$.next();
+  }
+
+  // Carga inicial (sin debounce)
   cargarZonas() {
     this.cargando = true;
     this.capaZonas?.clearLayers();
@@ -80,7 +113,7 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
 
     this.api.getZonasCalor(this.filtro.puerto_id, this.filtro.especie).subscribe({
       next: (data: any) => {
-        this.zonas   = data.zonas || [];
+        this.zonas    = data.zonas || [];
         this.cargando = false;
         this.calcularEstadisticas();
         this.dibujarZonas(data.puerto);
@@ -91,7 +124,7 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
   }
 
   dibujarZonas(puerto: any) {
-    if (!this.capaZonas) return;
+    if (!this.capaZonas || !this.mapa) return;
     this.capaZonas.clearLayers();
 
     // Marcador del puerto
@@ -136,7 +169,7 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
         .addTo(this.capaZonas!);
     });
 
-    // Centrar mapa
+    // Centrar mapa siempre en el puerto, ajustar bounds si hay zonas
     if (this.zonas.length > 0) {
       const coords: L.LatLngExpression[] = this.zonas.map(z => [z.lat, z.lon]);
       coords.push([puerto.lat, puerto.lon]);
@@ -145,7 +178,11 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
         if (bounds.isValid()) {
           setTimeout(() => this.mapa.fitBounds(bounds, { padding: [60, 60] }), 100);
         }
-      } catch(e) {}
+      } catch(e) {
+        setTimeout(() => this.mapa.setView([puerto.lat, puerto.lon], 7), 100);
+      }
+    } else {
+      setTimeout(() => this.mapa.setView([puerto.lat, puerto.lon], 7), 100);
     }
   }
 

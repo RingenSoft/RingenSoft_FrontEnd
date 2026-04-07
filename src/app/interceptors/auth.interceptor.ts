@@ -14,8 +14,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        // Token expirado o inválido: limpiar sesión y redirigir
+      // Solo redirigir a /login si el 401 viene de una ruta protegida,
+      // NO del propio endpoint de login/registro (evita borrar el mensaje de error)
+      const esEndpointAuth = req.url.includes('/auth/login') || req.url.includes('/auth/registro');
+      if (error.status === 401 && !esEndpointAuth) {
         localStorage.clear();
         router.navigate(['/login']);
       }
