@@ -1,17 +1,19 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import { ESPECIES } from '../../constants/app.constants';
 
 interface CondicionPuerto {
-  id:        string;
-  nombre:    string;
-  lat:       number;
-  lon:       number;
-  cargando:  boolean;
-  error:     boolean;
-  datos:     any;
+  id:       string;
+  nombre:   string;
+  lat:      number;
+  lon:      number;
+  cargando: boolean;
+  error:    boolean;
+  datos:    any;
 }
 
 @Component({
@@ -22,18 +24,18 @@ interface CondicionPuerto {
 })
 export class CondicionesComponent implements OnInit, OnDestroy {
 
-  puertos:         CondicionPuerto[] = [];
+  puertos:              CondicionPuerto[] = [];
   especieSeleccionada = 'ANCHOVETA';
-  readonly especies   = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+  readonly especies   = ESPECIES;
   cargandoTotal       = true;
   completados         = 0;
-  private timerActualizacion: any;
+  private timerActualizacion: ReturnType<typeof setInterval> | undefined;
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarPuertosYCondiciones();
-    // Auto-actualiza cada 5 minutos
     this.timerActualizacion = setInterval(() => this.cargarCondiciones(), 5 * 60 * 1000);
   }
 
@@ -42,9 +44,9 @@ export class CondicionesComponent implements OnInit, OnDestroy {
   }
 
   cargarPuertosYCondiciones() {
-    this.api.getPuertos().subscribe({
-      next: (data: any) => {
-        this.puertos = (data.puertos || []).map((p: any) => ({
+    this.api.getPuertos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
+        this.puertos = (data.puertos || []).map(p => ({
           id:       p.id,
           nombre:   p.nombre,
           lat:      p.lat,
@@ -60,28 +62,30 @@ export class CondicionesComponent implements OnInit, OnDestroy {
   }
 
   cargarCondiciones() {
-    this.completados  = 0;
+    this.completados   = 0;
     this.cargandoTotal = true;
     this.puertos.forEach(p => { p.cargando = true; p.error = false; p.datos = null; });
     this.cdr.detectChanges();
 
     this.puertos.forEach(puerto => {
-      this.api.getCondiciones(puerto.lat, puerto.lon, this.especieSeleccionada).subscribe({
-        next: (d: any) => {
-          puerto.datos    = d;
-          puerto.cargando = false;
-          this.completados++;
-          if (this.completados === this.puertos.length) this.cargandoTotal = false;
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          puerto.error    = true;
-          puerto.cargando = false;
-          this.completados++;
-          if (this.completados === this.puertos.length) this.cargandoTotal = false;
-          this.cdr.detectChanges();
-        }
-      });
+      this.api.getCondiciones(puerto.lat, puerto.lon, this.especieSeleccionada)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (d: any) => {
+            puerto.datos    = d;
+            puerto.cargando = false;
+            this.completados++;
+            if (this.completados === this.puertos.length) this.cargandoTotal = false;
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            puerto.error    = true;
+            puerto.cargando = false;
+            this.completados++;
+            if (this.completados === this.puertos.length) this.cargandoTotal = false;
+            this.cdr.detectChanges();
+          }
+        });
     });
   }
 
@@ -94,11 +98,12 @@ export class CondicionesComponent implements OnInit, OnDestroy {
   }
 
   get resumen() {
-    const conDatos = this.puertos.filter(p => p.datos);
-    const verdes   = conDatos.filter(p => p.datos.clima?.alerta?.nivel === 'VERDE').length;
-    const amarillos = conDatos.filter(p => p.datos.clima?.alerta?.nivel === 'AMARILLO').length;
-    const rojos    = conDatos.filter(p => p.datos.clima?.alerta?.nivel === 'ROJO').length;
-    const mejorFishScore = Math.max(...conDatos.map(p => p.datos.fish_score_preliminar ?? 0));
+    const conDatos   = this.puertos.filter(p => p.datos);
+    const verdes     = conDatos.filter(p => p.datos.clima?.alerta?.nivel === 'VERDE').length;
+    const amarillos  = conDatos.filter(p => p.datos.clima?.alerta?.nivel === 'AMARILLO').length;
+    const rojos      = conDatos.filter(p => p.datos.clima?.alerta?.nivel === 'ROJO').length;
+    const scores     = conDatos.map(p => p.datos.fish_score_preliminar ?? 0);
+    const mejorFishScore = scores.length ? Math.max(...scores) : 0;
     return { verdes, amarillos, rojos, mejorFishScore };
   }
 

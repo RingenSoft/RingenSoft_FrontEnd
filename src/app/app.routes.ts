@@ -1,36 +1,78 @@
 import { Routes } from '@angular/router';
-import {LoginComponent} from './pages/login/login';
-import {RegistroComponent} from './pages/registro/registro';
-import {DashboardComponent} from './pages/dashboard/dashboard';
-import {MapaComponent} from './pages/mapa/mapa';
-import {FlotaComponent} from './pages/flota/flota';
-import {ReportesComponent} from './pages/reportes/reportes';
-import {authGuard} from './guards/auth-guard';
-import { AlertasComponent } from './pages/alertas/alertas';
-import { PerfilComponent } from './pages/perfil/perfil';
-import { PlanificadorComponent } from './pages/planificador/planificador';
-import { MapaCalorComponent } from './pages/mapa-calor/mapa-calor';
-import { ZonaPescadoresComponent } from './pages/zona-pescadores/zona-pescadores';
-import { CondicionesComponent } from './pages/condiciones/condiciones';
-import { RankingsComponent } from './pages/rankings/rankings';
+import { authGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 
   // --- Rutas Públicas ---
-  { path: 'login', component: LoginComponent },
-  { path: 'registro', component: RegistroComponent },
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
+  },
+  {
+    path: 'registro',
+    loadComponent: () => import('./pages/registro/registro').then(m => m.RegistroComponent)
+  },
 
   // --- Rutas Privadas (Requieren Login) ---
-  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
-  { path: 'perfil', component: PerfilComponent, canActivate: [authGuard] },
-  { path: 'planificador', component: PlanificadorComponent, canActivate: [authGuard] },
-  { path: 'mapa-calor', component: MapaCalorComponent, canActivate: [authGuard] },
-  { path: 'mapa', component: MapaComponent, canActivate: [authGuard] },
-  { path: 'flota', component: FlotaComponent, canActivate: [authGuard] },
-  { path: 'reportes', component: ReportesComponent, canActivate: [authGuard] },
-  { path: 'alertas', component: AlertasComponent, canActivate: [authGuard] },
-  { path: 'zona-pescadores', component: ZonaPescadoresComponent, canActivate: [authGuard] },
-  { path: 'condiciones', component: CondicionesComponent, canActivate: [authGuard] },
-  { path: 'rankings', component: RankingsComponent, canActivate: [authGuard] },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'perfil',
+    loadComponent: () => import('./pages/perfil/perfil').then(m => m.PerfilComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'planificador',
+    loadComponent: () => import('./pages/planificador/planificador').then(m => m.PlanificadorComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'mapa-calor',
+    loadComponent: () => import('./pages/mapa-calor/mapa-calor').then(m => m.MapaCalorComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'mapa',
+    loadComponent: () => import('./pages/mapa/mapa').then(m => m.MapaComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'flota',
+    loadComponent: () => import('./pages/flota/flota').then(m => m.FlotaComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'reportes',
+    loadComponent: () => import('./pages/reportes/reportes').then(m => m.ReportesComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'alertas',
+    loadComponent: () => import('./pages/alertas/alertas').then(m => m.AlertasComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'zona-pescadores',
+    loadComponent: () => import('./pages/zona-pescadores/zona-pescadores').then(m => m.ZonaPescadoresComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'condiciones',
+    loadComponent: () => import('./pages/condiciones/condiciones').then(m => m.CondicionesComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'rankings',
+    loadComponent: () => import('./pages/rankings/rankings').then(m => m.RankingsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'bitacora',
+    loadComponent: () => import('./pages/bitacora/bitacora').then(m => m.BitacoraComponent),
+    canActivate: [authGuard]
+  },
 ];

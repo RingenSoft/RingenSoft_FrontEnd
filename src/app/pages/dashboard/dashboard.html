@@ -1,500 +1,640 @@
-<div class="h-screen flex overflow-hidden bg-slate-900 font-sans">
+<div class="h-screen flex overflow-hidden page-layout" style="background:var(--bg-base);">
   <app-sidebar></app-sidebar>
 
   <main class="flex-1 overflow-y-auto">
 
-    <!-- Hero header -->
-    <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 px-6 py-5 relative overflow-hidden">
-      <div class="absolute inset-0 pointer-events-none overflow-hidden">
-        <div class="absolute -top-20 right-0 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 left-1/3 w-96 h-32 bg-blue-500/5 rounded-full blur-2xl"></div>
-      </div>
-      <div class="relative flex items-center justify-between">
+    <!-- Barra de estado superior — estilo chartplotter -->
+    <div class="px-5 py-2.5 flex items-center justify-between flex-wrap gap-3"
+         style="background:var(--bg-surface);border-bottom:1px solid var(--border-mid);">
+      <div class="flex items-center gap-4">
         <div>
-          <p class="text-blue-300/80 text-xs font-semibold uppercase tracking-widest mb-0.5">{{ fechaHoy }}</p>
-          <h1 class="text-white text-2xl font-black tracking-tight">
-            {{ saludo }}<span *ngIf="nombreUsuario">, {{ nombreUsuario }}</span> 👋
-          </h1>
-          <p class="text-slate-400 text-sm mt-1">Panel principal · Costa Peruana del Pacífico</p>
+          <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Operador</p>
+          <p class="text-sm font-semibold leading-tight" style="color:var(--text-primary);">
+            {{ saludo }}<span *ngIf="nombreUsuario">, {{ nombreUsuario }}</span>
+          </p>
         </div>
-        <!-- Botón "Registrar Regreso" -->
-        <button (click)="abrirModalRegreso()"
-                class="hidden md:flex items-center gap-2.5 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 rounded-2xl px-4 py-2.5 transition-all relative">
-          <span class="text-xl">🛳️</span>
-          <div class="text-left">
-            <p class="text-white text-sm font-bold leading-tight">Registrar Regreso</p>
-            <p class="text-teal-300 text-xs leading-tight">Reporta tu captura real</p>
-          </div>
-          <span *ngIf="rutasPendientes.length > 0"
-                class="absolute -top-2 -right-2 bg-amber-400 text-slate-900 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center shadow-lg">
-            {{ rutasPendientes.length }}
-          </span>
-        </button>
+        <div class="w-px h-8" style="background:var(--border-mid);"></div>
+        <div>
+          <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Fecha local</p>
+          <p class="text-xs capitalize" style="color:var(--text-secondary);">{{ fechaHoy }}</p>
+        </div>
+        <div class="w-px h-8" style="background:var(--border-mid);"></div>
+        <div>
+          <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Zona</p>
+          <p class="text-xs" style="color:var(--text-secondary);">Costa Peruana · Pacífico Sur</p>
+        </div>
+      </div>
 
-        <div *ngIf="!cargando && condiciones" class="hidden md:flex items-center gap-2 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5">
-          <span class="text-2xl">
-            {{ condiciones.clima?.alerta?.nivel === 'VERDE' ? '✅' : condiciones.clima?.alerta?.nivel === 'AMARILLO' ? '⚠️' : '⛔' }}
-          </span>
-          <div>
-            <p class="text-white text-sm font-bold leading-tight">Chimbote</p>
-            <p class="text-slate-400 text-xs">Nivel {{ condiciones.clima?.alerta?.nivel }}</p>
-          </div>
-        </div>
+      <!-- Botón regreso + badge -->
+      <button (click)="abrirModalRegreso()"
+              class="relative flex items-center gap-2 px-4 py-2 rounded text-sm font-bold transition-all"
+              style="background:rgba(0,153,106,0.12);border:1px solid rgba(0,153,106,0.35);color:var(--accent-green);">
+        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path d="M18 8h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h2"/>
+          <path d="M12 2v14M9 5l3-3 3 3"/>
+        </svg>
+        Registrar regreso
+        <span *ngIf="rutasPendientes.length > 0"
+              class="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center"
+              style="background:var(--accent-amber);color:#07111D;">
+          {{ rutasPendientes.length }}
+        </span>
+      </button>
+    </div>
+
+    <!-- Cargando -->
+    <div *ngIf="cargando" class="flex items-center justify-center h-64">
+      <div class="text-center">
+        <svg class="w-10 h-10 mx-auto mb-3 animate-spin" style="color:var(--accent-cyan);animation-duration:3s"
+             fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/>
+          <circle cx="12" cy="12" r="5" stroke-opacity="0.5"/>
+          <circle cx="12" cy="12" r="2"/>
+          <line x1="12" y1="3" x2="12" y2="7" stroke-opacity="0.5"/>
+        </svg>
+        <p class="text-xs uppercase tracking-widest font-bold" style="color:var(--text-label);">Consultando satélites NASA</p>
+        <p class="text-[10px] mt-1" style="color:var(--text-label);">Cargando datos oceanográficos...</p>
       </div>
     </div>
 
-    <div class="p-6">
+    <div *ngIf="!cargando && condiciones" class="p-4 space-y-4">
 
-      <!-- Cargando -->
-      <div *ngIf="cargando" class="flex items-center justify-center h-64">
-        <div class="text-center">
-          <div class="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-satellite text-blue-500 text-xl animate-spin" style="animation-duration:3s"></i>
+      <!-- Banner alerta rutas pendientes -->
+      <div *ngIf="rutasPendientes.length > 0"
+           class="flex items-center justify-between px-4 py-3 rounded gap-4"
+           style="background:rgba(196,122,10,0.08);border:1px solid rgba(196,122,10,0.3);">
+        <div class="flex items-center gap-3">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="var(--accent-amber)" stroke-width="1.75" viewBox="0 0 24 24">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div>
+            <p class="text-xs font-bold" style="color:var(--accent-amber);">
+              {{ rutasPendientes.length }} {{ rutasPendientes.length === 1 ? 'salida pendiente' : 'salidas pendientes' }} de reporte
+            </p>
+            <p class="text-[10px] mt-0.5" style="color:var(--text-secondary);">Reporta tu captura real para mejorar las predicciones del modelo IA</p>
           </div>
-          <p class="text-slate-500 font-semibold text-sm">Consultando satélites NASA...</p>
-          <p class="text-slate-400 text-xs mt-1">Cargando datos oceanográficos</p>
+        </div>
+        <button (click)="abrirModalRegreso()"
+                class="px-3 py-1.5 rounded text-xs font-bold whitespace-nowrap transition-all"
+                style="background:var(--accent-amber);color:#07111D;">
+          Registrar ahora
+        </button>
+      </div>
+
+      <!-- Estado de zona: FishScore + condiciones actuales -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-3">
+
+        <!-- FishScore panel -->
+        <div class="lg:col-span-1 rounded flex flex-col items-center justify-center py-5 px-3"
+             style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <p class="text-[9px] uppercase tracking-widest font-bold mb-3" style="color:var(--text-label);">FishScore™</p>
+          <div class="relative w-20 h-20">
+            <svg viewBox="0 0 36 36" class="w-20 h-20" style="transform:rotate(-90deg);">
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--bg-elevated)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.9" fill="none" stroke-width="3" stroke-linecap="round"
+                      [attr.stroke]="condiciones.clima?.alerta?.nivel === 'VERDE' ? 'var(--accent-green)' :
+                                     condiciones.clima?.alerta?.nivel === 'AMARILLO' ? 'var(--accent-amber)' : 'var(--accent-red)'"
+                      [attr.stroke-dasharray]="(condiciones.fish_score_preliminar || 0) + ' 100'"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="text-xl font-black leading-none data-value" style="color:var(--text-primary);">
+                {{ condiciones.fish_score_preliminar }}
+              </span>
+              <span class="text-[8px] uppercase font-bold mt-0.5" style="color:var(--text-label);">/ 100</span>
+            </div>
+          </div>
+          <p class="text-xs font-bold mt-3 uppercase tracking-wide"
+             [style.color]="condiciones.clima?.alerta?.nivel === 'VERDE' ? 'var(--accent-green)' :
+                            condiciones.clima?.alerta?.nivel === 'AMARILLO' ? 'var(--accent-amber)' : 'var(--accent-red)'">
+            {{ condiciones.clima?.alerta?.nivel === 'VERDE' ? 'ÓPTIMO' :
+               condiciones.clima?.alerta?.nivel === 'AMARILLO' ? 'PRECAUCIÓN' : 'PELIGRO' }}
+          </p>
+          <p class="text-[9px] text-center mt-1 leading-tight" style="color:var(--text-label);">{{ condiciones.clima?.alerta?.mensaje }}</p>
+        </div>
+
+        <!-- Instrumentos oceánicos: 4 lecturas -->
+        <div class="lg:col-span-4 grid grid-cols-2 lg:grid-cols-4 gap-3">
+
+          <!-- Olas -->
+          <div class="rounded p-3.5 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+            <div class="flex items-center gap-1.5 mb-2.5">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+                <path d="M2 12 C6 8 10 16 14 12 S18 8 22 12"/>
+                <path d="M2 17 C6 13 10 21 14 17 S18 13 22 17" stroke-opacity="0.5"/>
+              </svg>
+              <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Altura olas</p>
+            </div>
+            <p class="text-3xl font-black leading-none data-value" style="color:var(--text-data);">
+              {{ condiciones.clima?.mar?.altura_olas_m }}
+              <span class="text-sm font-semibold" style="color:var(--text-secondary);">m</span>
+            </p>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-secondary);">
+              período {{ condiciones.clima?.mar?.periodo_olas_s }}s
+            </p>
+          </div>
+
+          <!-- Viento -->
+          <div class="rounded p-3.5 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+            <div class="flex items-center gap-1.5 mb-2.5">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+                <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+              </svg>
+              <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Viento</p>
+            </div>
+            <p class="text-3xl font-black leading-none data-value" style="color:var(--text-data);">
+              {{ condiciones.clima?.viento?.velocidad_kmh }}
+              <span class="text-sm font-semibold" style="color:var(--text-secondary);">km/h</span>
+            </p>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-secondary);">
+              ráf. {{ condiciones.clima?.viento?.rafagas_kmh }} km/h
+            </p>
+          </div>
+
+          <!-- Temp. Mar -->
+          <div class="rounded p-3.5 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+            <div class="flex items-center gap-1.5 mb-2.5">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/>
+              </svg>
+              <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Temp. mar</p>
+            </div>
+            <p class="text-3xl font-black leading-none data-value" style="color:var(--accent-cyan);">
+              {{ condiciones.oceanografia?.temperatura?.temperatura_c }}
+              <span class="text-sm font-semibold" style="color:var(--text-secondary);">°C</span>
+            </p>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-secondary);">NASA MUR SST</p>
+          </div>
+
+          <!-- Clorofila -->
+          <div class="rounded p-3.5 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+            <div class="flex items-center gap-1.5 mb-2.5">
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="var(--accent-green)" stroke-width="1.75" viewBox="0 0 24 24">
+                <path d="M17 8C8 10 5.9 16.17 3.82 19.06A2 2 0 0 0 5.6 22a2 2 0 0 0 1.54-.73C8.8 19.16 10.7 18 12 18c3 0 5-2 7-5"/>
+              </svg>
+              <p class="text-[9px] uppercase tracking-widest font-bold" style="color:var(--text-label);">Clorofila‑a</p>
+            </div>
+            <p class="text-3xl font-black leading-none data-value" style="color:var(--accent-green);">
+              {{ condiciones.oceanografia?.clorofila?.clorofila_mg_m3 }}
+              <span class="text-xs font-normal" style="color:var(--text-secondary);">mg/m³</span>
+            </p>
+            <p class="text-[10px] mt-1.5" style="color:var(--text-secondary);">{{ condiciones.oceanografia?.clorofila?.nivel }}</p>
+          </div>
+
         </div>
       </div>
 
-      <div *ngIf="!cargando && condiciones">
+      <!-- KPIs de historial — lecturas de log -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="rounded p-4 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <p class="text-[9px] uppercase tracking-widest font-bold mb-2" style="color:var(--text-label);">Rutas calculadas</p>
+          <p class="text-4xl font-black leading-none data-value" style="color:var(--text-primary);">{{ estadisticas?.total ?? '—' }}</p>
+          <div class="mt-2 flex items-center gap-1.5">
+            <svg class="w-3 h-3" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" viewBox="0 0 24 24">
+              <path d="M3 12h18M3 6l5 6-5 6M21 6l-5 6 5 6"/>
+            </svg>
+            <p class="text-[10px]" style="color:var(--text-secondary);">Total histórico</p>
+          </div>
+        </div>
+        <div class="rounded p-4 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <p class="text-[9px] uppercase tracking-widest font-bold mb-2" style="color:var(--text-label);">Km navegados</p>
+          <p class="text-4xl font-black leading-none data-value" style="color:var(--text-primary);">{{ estadisticas?.km_total ?? '—' }}</p>
+          <div class="mt-2 flex items-center gap-1.5">
+            <svg class="w-3 h-3" fill="none" stroke="var(--accent-green)" stroke-width="1.5" viewBox="0 0 24 24">
+              <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+            </svg>
+            <p class="text-[10px]" style="color:var(--text-secondary);">Distancia acumulada</p>
+          </div>
+        </div>
+        <div class="rounded p-4 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <p class="text-[9px] uppercase tracking-widest font-bold mb-2" style="color:var(--text-label);">TM acumuladas</p>
+          <p class="text-4xl font-black leading-none data-value" style="color:var(--text-primary);">{{ estadisticas?.carga_total_tm ?? '—' }}</p>
+          <div class="mt-2 flex items-center gap-1.5">
+            <svg class="w-3 h-3" fill="none" stroke="var(--accent-amber)" stroke-width="1.5" viewBox="0 0 24 24">
+              <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20" stroke-opacity="0.4"/>
+              <line x1="12" y1="2" x2="12" y2="22"/>
+            </svg>
+            <p class="text-[10px]" style="color:var(--text-secondary);">Carga estimada hist.</p>
+          </div>
+        </div>
+        <div class="rounded p-4 card-hover" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <p class="text-[9px] uppercase tracking-widest font-bold mb-2" style="color:var(--text-label);">Capturas conf.</p>
+          <p class="text-4xl font-black leading-none data-value" style="color:var(--text-primary);">{{ estadisticas?.capturas_reales ?? '—' }}</p>
+          <div class="mt-2 flex items-center gap-1.5">
+            <svg class="w-3 h-3" fill="none" stroke="#6C80A0" stroke-width="1.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+            </svg>
+            <p class="text-[10px]" style="color:var(--text-secondary);">Reportes validados</p>
+          </div>
+        </div>
+      </div>
 
-        <!-- Banner alerta principal -->
-        <div class="rounded-2xl p-4 mb-5 flex items-center gap-4 border-l-4 shadow-sm"
-             [ngClass]="{
-               'bg-green-50 border-green-400':   condiciones.clima?.alerta?.nivel === 'VERDE',
-               'bg-amber-50 border-amber-400':   condiciones.clima?.alerta?.nivel === 'AMARILLO',
-               'bg-red-50 border-red-400':       condiciones.clima?.alerta?.nivel === 'ROJO'
-             }">
-          <div class="text-2xl flex-shrink-0">
-            {{ condiciones.clima?.alerta?.nivel === 'VERDE' ? '✅' : condiciones.clima?.alerta?.nivel === 'AMARILLO' ? '⚠️' : '⛔' }}
+      <!-- Flota + Pronóstico (dos columnas) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+
+        <!-- Estado de flota -->
+        <div *ngIf="embarcaciones.length > 0" class="rounded p-4" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="var(--text-secondary)" stroke-width="1.75" viewBox="0 0 24 24">
+                <path d="M2 20h20M5 20V10l7-7 7 7v10"/><rect x="9" y="14" width="6" height="6"/>
+              </svg>
+              <p class="text-xs font-bold" style="color:var(--text-primary);">Estado de flota</p>
+            </div>
+            <span class="text-[10px] px-2 py-0.5 rounded" style="background:var(--bg-elevated);color:var(--text-secondary);">
+              {{ embarcaciones.length }} unidades
+            </span>
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="font-bold text-slate-800 text-sm">{{ condiciones.clima?.alerta?.mensaje }}</p>
-            <p class="text-xs text-slate-500 mt-0.5">Chimbote · Open-Meteo Marine en tiempo real</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="rounded p-3 text-center" style="background:rgba(0,153,106,0.08);border:1px solid rgba(0,153,106,0.2);">
+              <p class="text-2xl font-black data-value" style="color:var(--accent-green);">{{ fleetCounts.enPuerto }}</p>
+              <div class="flex items-center justify-center gap-1 mt-1">
+                <div class="status-led verde"></div>
+                <p class="text-[10px] font-bold" style="color:var(--accent-green);">En puerto</p>
+              </div>
+            </div>
+            <div class="rounded p-3 text-center" style="background:rgba(0,180,204,0.08);border:1px solid rgba(0,180,204,0.2);">
+              <p class="text-2xl font-black data-value" style="color:var(--accent-cyan);">{{ fleetCounts.enMar }}</p>
+              <div class="flex items-center justify-center gap-1 mt-1">
+                <div class="status-led online"></div>
+                <p class="text-[10px] font-bold" style="color:var(--accent-cyan);">En mar</p>
+              </div>
+            </div>
+            <div class="rounded p-3 text-center" style="background:rgba(196,122,10,0.08);border:1px solid rgba(196,122,10,0.2);">
+              <p class="text-2xl font-black data-value" style="color:var(--accent-amber);">{{ fleetCounts.mantenimiento }}</p>
+              <div class="flex items-center justify-center gap-1 mt-1">
+                <div class="status-led amarillo"></div>
+                <p class="text-[10px] font-bold" style="color:var(--accent-amber);">Mant.</p>
+              </div>
+            </div>
           </div>
-          <div class="text-right flex-shrink-0">
-            <p class="text-xs text-slate-400">FishScore zona</p>
-            <p class="text-3xl font-black" [style.color]="getColorAlerta(condiciones.clima?.alerta?.nivel)">
-              {{ condiciones.fish_score_preliminar }}
+        </div>
+
+        <!-- Pronóstico 24h -->
+        <div *ngIf="pronosticoHoras.length > 0" class="rounded p-4" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="var(--text-secondary)" stroke-width="1.75" viewBox="0 0 24 24">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+              <p class="text-xs font-bold" style="color:var(--text-primary);">Pronóstico · 24 horas</p>
+            </div>
+            <span *ngIf="pronostico?.mejor_ventana_salida"
+                  class="text-[10px] px-2 py-0.5 rounded font-bold"
+                  style="background:rgba(0,153,106,0.12);border:1px solid rgba(0,153,106,0.3);color:var(--accent-green);">
+              Mejor ventana: {{ pronostico.mejor_ventana_salida }}
+            </span>
+          </div>
+          <div class="flex gap-1.5 overflow-x-auto pb-1 scroll-hidden">
+            <div *ngFor="let h of pronosticoHoras"
+                 class="flex-shrink-0 flex flex-col items-center rounded px-2.5 py-2.5 min-w-[60px] transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-[9px] font-bold mb-1.5" style="color:var(--text-label);">{{ h.hora }}</p>
+              <p class="text-base font-black data-value leading-none" style="color:var(--text-data);">{{ h.olas_m }}<span class="text-[9px] font-normal">m</span></p>
+              <p class="text-[9px] mt-1" style="color:var(--text-secondary);">{{ h.viento_kmh }}km/h</p>
+              <div class="mt-1.5 w-full h-0.5 rounded-full"
+                   [style.background]="h.olas_m < 1.5 ? 'var(--accent-green)' : h.olas_m < 2.5 ? 'var(--accent-amber)' : 'var(--accent-red)'"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gráficos -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div class="rounded p-4" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+              <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+            <p class="text-xs font-bold" style="color:var(--text-primary);">Últimas 10 rutas</p>
+          </div>
+          <div *ngIf="estadisticas?.ultimas_rutas?.length > 0; else sinDatos1">
+            <canvas #chartRutas style="max-height:200px"></canvas>
+          </div>
+          <ng-template #sinDatos1>
+            <div class="flex flex-col items-center justify-center h-40 gap-2">
+              <svg class="w-8 h-8" fill="none" stroke="var(--border-mid)" stroke-width="1.5" viewBox="0 0 24 24">
+                <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+              </svg>
+              <p class="text-xs" style="color:var(--text-label);">Sin rutas calculadas aún</p>
+            </div>
+          </ng-template>
+        </div>
+        <div class="rounded p-4" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <div class="flex items-center gap-2 mb-3">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9"/><path d="M12 3v9l4 4"/>
+            </svg>
+            <p class="text-xs font-bold" style="color:var(--text-primary);">Rutas por especie</p>
+          </div>
+          <div *ngIf="estadisticas?.por_especie?.length > 0; else sinDatos2">
+            <canvas #chartEspecies style="max-height:200px"></canvas>
+          </div>
+          <ng-template #sinDatos2>
+            <div class="flex flex-col items-center justify-center h-40 gap-2">
+              <svg class="w-8 h-8" fill="none" stroke="var(--border-mid)" stroke-width="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9"/>
+              </svg>
+              <p class="text-xs" style="color:var(--text-label);">Sin datos de especies</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Panel IA Pesquera -->
+      <div class="rounded p-4" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded flex items-center justify-center"
+                 style="background:rgba(0,180,204,0.1);border:1px solid rgba(0,180,204,0.25);">
+              <svg class="w-4 h-4" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20" stroke-opacity="0.3"/>
+                <path d="M12 7a5 5 0 0 1 0 10M12 7a5 5 0 0 0 0 10" stroke-opacity="0.5"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold" style="color:var(--text-primary);">Modelo IA Pesquera</p>
+              <p class="text-[10px]" style="color:var(--text-secondary);">Predicción de captura por aprendizaje automático</p>
+            </div>
+          </div>
+          <button (click)="cargarEstadoML()" [disabled]="cargandoML"
+                  class="text-[10px] font-bold uppercase tracking-wide transition-colors"
+                  style="color:var(--accent-cyan);">
+            {{ cargandoML ? 'Consultando...' : 'Actualizar' }}
+          </button>
+        </div>
+
+        <div *ngIf="!estadoML" class="py-3 text-center">
+          <p class="text-xs" style="color:var(--text-label);">Consultando estado del modelo...</p>
+        </div>
+
+        <div *ngIf="estadoML && !estadoML.activo"
+             class="flex items-start gap-3 rounded p-3.5"
+             style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+          <svg class="w-4 h-4 shrink-0 mt-0.5" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+          </svg>
+          <div class="flex-1">
+            <p class="text-xs font-bold" style="color:var(--text-primary);">Modelo sin entrenar</p>
+            <p class="text-[10px] mt-0.5" style="color:var(--text-secondary);">{{ estadoML.mensaje }}</p>
+            <p class="text-[10px] mt-2 px-3 py-2 rounded" style="background:var(--bg-card);color:var(--text-secondary);">
+              Registra al menos <span style="color:var(--accent-amber);font-weight:bold;">10 capturas reales</span>
+              con "Registrar Regreso" y luego ejecuta el entrenamiento.
             </p>
           </div>
         </div>
 
-        <!-- Banner rutas pendientes -->
-        <div *ngIf="rutasPendientes.length > 0"
-             class="mb-5 bg-amber-900/30 border border-amber-700/50 rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3">
-            <span class="text-2xl">⚓</span>
-            <div>
-              <p class="text-amber-300 font-bold text-sm">
-                {{ rutasPendientes.length }} {{ rutasPendientes.length === 1 ? 'salida sin' : 'salidas sin' }} captura reportada
+        <div *ngIf="estadoML?.activo" class="space-y-3">
+          <div class="grid grid-cols-3 gap-2">
+            <div class="rounded p-3 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-2xl font-black data-value" style="color:var(--accent-cyan);">{{ estadoML.samples }}</p>
+              <p class="text-[9px] uppercase font-bold mt-0.5" style="color:var(--text-label);">Viajes aprendidos</p>
+            </div>
+            <div class="rounded p-3 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-2xl font-black data-value"
+                 [style.color]="estadoML.r2_cv >= 0.7 ? 'var(--accent-green)' : estadoML.r2_cv >= 0.4 ? 'var(--accent-amber)' : 'var(--accent-red)'">
+                {{ estadoML.r2_cv != null ? (estadoML.r2_cv * 100 | number:'1.0-0') + '%' : 'N/D' }}
               </p>
-              <p class="text-amber-400/70 text-xs">Reporta tu captura real para mejorar las predicciones de la IA</p>
+              <p class="text-[9px] uppercase font-bold mt-0.5" style="color:var(--text-label);">Precisión R²</p>
+            </div>
+            <div class="rounded p-3 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-xs font-bold data-value" style="color:var(--text-data);">
+                {{ estadoML.fecha_entrenamiento ? (estadoML.fecha_entrenamiento | date:'dd MMM') : '—' }}
+              </p>
+              <p class="text-[9px] uppercase font-bold mt-0.5" style="color:var(--text-label);">Último entreno</p>
             </div>
           </div>
-          <button (click)="abrirModalRegreso()"
-                  class="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-sm px-4 py-2 rounded-xl transition-all whitespace-nowrap">
-            Registrar regreso →
+          <div>
+            <div class="flex justify-between text-[9px] mb-1" style="color:var(--text-label);">
+              <span>Precisión del modelo</span>
+              <span>{{ estadoML.r2_cv != null ? (estadoML.r2_cv * 100 | number:'1.0-0') + '%' : '—' }}</span>
+            </div>
+            <div class="level-bar-track h-1">
+              <div class="level-bar-fill"
+                   [style.width]="(estadoML.r2_cv != null ? estadoML.r2_cv * 100 : 0) + '%'"
+                   [style.background]="estadoML.r2_cv >= 0.7 ? 'var(--accent-green)' : estadoML.r2_cv >= 0.4 ? 'var(--accent-amber)' : 'var(--accent-red)'">
+              </div>
+            </div>
+          </div>
+          <p class="text-[10px]" style="color:var(--text-secondary);">
+            Modelo activo — las estimaciones de captura en el planificador usan este modelo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Fuentes de datos -->
+      <div class="rounded px-4 py-3 text-[10px]"
+           style="background:var(--bg-surface);border:1px solid var(--border-subtle);color:var(--text-label);">
+        <div class="flex items-center gap-1.5 mb-1.5">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20" stroke-opacity="0.3"/>
+            <path d="M12 7a5 5 0 0 1 0 10M12 7a5 5 0 0 0 0 10" stroke-opacity="0.5"/>
+          </svg>
+          <span class="font-bold uppercase tracking-widest text-[9px]">Fuentes de datos en tiempo real</span>
+        </div>
+        <p>Temperatura: {{ condiciones.oceanografia?.temperatura?.fuente }} · {{ condiciones.oceanografia?.temperatura?.fecha_dato }}</p>
+        <p class="mt-0.5">Clorofila: {{ condiciones.oceanografia?.clorofila?.fuente }} · {{ condiciones.oceanografia?.clorofila?.fecha_dato }}</p>
+        <p class="mt-0.5">Clima marino: Open-Meteo Marine API · Actualización cada hora</p>
+      </div>
+
+    </div>
+
+    <!-- ====================================================
+         MODAL "REGRESÉ DEL MAR"
+         ==================================================== -->
+    <div *ngIf="mostrarModalRegreso"
+         class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop"
+         style="background:rgba(0,0,0,0.75)">
+      <div class="modal-content rounded shadow-2xl w-full max-w-lg mx-4 overflow-hidden"
+           style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+
+        <!-- Header modal -->
+        <div class="flex items-center justify-between px-5 py-3.5" style="border-bottom:1px solid var(--border-mid);">
+          <div class="flex items-center gap-3">
+            <svg class="w-4 h-4" fill="none" stroke="var(--accent-green)" stroke-width="1.75" viewBox="0 0 24 24">
+              <path d="M18 8h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h2"/>
+              <path d="M12 2v14M9 5l3-3 3 3"/>
+            </svg>
+            <div>
+              <h3 class="text-sm font-black leading-tight" style="color:var(--text-primary);">Registrar Regreso</h3>
+              <div class="flex items-center gap-1 mt-1">
+                <div *ngFor="let paso of [1,2,3]"
+                     class="h-0.5 w-7 rounded-full transition-all"
+                     [style.background]="pasoRegreso >= paso ? 'var(--accent-green)' : 'var(--border-mid)'"></div>
+              </div>
+            </div>
+          </div>
+          <button (click)="cerrarModalRegreso()"
+                  class="w-6 h-6 flex items-center justify-center rounded transition-colors"
+                  style="color:var(--text-secondary);"
+                  onmouseenter="this.style.color='var(--text-primary)'"
+                  onmouseleave="this.style.color='var(--text-secondary)'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
           </button>
         </div>
 
-        <!-- KPIs condiciones actuales -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.05s">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-blue-900/50 rounded-lg flex items-center justify-center">
-                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M2 12c1.5-3 4-4.5 6-4.5S11.5 9 13.5 9s4.5-1.5 6-4.5"/><path d="M2 18c1.5-3 4-4.5 6-4.5S11.5 15 13.5 15s4.5-1.5 6-4.5"/><path d="M2 6c1.5-3 4-4.5 6-4.5S11.5 3 13.5 3s4.5-1.5 6-4.5"/></svg>
-              </div>
-              <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Olas</p>
-            </div>
-            <p class="text-2xl font-black text-white kpi-number">{{ condiciones.clima?.mar?.altura_olas_m }}<span class="text-sm font-semibold text-slate-400 ml-1">m</span></p>
-            <p class="text-xs text-slate-500 mt-0.5">período {{ condiciones.clima?.mar?.periodo_olas_s }}s</p>
+        <!-- PASO 1 — Seleccionar ruta -->
+        <div *ngIf="pasoRegreso === 1" class="p-5">
+          <p class="text-xs mb-4" style="color:var(--text-secondary);">Selecciona la salida que completaste:</p>
+
+          <div *ngIf="rutasPendientes.length === 0" class="text-center py-10">
+            <svg class="w-10 h-10 mx-auto mb-3" fill="none" stroke="var(--accent-green)" stroke-width="1.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+            </svg>
+            <p class="text-sm font-bold" style="color:var(--text-primary);">Sin salidas pendientes</p>
+            <p class="text-xs mt-1" style="color:var(--text-secondary);">Todas tus rutas tienen captura registrada</p>
           </div>
 
-          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.1s">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-slate-700 rounded-lg flex items-center justify-center">
-                <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>
+          <div class="space-y-1.5 max-h-80 overflow-y-auto pr-1 scroll-hidden">
+            <button *ngFor="let ruta of rutasPendientes"
+                    (click)="seleccionarRuta(ruta)"
+                    class="w-full text-left rounded px-4 py-3 transition-all group"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);"
+                    onmouseenter="this.style.borderColor='var(--border-active)'"
+                    onmouseleave="this.style.borderColor='var(--border-mid)'">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1.5">
+                    <span class="text-[10px] font-black px-1.5 py-0.5 rounded-sm"
+                          style="background:rgba(0,180,204,0.15);color:var(--accent-cyan);">
+                      {{ ruta.especie }}
+                    </span>
+                    <span class="text-[10px]" style="color:var(--text-secondary);">{{ formatFecha(ruta.fecha) }}</span>
+                  </div>
+                  <div class="flex items-center gap-3 text-[10px]" style="color:var(--text-secondary);">
+                    <span *ngIf="ruta.distancia_km" class="data-value">{{ ruta.distancia_km }} km</span>
+                    <span *ngIf="ruta.tiempo_horas" class="data-value">{{ ruta.tiempo_horas }} h</span>
+                    <span *ngIf="ruta.carga_estimada" class="data-value">~{{ ruta.carga_estimada }} TM</span>
+                  </div>
+                </div>
+                <svg class="w-4 h-4 transition-colors" fill="none" stroke="var(--border-mid)" stroke-width="2" viewBox="0 0 24 24"
+                     style="flex-shrink:0">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
               </div>
-              <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Viento</p>
-            </div>
-            <p class="text-2xl font-black text-white kpi-number">{{ condiciones.clima?.viento?.velocidad_kmh }}<span class="text-sm font-semibold text-slate-400 ml-1">km/h</span></p>
-            <p class="text-xs text-slate-500 mt-0.5">ráf. {{ condiciones.clima?.viento?.rafagas_kmh }} km/h</p>
-          </div>
-
-          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.15s">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-blue-900/50 rounded-lg flex items-center justify-center">
-                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
-              </div>
-              <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Temp. Mar</p>
-            </div>
-            <p class="text-2xl font-black text-blue-400 kpi-number">{{ condiciones.oceanografia?.temperatura?.temperatura_c }}<span class="text-sm font-semibold ml-1">°C</span></p>
-            <p class="text-xs text-slate-500 mt-0.5">NASA MUR SST</p>
-          </div>
-
-          <div class="bg-slate-800 rounded-2xl p-4 border border-slate-700 shadow-sm card-hover animate-fade-in" style="animation-delay:0.2s">
-            <div class="flex items-center gap-2 mb-2">
-              <div class="w-7 h-7 bg-emerald-900/50 rounded-lg flex items-center justify-center">
-                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 19.06A2 2 0 0 0 5.6 22a2 2 0 0 0 1.54-.73C8.8 19.16 10.7 18 12 18c3 0 5-2 7-5"/><path d="M12 14c-2 0-3.5-1.5-3.5-3.5S10 7 12 7s3.5 1.5 3.5 3.5S14 14 12 14z" fill="currentColor" opacity=".2"/></svg>
-              </div>
-              <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Clorofila-a</p>
-            </div>
-            <p class="text-2xl font-black text-emerald-400 kpi-number">{{ condiciones.oceanografia?.clorofila?.clorofila_mg_m3 }}<span class="text-xs font-normal text-slate-400 ml-1">mg/m³</span></p>
-            <p class="text-xs text-slate-500 mt-0.5">{{ condiciones.oceanografia?.clorofila?.nivel }}</p>
+            </button>
           </div>
         </div>
 
-        <!-- KPIs historial -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 text-white shadow-lg shadow-blue-900/40 card-hover animate-slide-up" style="animation-delay:0.1s">
-            <svg class="w-4 h-4 text-blue-300 mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6l5 6-5 6M21 6l-5 6 5 6"/></svg>
-            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.total ?? '—' }}</p>
-            <p class="text-blue-200 text-xs font-semibold mt-2 uppercase tracking-wide">Rutas calculadas</p>
+        <!-- PASO 2 — Ingresar captura -->
+        <div *ngIf="pasoRegreso === 2 && rutaSeleccionada" class="p-5">
+          <div class="rounded px-4 py-3 mb-4" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+            <p class="text-[9px] uppercase tracking-widest font-bold mb-1" style="color:var(--text-label);">Salida seleccionada</p>
+            <p class="text-sm font-bold" style="color:var(--text-primary);">{{ rutaSeleccionada.especie }} · {{ formatFecha(rutaSeleccionada.fecha) }}</p>
+            <p class="text-[10px] mt-0.5" style="color:var(--text-secondary);">
+              Carga estimada: <span class="font-bold data-value" style="color:var(--accent-green);">{{ rutaSeleccionada.carga_estimada }} TM</span>
+            </p>
           </div>
-          <div class="bg-gradient-to-br from-teal-600 to-teal-700 rounded-2xl p-5 text-white shadow-lg shadow-teal-900/40 card-hover animate-slide-up" style="animation-delay:0.15s">
-            <svg class="w-4 h-4 text-teal-300 mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.km_total ?? '—' }}</p>
-            <p class="text-teal-200 text-xs font-semibold mt-2 uppercase tracking-wide">Km navegados</p>
+
+          <div class="mb-4">
+            <label class="block text-xs font-bold mb-2" style="color:var(--text-primary);">
+              Captura real obtenida (TM)
+            </label>
+            <input type="number"
+                   [(ngModel)]="capturaForm.captura_real_tm"
+                   min="0" step="0.1"
+                   class="w-full rounded px-4 py-3 text-2xl font-black text-center outline-none transition-colors data-value"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
+            <p class="text-[10px] mt-1.5 text-center" style="color:var(--text-secondary);">
+              1 TM = 1,000 kg · Ingresa 0 si no hubo captura
+            </p>
           </div>
-          <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-5 text-white shadow-lg shadow-green-900/40 card-hover animate-slide-up" style="animation-delay:0.2s">
-            <svg class="w-4 h-4 text-green-300 mb-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 12c0 4.4-3.6 8-8 8S4 16.4 4 12c0-2 .8-3.9 2-5.2M17 3.3A9 9 0 0 0 6 7.5"/><path d="M6 3l1 4-4 1"/></svg>
-            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.carga_total_tm ?? '—' }}</p>
-            <p class="text-green-200 text-xs font-semibold mt-2 uppercase tracking-wide">TM acumuladas</p>
-          </div>
-          <div class="bg-gradient-to-br from-violet-600 to-violet-700 rounded-2xl p-5 text-white shadow-lg shadow-violet-900/40 card-hover animate-slide-up" style="animation-delay:0.25s">
-            <svg class="w-4 h-4 text-violet-300 mb-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
-            <p class="text-4xl font-black leading-none kpi-number">{{ estadisticas?.capturas_reales ?? '—' }}</p>
-            <p class="text-violet-200 text-xs font-semibold mt-2 uppercase tracking-wide">Capturas confirmadas</p>
+
+          <div class="flex gap-2">
+            <button (click)="pasoRegreso = 1"
+                    class="flex-1 py-2.5 rounded text-sm font-bold transition-all"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-secondary);">
+              Volver
+            </button>
+            <button (click)="registrarCaptura()"
+                    [disabled]="guardandoCaptura || capturaForm.captura_real_tm < 0"
+                    class="flex-1 py-2.5 rounded text-sm font-bold transition-all disabled:opacity-50"
+                    style="background:var(--accent-green);color:white;">
+              {{ guardandoCaptura ? 'Guardando...' : 'Registrar captura' }}
+            </button>
           </div>
         </div>
 
-        <!-- Resumen de flota -->
-        <div *ngIf="embarcaciones.length > 0"
-             class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5 mb-5">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <i class="fas fa-ship text-slate-400 text-sm"></i>
-              <p class="text-sm font-bold text-slate-200">Estado de flota</p>
-            </div>
-            <span class="bg-slate-700 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-full">{{ embarcaciones.length }} embarcaciones</span>
+        <!-- PASO 3 — Éxito + ML -->
+        <div *ngIf="pasoRegreso === 3" class="p-5 text-center">
+          <div class="w-14 h-14 rounded flex items-center justify-center mx-auto mb-4"
+               style="background:rgba(0,153,106,0.12);border:1px solid rgba(0,153,106,0.3);">
+            <svg class="w-7 h-7" fill="none" stroke="var(--accent-green)" stroke-width="1.75" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+            </svg>
           </div>
-          <div class="grid grid-cols-3 gap-3">
-            <div class="bg-emerald-900/30 rounded-xl p-3.5 text-center border border-emerald-800/50">
-              <p class="text-3xl font-black text-emerald-400 leading-none">{{ fleetCounts.enPuerto }}</p>
-              <p class="text-xs text-emerald-400 font-semibold mt-1.5">En puerto</p>
-            </div>
-            <div class="bg-blue-900/30 rounded-xl p-3.5 text-center border border-blue-800/50">
-              <p class="text-3xl font-black text-blue-400 leading-none">{{ fleetCounts.enMar }}</p>
-              <p class="text-xs text-blue-400 font-semibold mt-1.5">En mar</p>
-            </div>
-            <div class="bg-orange-900/30 rounded-xl p-3.5 text-center border border-orange-800/50">
-              <p class="text-3xl font-black text-orange-400 leading-none">{{ fleetCounts.mantenimiento }}</p>
-              <p class="text-xs text-orange-400 font-semibold mt-1.5">Mantenimiento</p>
-            </div>
-          </div>
-        </div>
+          <h4 class="text-base font-black mb-1" style="color:var(--text-primary);">Captura registrada</h4>
+          <p class="text-sm mb-2" style="color:var(--text-secondary);">
+            <span class="font-bold data-value" style="color:var(--accent-green);">{{ capturaForm.captura_real_tm }} TM</span>
+            de {{ rutaSeleccionada?.especie }} guardadas correctamente.
+          </p>
 
-        <!-- Pronóstico próximas horas -->
-        <div *ngIf="pronosticoHoras.length > 0"
-             class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5 mb-5 animate-fade-in">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <span class="text-lg">🔮</span>
-              <div>
-                <p class="text-sm font-bold text-white">Pronóstico próximas 24 horas</p>
-                <p class="text-xs text-slate-500">Olas y viento · Open-Meteo Marine</p>
-              </div>
-            </div>
-            <span *ngIf="pronostico?.mejor_ventana_salida"
-                  class="text-xs bg-teal-600/20 border border-teal-600/40 text-teal-300 px-3 py-1 rounded-full font-bold">
-              ✅ Mejor hora: {{ pronostico.mejor_ventana_salida }}
-            </span>
+          <div *ngIf="mlResultado" class="my-4 rounded px-4 py-3 text-sm"
+               style="background:rgba(0,180,204,0.08);border:1px solid rgba(0,180,204,0.25);">
+            <p *ngIf="mlResultado.ok" class="font-bold text-xs" style="color:var(--accent-cyan);">
+              Modelo IA entrenado con {{ mlResultado.samples }} muestras
+              <span *ngIf="mlResultado.r2_cv"> · Precisión R² = {{ mlResultado.r2_cv }}</span>
+            </p>
+            <p *ngIf="!mlResultado.ok" class="text-xs" style="color:var(--text-secondary);">{{ mlResultado.mensaje }}</p>
           </div>
-          <div class="flex gap-2 overflow-x-auto pb-2 scroll-hidden">
-            <div *ngFor="let h of pronosticoHoras"
-                 class="flex-shrink-0 flex flex-col items-center bg-slate-900/60 rounded-xl px-3 py-3 min-w-[72px] border border-slate-700/60 hover:border-slate-500 transition-colors">
-              <p class="text-[10px] text-slate-500 font-bold mb-2">{{ h.hora }}</p>
-              <span class="text-xl mb-1">
-                {{ h.olas_m < 1.5 ? '🌊' : h.olas_m < 2.5 ? '🌬️' : '⛈️' }}
-              </span>
-              <p class="text-white font-black text-sm leading-none">{{ h.olas_m }}m</p>
-              <p class="text-slate-500 text-[10px] mt-1">{{ h.viento_kmh }} km/h</p>
-              <div class="mt-1.5 w-full h-1 rounded-full"
-                   [ngClass]="h.olas_m < 1.5 ? 'bg-teal-500' : h.olas_m < 2.5 ? 'bg-amber-500' : 'bg-red-500'"></div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Gráficos -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
-          <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5">
-            <div class="flex items-center gap-2 mb-4">
-              <i class="fas fa-chart-bar text-blue-400 text-sm"></i>
-              <p class="text-sm font-bold text-slate-200">Últimas 10 rutas</p>
-            </div>
-            <div *ngIf="estadisticas?.ultimas_rutas?.length > 0; else sinDatos1">
-              <canvas #chartRutas style="max-height:200px"></canvas>
-            </div>
-            <ng-template #sinDatos1>
-              <div class="flex flex-col items-center justify-center h-40 gap-2">
-                <i class="fas fa-chart-bar text-slate-600 text-4xl"></i>
-                <p class="text-slate-500 text-sm">Calcula rutas para ver estadísticas</p>
-              </div>
-            </ng-template>
-          </div>
-          <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-sm p-5">
-            <div class="flex items-center gap-2 mb-4">
-              <i class="fas fa-chart-pie text-teal-400 text-sm"></i>
-              <p class="text-sm font-bold text-slate-200">Rutas por especie</p>
-            </div>
-            <div *ngIf="estadisticas?.por_especie?.length > 0; else sinDatos2">
-              <canvas #chartEspecies style="max-height:200px"></canvas>
-            </div>
-            <ng-template #sinDatos2>
-              <div class="flex flex-col items-center justify-center h-40 gap-2">
-                <i class="fas fa-fish text-slate-600 text-4xl"></i>
-                <p class="text-slate-500 text-sm">Sin datos de especies aún</p>
-              </div>
-            </ng-template>
-          </div>
-        </div>
-
-        <!-- Panel IA Pesquera -->
-        <div class="bg-gradient-to-br from-slate-800 to-blue-950/40 rounded-2xl border border-blue-900/40 p-5 mb-5">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 bg-blue-600/20 rounded-xl flex items-center justify-center">
-                <span class="text-lg">🧠</span>
-              </div>
-              <div>
-                <p class="text-white font-bold text-sm">IA Pesquera</p>
-                <p class="text-slate-500 text-xs">Predicción de captura por ML</p>
-              </div>
-            </div>
-            <button (click)="cargarEstadoML()" [disabled]="cargandoML"
-                    class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors">
-              {{ cargandoML ? 'Consultando...' : '↻ Actualizar' }}
+          <div *ngIf="!mlResultado" class="my-4 rounded p-4" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+            <p class="text-xs font-bold mb-1" style="color:var(--text-primary);">Re-entrenar modelo IA</p>
+            <p class="text-[10px] mb-3" style="color:var(--text-secondary);">
+              Actualiza el modelo con tu nueva captura para mejorar las próximas predicciones.
+            </p>
+            <button (click)="entrenarML()" [disabled]="mlEntrenando"
+                    class="w-full py-2.5 rounded text-sm font-bold transition-all disabled:opacity-50"
+                    style="background:rgba(0,180,204,0.12);border:1px solid rgba(0,180,204,0.3);color:var(--accent-cyan);">
+              {{ mlEntrenando ? 'Entrenando modelo...' : 'Entrenar IA ahora' }}
             </button>
           </div>
 
-          <!-- Sin datos del modelo -->
-          <div *ngIf="!estadoML" class="text-center py-4">
-            <p class="text-slate-500 text-sm">Consultando estado del modelo...</p>
-          </div>
-
-          <!-- Modelo no entrenado -->
-          <div *ngIf="estadoML && !estadoML.activo" class="flex items-start gap-3 bg-slate-700/40 rounded-xl p-4">
-            <span class="text-2xl flex-shrink-0">💤</span>
-            <div class="flex-1">
-              <p class="text-slate-300 font-semibold text-sm">Modelo sin entrenar</p>
-              <p class="text-slate-500 text-xs mt-0.5">{{ estadoML.mensaje }}</p>
-              <div class="mt-2 bg-slate-800 rounded-lg px-3 py-2">
-                <p class="text-slate-400 text-xs">
-                  Para activar la IA: registra al menos
-                  <span class="text-amber-400 font-bold">10 capturas reales</span>
-                  usando el botón "Registrar Regreso" y luego ejecuta el entrenamiento.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Modelo activo -->
-          <div *ngIf="estadoML?.activo" class="space-y-3">
-            <div class="grid grid-cols-3 gap-3">
-              <div class="bg-slate-900/50 rounded-xl p-3 text-center">
-                <p class="text-2xl font-black text-blue-400">{{ estadoML.samples }}</p>
-                <p class="text-slate-500 text-[10px] uppercase font-bold mt-0.5">Viajes aprendidos</p>
-              </div>
-              <div class="bg-slate-900/50 rounded-xl p-3 text-center">
-                <p class="text-2xl font-black"
-                   [ngClass]="estadoML.r2_cv >= 0.7 ? 'text-teal-400' : estadoML.r2_cv >= 0.4 ? 'text-amber-400' : 'text-red-400'">
-                  {{ estadoML.r2_cv != null ? (estadoML.r2_cv * 100 | number:'1.0-0') + '%' : 'N/D' }}
-                </p>
-                <p class="text-slate-500 text-[10px] uppercase font-bold mt-0.5">Precisión (R²)</p>
-              </div>
-              <div class="bg-slate-900/50 rounded-xl p-3 text-center">
-                <p class="text-xs font-bold text-slate-300 leading-tight">
-                  {{ estadoML.fecha_entrenamiento ? (estadoML.fecha_entrenamiento | date:'dd MMM') : '—' }}
-                </p>
-                <p class="text-slate-500 text-[10px] uppercase font-bold mt-0.5">Último entreno</p>
-              </div>
-            </div>
-
-            <!-- Barra de precisión -->
-            <div>
-              <div class="flex justify-between text-[10px] text-slate-500 mb-1">
-                <span>Precisión del modelo</span>
-                <span>{{ estadoML.r2_cv != null ? (estadoML.r2_cv * 100 | number:'1.0-0') + '%' : '—' }}</span>
-              </div>
-              <div class="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-700"
-                     [ngClass]="estadoML.r2_cv >= 0.7 ? 'bg-teal-400' : estadoML.r2_cv >= 0.4 ? 'bg-amber-400' : 'bg-red-400'"
-                     [style.width]="(estadoML.r2_cv != null ? estadoML.r2_cv * 100 : 0) + '%'"></div>
-              </div>
-            </div>
-
-            <p class="text-slate-500 text-xs">
-              🎯 Activo — las estimaciones de captura en el planificador de rutas usan este modelo.
-              Mejora registrando más capturas reales.
-            </p>
-          </div>
-        </div>
-
-        <!-- Fuentes -->
-        <div class="bg-slate-800/50 rounded-xl border border-slate-700 p-4 text-xs text-slate-400">
-          <p class="font-semibold text-slate-500 mb-1.5 flex items-center gap-1.5">
-            <i class="fas fa-satellite-dish text-slate-400"></i> Fuentes de datos en tiempo real
-          </p>
-          <p>Temperatura: {{ condiciones.oceanografia?.temperatura?.fuente }} · {{ condiciones.oceanografia?.temperatura?.fecha_dato }}</p>
-          <p class="mt-0.5">Clorofila: {{ condiciones.oceanografia?.clorofila?.fuente }} · {{ condiciones.oceanografia?.clorofila?.fecha_dato }}</p>
-          <p class="mt-0.5">Clima marino: Open-Meteo Marine API · Actualización cada hora</p>
+          <button (click)="cerrarModalRegreso()"
+                  class="w-full py-2.5 rounded text-sm font-bold transition-all mt-1"
+                  style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-secondary);">
+            Cerrar
+          </button>
         </div>
 
       </div>
     </div>
-  <!-- =====================================================
-       MODAL "REGRESÉ DEL MAR"
-       ===================================================== -->
-  <div *ngIf="mostrarModalRegreso"
-       class="fixed inset-0 z-50 flex items-center justify-center"
-       style="background:rgba(0,0,0,0.7)">
-    <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 w-full max-w-lg mx-4 overflow-hidden">
-
-      <!-- Header del modal -->
-      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-700">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl">🛳️</span>
-          <div>
-            <h3 class="text-white font-black text-lg leading-tight">Registrar Regreso</h3>
-            <div class="flex items-center gap-1 mt-0.5">
-              <div *ngFor="let paso of [1,2,3]"
-                   class="h-1 w-8 rounded-full transition-all"
-                   [ngClass]="pasoRegreso >= paso ? 'bg-teal-400' : 'bg-slate-600'"></div>
-            </div>
-          </div>
-        </div>
-        <button (click)="cerrarModalRegreso()" class="text-slate-400 hover:text-white text-xl font-bold">✕</button>
-      </div>
-
-      <!-- PASO 1 — Seleccionar ruta -->
-      <div *ngIf="pasoRegreso === 1" class="p-6">
-        <p class="text-slate-400 text-sm mb-4">Selecciona la salida que completaste:</p>
-
-        <div *ngIf="rutasPendientes.length === 0" class="text-center py-10">
-          <p class="text-slate-500 text-4xl mb-3">✅</p>
-          <p class="text-slate-300 font-semibold">No hay salidas pendientes de reporte</p>
-          <p class="text-slate-500 text-sm mt-1">Todas tus rutas tienen captura registrada</p>
-        </div>
-
-        <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
-          <button *ngFor="let ruta of rutasPendientes"
-                  (click)="seleccionarRuta(ruta)"
-                  class="w-full text-left bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-teal-500 rounded-xl p-4 transition-all group">
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="text-xs font-black px-2 py-0.5 rounded-full"
-                        [ngClass]="{
-                          'bg-blue-900/60 text-blue-300':   ruta.especie === 'ANCHOVETA',
-                          'bg-teal-900/60 text-teal-300':   ruta.especie === 'BONITO',
-                          'bg-amber-900/60 text-amber-300': ruta.especie === 'CABALLA',
-                          'bg-purple-900/60 text-purple-300': ruta.especie === 'JUREL'
-                        }">
-                    {{ ruta.especie }}
-                  </span>
-                  <span class="text-slate-400 text-xs">{{ formatFecha(ruta.fecha) }}</span>
-                </div>
-                <div class="flex items-center gap-4 text-xs text-slate-400">
-                  <span *ngIf="ruta.distancia_km">📏 {{ ruta.distancia_km }} km</span>
-                  <span *ngIf="ruta.tiempo_horas">⏱️ {{ ruta.tiempo_horas }} h</span>
-                  <span *ngIf="ruta.carga_estimada">🎣 ~{{ ruta.carga_estimada }} TM est.</span>
-                </div>
-              </div>
-              <span class="text-slate-500 group-hover:text-teal-400 text-lg transition-colors">→</span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <!-- PASO 2 — Ingresar captura real -->
-      <div *ngIf="pasoRegreso === 2 && rutaSeleccionada" class="p-6">
-        <div class="bg-slate-700/50 rounded-xl p-4 mb-5 border border-slate-600">
-          <p class="text-slate-400 text-xs uppercase font-bold mb-1">Salida seleccionada</p>
-          <p class="text-white font-bold">{{ rutaSeleccionada.especie }} · {{ formatFecha(rutaSeleccionada.fecha) }}</p>
-          <p class="text-slate-400 text-xs mt-0.5">
-            Carga estimada: <span class="text-teal-400 font-bold">{{ rutaSeleccionada.carga_estimada }} TM</span>
-          </p>
-        </div>
-
-        <div class="mb-5">
-          <label class="block text-slate-300 text-sm font-bold mb-2">
-            ¿Cuánto pescaste realmente? (TM)
-          </label>
-          <input type="number"
-                 [(ngModel)]="capturaForm.captura_real_tm"
-                 min="0" step="0.1"
-                 class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 rounded-xl px-4 py-3 text-white text-2xl font-black text-center outline-none transition-colors"/>
-          <p class="text-slate-500 text-xs mt-1.5 text-center">
-            1 TM = 1,000 kg · Ingresa 0 si no hubo captura
-          </p>
-        </div>
-
-        <div class="flex gap-3">
-          <button (click)="pasoRegreso = 1"
-                  class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-3 rounded-xl text-sm transition-all">
-            ← Volver
-          </button>
-          <button (click)="registrarCaptura()"
-                  [disabled]="guardandoCaptura || capturaForm.captura_real_tm < 0"
-                  class="flex-1 bg-teal-500 hover:bg-teal-400 disabled:bg-slate-600 text-slate-900 font-black py-3 rounded-xl text-sm transition-all">
-            <span *ngIf="!guardandoCaptura">Registrar captura</span>
-            <span *ngIf="guardandoCaptura">Guardando...</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- PASO 3 — Éxito + opción ML -->
-      <div *ngIf="pasoRegreso === 3" class="p-6 text-center">
-
-        <div class="w-16 h-16 bg-teal-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-          <span class="text-3xl">✅</span>
-        </div>
-        <h4 class="text-white font-black text-xl mb-1">¡Captura registrada!</h4>
-        <p class="text-slate-400 text-sm mb-2">
-          <span class="text-teal-400 font-bold">{{ capturaForm.captura_real_tm }} TM</span>
-          de {{ rutaSeleccionada?.especie }} guardadas correctamente.
-        </p>
-
-        <!-- Resultado ML si ya entrenó -->
-        <div *ngIf="mlResultado" class="my-4 rounded-xl p-4 border text-sm"
-             [ngClass]="mlResultado.ok ? 'bg-blue-900/30 border-blue-700 text-blue-300' : 'bg-slate-700 border-slate-600 text-slate-400'">
-          <p *ngIf="mlResultado.ok" class="font-bold">
-            🧠 IA entrenada con {{ mlResultado.samples }} muestras
-            <span *ngIf="mlResultado.r2_cv"> · Precisión R² = {{ mlResultado.r2_cv }}</span>
-          </p>
-          <p *ngIf="!mlResultado.ok">{{ mlResultado.mensaje }}</p>
-        </div>
-
-        <!-- Botón entrenar IA (si no entrenó aún) -->
-        <div *ngIf="!mlResultado" class="my-4 bg-slate-700/50 rounded-xl p-4 border border-slate-600">
-          <p class="text-slate-300 text-sm font-semibold mb-1">🧠 ¿Mejorar la IA ahora?</p>
-          <p class="text-slate-500 text-xs mb-3">Re-entrena el modelo con tu nueva captura para que las próximas predicciones sean más precisas.</p>
-          <button (click)="entrenarML()" [disabled]="mlEntrenando"
-                  class="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 text-white font-bold py-2.5 rounded-xl text-sm transition-all">
-            <span *ngIf="!mlEntrenando">🚀 Entrenar IA</span>
-            <span *ngIf="mlEntrenando">⏳ Entrenando modelo...</span>
-          </button>
-        </div>
-
-        <button (click)="cerrarModalRegreso()"
-                class="w-full bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-3 rounded-xl text-sm transition-all mt-2">
-          Cerrar
-        </button>
-      </div>
-
-    </div>
-  </div>
 
   </main>
+</div>
+
+<!-- FABs móvil — visible solo en pantallas pequeñas -->
+<div class="fixed bottom-20 right-4 z-[500] flex flex-col gap-2 md:hidden">
+  <a routerLink="/mapa"
+     class="w-12 h-12 rounded-full flex items-center justify-center shadow-lg animate-fade-in-up delay-1"
+     style="background:var(--accent-blue);border:2px solid rgba(255,255,255,0.15);"
+     title="Carta de rutas">
+    <svg class="w-5 h-5" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+    </svg>
+  </a>
+  <a routerLink="/condiciones"
+     class="w-12 h-12 rounded-full flex items-center justify-center shadow-lg animate-fade-in-up delay-2"
+     style="background:var(--accent-green);border:2px solid rgba(255,255,255,0.15);"
+     title="Oceanografía">
+    <svg class="w-5 h-5" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M2 12 C5 9 7 15 12 12 S17 9 22 12"/>
+    </svg>
+  </a>
+  <a routerLink="/bitacora"
+     class="w-12 h-12 rounded-full flex items-center justify-center shadow-lg animate-fade-in-up delay-3"
+     style="background:var(--accent-amber);border:2px solid rgba(255,255,255,0.15);"
+     title="Bitácora de capturas">
+    <svg class="w-5 h-5" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+      <polyline points="14 2 14 8 20 8"/>
+    </svg>
+  </a>
 </div>

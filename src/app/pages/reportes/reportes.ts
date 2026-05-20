@@ -1,11 +1,27 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component, OnInit, OnDestroy, ChangeDetectorRef,
+  AfterViewInit, ElementRef, ViewChild, DestroyRef, inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
-import { Chart, registerables } from 'chart.js';
+import { ESPECIES, CHART_COLORS } from '../../constants/app.constants';
+import {
+  Chart,
+  DoughnutController, BarController,
+  ArcElement, BarElement,
+  CategoryScale, LinearScale,
+  Tooltip, Legend
+} from 'chart.js';
 
-Chart.register(...registerables);
+Chart.register(
+  DoughnutController, BarController,
+  ArcElement, BarElement,
+  CategoryScale, LinearScale,
+  Tooltip, Legend
+);
 
 @Component({
   selector: 'app-reportes',
@@ -22,36 +38,40 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
   historial:    any[] = [];
   cargando           = true;
   hoy                = new Date();
-  private charts: any[] = [];
+  errorExport        = '';
+  private charts: Chart[] = [];
 
-  // Filters
-  filtroEspecie     = '';
-  filtroFechaDesde  = '';
-  filtroFechaHasta  = '';
+  filtroEspecie    = '';
+  filtroFechaDesde = '';
+  filtroFechaHasta = '';
 
-  readonly especies = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+  readonly especies = ESPECIES;
 
   capturaModal: any = null;
   capturaValor      = 0;
 
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
-  ngOnInit()       { this.cargarDatos(); }
+  ngOnInit()        { this.cargarDatos(); }
   ngAfterViewInit() {}
-  ngOnDestroy()    { this.charts.forEach(c => c.destroy()); }
+  ngOnDestroy()     { this.charts.forEach(c => c.destroy()); }
 
   cargarDatos() {
     this.cargando = true;
-    this.api.getEstadisticas().subscribe({
-      next: (data: any) => {
-        this.estadisticas = data;
-        this.historial    = data.ultimas_rutas || [];
-        this.cargando     = false;
-        this.cdr.detectChanges();
-        setTimeout(() => this.iniciarGraficos(), 300);
-      },
-      error: () => { this.cargando = false; this.cdr.detectChanges(); }
-    });
+    this.api.getEstadisticas()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data: any) => {
+          this.estadisticas = data;
+          this.historial    = data.ultimas_rutas || [];
+          this.cargando     = false;
+          this.cdr.detectChanges();
+          setTimeout(() => this.iniciarGraficos(), 300);
+        },
+        error: () => { this.cargando = false; this.cdr.detectChanges(); }
+      });
   }
 
   get historialFiltrado(): any[] {
@@ -87,10 +107,10 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.charts.push(new Chart(this.chartEspeciesRef.nativeElement, {
       type: 'doughnut',
       data: {
-        labels: datos.map((d: any) => d.especie),
+        labels:   datos.map((d: any) => d.especie),
         datasets: [{
           data:            datos.map((d: any) => d.rutas),
-          backgroundColor: ['#1D9E75', '#378ADD', '#F59E0B', '#E24B4A'],
+          backgroundColor: [...CHART_COLORS],
           borderWidth: 0,
         }]
       },
@@ -126,7 +146,7 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
       options: {
         responsive: true,
         plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
-        scales:  { y: { beginAtZero: true, grid: { color: '#f1f5f9' } } }
+        scales:  { y: { beginAtZero: true, grid: { color: '#1E3850' } } }
       }
     }));
   }
@@ -137,20 +157,28 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   exportarCSV() {
     const filas = this.historialFiltrado;
-    if (!filas.length) { alert('No hay datos para exportar.'); return; }
+    if (!filas.length) {
+      this.errorExport = 'No hay datos para exportar.';
+      setTimeout(() => { this.errorExport = ''; this.cdr.detectChanges(); }, 3000);
+      this.cdr.detectChanges();
+      return;
+    }
 
-    const encabezado = ['ID', 'Fecha', 'Especie', 'Distancia (km)', 'Tiempo (h)', 'Carga Est. (TM)', 'Captura Real (TM)', 'FishScore', 'Olas (m)', 'Temp. Mar (°C)'];
+    const encabezado = [
+      'ID', 'Fecha', 'Especie', 'Distancia (km)', 'Tiempo (h)',
+      'Carga Est. (TM)', 'Captura Real (TM)', 'FishScore', 'Olas (m)', 'Temp. Mar (°C)'
+    ];
     const rows = filas.map((r: any) => [
       r.id,
       r.fecha ? new Date(r.fecha).toLocaleDateString('es-PE') : '',
-      r.especie || '',
+      r.especie  || '',
       r.distancia ?? '',
       r.tiempo_horas ?? '',
-      r.carga ?? '',
+      r.carga        ?? '',
       r.captura_real ?? '',
-      r.fish_score ?? '',
-      r.olas ?? '',
-      r.temp_mar ?? '',
+      r.fish_score   ?? '',
+      r.olas         ?? '',
+      r.temp_mar     ?? '',
     ]);
 
     const csv = [encabezado, ...rows]
@@ -179,13 +207,15 @@ export class ReportesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   guardarCaptura() {
     if (!this.capturaModal) return;
-    this.api.reportarCapturaRuta(this.capturaModal.id, this.capturaValor).subscribe({
-      next: () => {
-        this.capturaModal.captura_real = this.capturaValor;
-        this.capturaModal              = null;
-        this.cargarDatos();
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.reportarCapturaRuta(this.capturaModal.id, this.capturaValor)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.capturaModal.captura_real = this.capturaValor;
+          this.capturaModal              = null;
+          this.cargarDatos();
+          this.cdr.detectChanges();
+        }
+      });
   }
 }

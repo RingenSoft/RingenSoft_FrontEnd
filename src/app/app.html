@@ -1,1 +1,21 @@
 <router-outlet></router-outlet>
+
+<!-- Botón hamburger — solo móvil, siempre encima -->
+<button (click)="sidebar.toggle()"
+        class="fixed top-3 left-3 z-[60] md:hidden flex items-center justify-center w-9 h-9 rounded shadow-lg transition-all"
+        style="background:var(--bg-surface);border:1px solid var(--border-mid);color:var(--text-primary);">
+  @if (sidebar.isOpen()) {
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  } @else {
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  }
+</button>
+
+<app-error-toast></app-error-toast>
+<app-connection-banner></app-connection-banner>
+<app-sos-button></app-sos-button>
+<app-onboarding></app-onboarding>

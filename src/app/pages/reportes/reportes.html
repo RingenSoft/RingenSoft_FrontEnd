@@ -1,4 +1,4 @@
-<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+<div class="h-screen flex overflow-hidden font-sans page-layout" style="background:var(--bg-base);">
   <app-sidebar></app-sidebar>
 
   <main class="flex-1 p-6 overflow-y-auto">
@@ -6,16 +6,23 @@
     <!-- Cabecera para pantalla -->
     <div class="flex items-center justify-between mb-6 no-print">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">📊 Estadísticas y Capturas</h1>
-        <p class="text-slate-500 text-sm">Historial completo de rutas y rendimiento</p>
+        <h1 class="text-xl font-black tracking-tight flex items-center gap-2" style="color:var(--text-primary);">
+          <span class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:var(--accent-blue);">
+            <i class="fas fa-chart-bar text-white text-xs"></i>
+          </span>
+          Estadísticas y Capturas
+        </h1>
+        <p class="text-sm mt-0.5" style="color:var(--text-secondary);">Historial completo de rutas y rendimiento</p>
       </div>
       <div class="flex gap-2">
         <button (click)="cargarDatos()"
-                class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition-all">
-          🔄 Actualizar
+                class="px-4 py-2 rounded-xl text-sm font-bold transition-all"
+                style="background:var(--bg-elevated);color:var(--text-secondary);">
+          <i class="fas fa-rotate-right mr-1.5 text-xs"></i>Actualizar
         </button>
         <button (click)="exportarCSV()"
-                class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                class="text-white px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+                style="background:var(--accent-green);">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -24,7 +31,8 @@
           Excel/CSV
         </button>
         <button (click)="exportarPDF()"
-                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2">
+                class="text-white px-4 py-2 rounded-xl text-sm font-bold transition-all flex items-center gap-2"
+                style="background:var(--accent-blue);">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
@@ -37,14 +45,14 @@
 
     <!-- Cabecera solo para impresión -->
     <div class="print-only mb-6">
-      <h1 class="text-2xl font-bold text-slate-800">FishRoute Pro — Reporte de Estadísticas y Capturas</h1>
-      <p class="text-slate-500 text-sm">Generado el {{ hoy | date:'dd/MM/yyyy HH:mm' }}</p>
+      <h1 class="text-2xl font-bold" style="color:var(--text-primary);">FishRoute Pro — Reporte de Estadísticas y Capturas</h1>
+      <p class="text-sm" style="color:var(--text-secondary);">Generado el {{ hoy | date:'dd/MM/yyyy HH:mm' }}</p>
     </div>
 
     <div *ngIf="cargando" class="flex items-center justify-center h-64">
       <div class="text-center">
-        <div class="text-4xl mb-3 animate-pulse">📊</div>
-        <p class="text-slate-500">Cargando estadísticas...</p>
+        <i class="fas fa-circle-notch fa-spin text-4xl mb-3" style="color:var(--accent-blue);"></i>
+        <p style="color:var(--text-secondary);">Cargando estadísticas...</p>
       </div>
     </div>
 
@@ -52,55 +60,69 @@
 
       <!-- KPIs -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-400 uppercase font-bold mb-2">🗺️ Total rutas</p>
-          <p class="text-3xl font-black text-blue-600">{{ estadisticas.total }}</p>
+        <div class="rounded-2xl p-4" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+          <p class="text-xs uppercase font-bold mb-2" style="color:var(--text-secondary);">
+            <i class="fas fa-map-marked-alt mr-1"></i> Total rutas
+          </p>
+          <p class="text-3xl font-black" style="color:var(--accent-blue);">{{ estadisticas.total }}</p>
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-400 uppercase font-bold mb-2">📍 Km totales</p>
-          <p class="text-3xl font-black text-slate-700">{{ estadisticas.km_total }}</p>
+        <div class="rounded-2xl p-4" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+          <p class="text-xs uppercase font-bold mb-2" style="color:var(--text-secondary);">
+            <i class="fas fa-location-dot mr-1"></i> Km totales
+          </p>
+          <p class="text-3xl font-black" style="color:var(--text-primary);">{{ estadisticas.km_total }}</p>
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-400 uppercase font-bold mb-2">🐟 Carga estimada</p>
-          <p class="text-3xl font-black text-green-600">{{ estadisticas.carga_total_tm }} TM</p>
+        <div class="rounded-2xl p-4" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+          <p class="text-xs uppercase font-bold mb-2" style="color:var(--text-secondary);">
+            <i class="fas fa-fish mr-1"></i> Carga estimada
+          </p>
+          <p class="text-3xl font-black" style="color:var(--accent-green);">{{ estadisticas.carga_total_tm }} TM</p>
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
-          <p class="text-xs text-slate-400 uppercase font-bold mb-2">✅ Capturas reportadas</p>
-          <p class="text-3xl font-black text-teal-600">{{ estadisticas.capturas_reales }}</p>
+        <div class="rounded-2xl p-4" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+          <p class="text-xs uppercase font-bold mb-2" style="color:var(--text-secondary);">
+            <i class="fas fa-check-circle mr-1"></i> Capturas reportadas
+          </p>
+          <p class="text-3xl font-black" style="color:var(--accent-green);">{{ estadisticas.capturas_reales }}</p>
         </div>
       </div>
 
       <!-- Gráficos -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-          <p class="text-sm font-bold text-slate-700 mb-3">🐠 Rutas por especie</p>
+        <div class="rounded-2xl p-5" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+          <p class="text-sm font-bold mb-3" style="color:var(--text-primary);">
+            <i class="fas fa-fish mr-1.5 text-xs" style="color:var(--accent-blue);"></i>Rutas por especie
+          </p>
           <canvas #chartEspecies style="max-height:200px"></canvas>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-          <p class="text-sm font-bold text-slate-700 mb-3">📈 Últimas 10 rutas</p>
+        <div class="rounded-2xl p-5" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+          <p class="text-sm font-bold mb-3" style="color:var(--text-primary);">
+            <i class="fas fa-chart-line mr-1.5 text-xs" style="color:var(--accent-blue);"></i>Últimas 10 rutas
+          </p>
           <canvas #chartDistancias style="max-height:200px"></canvas>
         </div>
       </div>
 
       <!-- Por especie -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-6">
-        <p class="text-sm font-bold text-slate-700 mb-3">🏆 Resumen por especie</p>
+      <div class="rounded-2xl p-5 mb-6" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
+        <p class="text-sm font-bold mb-3" style="color:var(--text-primary);">
+          <i class="fas fa-trophy mr-1.5 text-xs" style="color:var(--accent-amber);"></i>Resumen por especie
+        </p>
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
           <div *ngFor="let esp of estadisticas.por_especie"
-               class="bg-slate-50 rounded-xl p-3 border border-slate-100">
-            <p class="font-bold text-slate-700 text-sm mb-2">🐠 {{ esp.especie }}</p>
-            <div class="space-y-1 text-xs text-slate-500">
+               class="rounded-xl p-3" style="background:var(--bg-elevated);border:1px solid var(--border-subtle);">
+            <p class="font-bold text-sm mb-2" style="color:var(--text-primary);">🐠 {{ esp.especie }}</p>
+            <div class="space-y-1 text-xs" style="color:var(--text-secondary);">
               <div class="flex justify-between">
                 <span>Rutas</span>
-                <span class="font-bold text-slate-700">{{ esp.rutas }}</span>
+                <span class="font-bold" style="color:var(--text-primary);">{{ esp.rutas }}</span>
               </div>
               <div class="flex justify-between">
                 <span>Km total</span>
-                <span class="font-bold text-slate-700">{{ esp.km_total | number:'1.0-0' }}</span>
+                <span class="font-bold" style="color:var(--text-primary);">{{ esp.km_total | number:'1.0-0' }}</span>
               </div>
               <div class="flex justify-between">
                 <span>Carga est.</span>
-                <span class="font-bold text-green-600">{{ esp.carga_total | number:'1.1-1' }} TM</span>
+                <span class="font-bold" style="color:var(--accent-green);">{{ esp.carga_total | number:'1.1-1' }} TM</span>
               </div>
             </div>
           </div>
@@ -108,13 +130,13 @@
       </div>
 
       <!-- Historial con filtros -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="rounded-2xl overflow-hidden" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
 
         <!-- Cabecera + filtros -->
-        <div class="p-4 border-b border-slate-100">
+        <div class="p-4" style="border-bottom:1px solid var(--border-subtle);">
           <div class="flex items-center justify-between mb-3">
-            <p class="font-bold text-slate-700">Historial de rutas</p>
-            <span class="text-xs text-slate-400">
+            <p class="font-bold" style="color:var(--text-primary);">Historial de rutas</p>
+            <span class="text-xs" style="color:var(--text-secondary);">
               {{ historialFiltrado.length }}
               <span *ngIf="filtrosActivos"> de {{ historial.length }}</span>
               rutas
@@ -124,34 +146,39 @@
           <!-- Controles de filtro -->
           <div class="flex flex-wrap gap-2 no-print">
             <select [(ngModel)]="filtroEspecie"
-                    class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300">
+                    class="rounded-lg px-3 py-1.5 text-xs outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);">
               <option value="">Todas las especies</option>
               <option *ngFor="let e of especies" [value]="e">{{ e }}</option>
             </select>
 
             <input type="date" [(ngModel)]="filtroFechaDesde"
-                   class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300"
+                   class="rounded-lg px-3 py-1.5 text-xs outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);"
                    placeholder="Desde"/>
 
             <input type="date" [(ngModel)]="filtroFechaHasta"
-                   class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300"
+                   class="rounded-lg px-3 py-1.5 text-xs outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);"
                    placeholder="Hasta"/>
 
             <button *ngIf="filtrosActivos" (click)="limpiarFiltros()"
-                    class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1"
+                    style="background:var(--bg-elevated);color:var(--text-secondary);">
               <i class="fas fa-times"></i> Limpiar
             </button>
           </div>
         </div>
 
         <!-- Estado vacío -->
-        <div *ngIf="historialFiltrado.length === 0" class="p-10 text-center text-slate-400">
+        <div *ngIf="historialFiltrado.length === 0" class="p-10 text-center" style="color:var(--text-secondary);">
           <p class="text-4xl mb-3">🗺️</p>
           <p class="font-bold" *ngIf="!filtrosActivos">Sin rutas calculadas aún</p>
           <p class="font-bold" *ngIf="filtrosActivos">Sin resultados para los filtros aplicados</p>
           <p class="text-sm mt-1" *ngIf="!filtrosActivos">Ve al Mapa de Rutas para calcular tu primera ruta</p>
           <button *ngIf="filtrosActivos" (click)="limpiarFiltros()"
-                  class="mt-4 text-blue-600 text-sm font-bold hover:underline">
+                  class="mt-4 text-sm font-bold hover:underline"
+                  style="color:var(--accent-blue);">
             Limpiar filtros
           </button>
         </div>
@@ -159,33 +186,37 @@
         <!-- Tabla -->
         <div class="overflow-x-auto" *ngIf="historialFiltrado.length > 0">
           <table class="w-full text-sm" style="table-layout:fixed">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead style="background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);">
               <tr>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase w-24">Fecha</th>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase w-24">Especie</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase w-20">Dist.</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase w-20">Carga est.</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase w-24">Captura real</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase w-20">Olas</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase w-20">Temp.</th>
-                <th class="p-3 text-center text-xs font-bold text-slate-400 uppercase w-24 no-print">Acción</th>
+                <th class="p-3 text-left text-xs font-bold uppercase w-24" style="color:var(--text-secondary);">Fecha</th>
+                <th class="p-3 text-left text-xs font-bold uppercase w-24" style="color:var(--text-secondary);">Especie</th>
+                <th class="p-3 text-right text-xs font-bold uppercase w-20" style="color:var(--text-secondary);">Dist.</th>
+                <th class="p-3 text-right text-xs font-bold uppercase w-20" style="color:var(--text-secondary);">Carga est.</th>
+                <th class="p-3 text-right text-xs font-bold uppercase w-24" style="color:var(--text-secondary);">Captura real</th>
+                <th class="p-3 text-right text-xs font-bold uppercase w-20" style="color:var(--text-secondary);">Olas</th>
+                <th class="p-3 text-right text-xs font-bold uppercase w-20" style="color:var(--text-secondary);">Temp.</th>
+                <th class="p-3 text-center text-xs font-bold uppercase w-24 no-print" style="color:var(--text-secondary);">Acción</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let r of historialFiltrado" class="border-b border-slate-50 hover:bg-blue-50 transition-colors">
-                <td class="p-3 text-slate-500 text-xs">{{ r.fecha | date:'dd/MM HH:mm' }}</td>
-                <td class="p-3 font-bold text-slate-700">{{ r.especie }}</td>
-                <td class="p-3 text-right text-slate-600">{{ r.distancia }} km</td>
-                <td class="p-3 text-right text-blue-600 font-bold">{{ r.carga }} TM</td>
+              <tr *ngFor="let r of historialFiltrado"
+                  class="transition-colors"
+                  style="border-bottom:1px solid var(--border-subtle);">
+                <td class="p-3 text-xs" style="color:var(--text-secondary);">{{ r.fecha | date:'dd/MM HH:mm' }}</td>
+                <td class="p-3 font-bold" style="color:var(--text-primary);">{{ r.especie }}</td>
+                <td class="p-3 text-right" style="color:var(--text-secondary);">{{ r.distancia }} km</td>
+                <td class="p-3 text-right font-bold" style="color:var(--accent-blue);">{{ r.carga }} TM</td>
                 <td class="p-3 text-right font-bold"
-                    [ngClass]="r.captura_real ? 'text-green-600' : 'text-slate-300'">
+                    [ngClass]="r.captura_real ? '' : ''"
+                    [style]="r.captura_real ? 'color:var(--accent-green);' : 'color:var(--border-subtle);'">
                   {{ r.captura_real ? (r.captura_real + ' TM') : '—' }}
                 </td>
-                <td class="p-3 text-right text-slate-500">{{ r.olas }}m</td>
-                <td class="p-3 text-right text-slate-500">{{ r.temp_mar }}°C</td>
+                <td class="p-3 text-right" style="color:var(--text-secondary);">{{ r.olas }}m</td>
+                <td class="p-3 text-right" style="color:var(--text-secondary);">{{ r.temp_mar }}°C</td>
                 <td class="p-3 text-center no-print">
                   <button (click)="abrirModalCaptura(r)"
-                          class="bg-green-50 hover:bg-green-100 text-green-700 px-2 py-1 rounded-lg text-xs font-bold transition-all">
+                          class="px-2 py-1 rounded-lg text-xs font-bold transition-all"
+                          style="background:rgba(29,158,117,0.15);color:var(--accent-green);">
                     {{ r.captura_real ? '✏️ Editar' : '+ Captura' }}
                   </button>
                 </td>
@@ -199,28 +230,31 @@
     <!-- Modal captura real -->
     <div *ngIf="capturaModal"
          class="no-print fixed inset-0 z-50 flex items-center justify-center"
-         style="background:rgba(0,0,0,0.5)">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 w-80">
+         style="background:rgba(0,0,0,0.6)">
+      <div class="rounded-2xl shadow-2xl p-6 w-80" style="background:var(--bg-surface);border:1px solid var(--border-subtle);">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-slate-800">Reportar captura real</h3>
-          <button (click)="capturaModal = null" class="text-slate-400 hover:text-slate-700 text-xl">✕</button>
+          <h3 class="font-bold" style="color:var(--text-primary);">Reportar captura real</h3>
+          <button (click)="capturaModal = null" class="text-xl hover:opacity-70" style="color:var(--text-secondary);">✕</button>
         </div>
-        <div class="bg-blue-50 rounded-xl p-3 mb-4 text-xs text-blue-700">
+        <div class="rounded-xl p-3 mb-4 text-xs" style="background:rgba(55,138,221,0.12);color:var(--accent-blue);">
           Ruta {{ capturaModal.especie }} · {{ capturaModal.distancia }} km · {{ capturaModal.fecha | date:'dd/MM/yyyy' }}
         </div>
         <div class="mb-4">
-          <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Toneladas capturadas realmente</label>
+          <label class="block text-xs font-bold uppercase mb-1" style="color:var(--text-secondary);">Toneladas capturadas realmente</label>
           <input type="number" [(ngModel)]="capturaValor" step="0.1" min="0"
-                 class="w-full border border-slate-200 rounded-xl py-3 px-4 text-lg font-bold text-center outline-none focus:ring-2 focus:ring-green-400"/>
-          <p class="text-[10px] text-slate-400 mt-1 text-center">Carga estimada: {{ capturaModal.carga }} TM</p>
+                 class="w-full rounded-xl py-3 px-4 text-lg font-bold text-center outline-none"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);"/>
+          <p class="text-[10px] mt-1 text-center" style="color:var(--text-secondary);">Carga estimada: {{ capturaModal.carga }} TM</p>
         </div>
         <div class="flex gap-3">
           <button (click)="capturaModal = null"
-                  class="flex-1 border border-slate-200 text-slate-600 py-2.5 rounded-xl text-sm font-bold">
+                  class="flex-1 py-2.5 rounded-xl text-sm font-bold"
+                  style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-subtle);">
             Cancelar
           </button>
           <button (click)="guardarCaptura()"
-                  class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all">
+                  class="flex-1 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
+                  style="background:var(--accent-green);">
             Guardar
           </button>
         </div>

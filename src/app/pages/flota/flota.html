@@ -1,43 +1,73 @@
-<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+<div class="h-screen flex overflow-hidden page-layout" style="background:var(--bg-base);">
   <app-sidebar></app-sidebar>
 
-  <main class="flex-1 p-6 overflow-y-auto">
+  <main class="flex-1 p-4 overflow-y-auto">
 
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <div>
-        <h1 class="text-2xl font-bold text-slate-800">Gestión de Flota</h1>
-        <p class="text-slate-500 text-sm">Administra tus embarcaciones pesqueras</p>
+        <div class="flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+            <path d="M3 17l4-8 4 4 4-6 4 8"/><path d="M2 20h20"/>
+          </svg>
+          <h1 class="text-sm font-bold" style="color:var(--text-primary);">Gestión de Flota</h1>
+        </div>
+        <p class="text-[10px] mt-0.5" style="color:var(--text-secondary);">Administra tus embarcaciones pesqueras</p>
       </div>
       <button *ngIf="tabActiva === 'embarcaciones'"
               (click)="mostrarFormulario = !mostrarFormulario"
-              class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all flex items-center gap-2">
-        <span>{{ mostrarFormulario ? '✕ Cancelar' : '+ Nueva Embarcación' }}</span>
+              class="text-white px-4 py-2 rounded text-xs font-bold transition-all flex items-center gap-1.5"
+              style="background:var(--accent-cyan);color:#07111D;">
+        <svg *ngIf="!mostrarFormulario" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        <svg *ngIf="mostrarFormulario" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        <span>{{ mostrarFormulario ? 'Cancelar' : 'Nueva Embarcación' }}</span>
       </button>
       <button *ngIf="tabActiva === 'mantenimiento'"
               (click)="mostrarFormMant = !mostrarFormMant"
-              class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-orange-200 transition-all flex items-center gap-2">
-        <i class="fas" [ngClass]="mostrarFormMant ? 'fa-times' : 'fa-wrench'"></i>
-        <span>{{ mostrarFormMant ? 'Cancelar' : '+ Registrar mantenimiento' }}</span>
+              class="px-4 py-2 rounded text-xs font-bold transition-all flex items-center gap-1.5"
+              style="background:rgba(196,122,10,0.15);color:var(--accent-amber);border:1px solid rgba(196,122,10,0.3);">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        <span>{{ mostrarFormMant ? 'Cancelar' : 'Registrar mantenimiento' }}</span>
       </button>
     </div>
 
     <!-- Mensaje de éxito -->
-    <div *ngIf="mensaje" class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl text-sm font-medium flex items-center gap-2">
-      ✅ {{ mensaje }}
+    <div *ngIf="mensaje" class="mb-4 p-3 rounded text-xs font-medium flex items-center gap-2"
+         style="background:rgba(0,153,106,0.1);border:1px solid rgba(0,153,106,0.25);color:var(--accent-green);">
+      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      {{ mensaje }}
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 mb-6 bg-slate-200 p-1 rounded-xl w-fit">
+    <div class="flex gap-0 mb-4 rounded overflow-hidden w-fit" style="border:1px solid var(--border-mid);">
       <button (click)="tabActiva = 'embarcaciones'"
-              [ngClass]="tabActiva === 'embarcaciones' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-              class="px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2">
-        <i class="fas fa-ship"></i> Embarcaciones
+              class="px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
+              [style]="tabActiva === 'embarcaciones'
+                ? 'background:var(--accent-cyan);color:#07111D;'
+                : 'background:var(--bg-elevated);color:var(--text-secondary);'">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path d="M3 17l4-8 4 4 4-6 4 8"/><path d="M2 20h20"/>
+        </svg>
+        Embarcaciones
       </button>
       <button (click)="tabActiva = 'mantenimiento'"
-              [ngClass]="tabActiva === 'mantenimiento' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
-              class="px-5 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2">
-        <i class="fas fa-wrench"></i> Mantenimiento
+              class="px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5"
+              [style]="tabActiva === 'mantenimiento'
+                ? 'background:var(--accent-cyan);color:#07111D;'
+                : 'background:var(--bg-elevated);color:var(--text-secondary);'"
+              style="border-left:1px solid var(--border-mid);">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        Mantenimiento
       </button>
     </div>
 
@@ -46,44 +76,61 @@
 
       <!-- Formulario nueva embarcación -->
       <div *ngIf="mostrarFormulario"
-           class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar nueva embarcación</h2>
-        <p class="text-slate-400 text-xs mb-5">Completa los datos técnicos de tu embarcación para calcular rutas precisas.</p>
+           class="rounded p-5 mb-4"
+           style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+        <h2 class="text-sm font-bold mb-0.5" style="color:var(--text-primary);">Registrar nueva embarcación</h2>
+        <p class="text-[10px] mb-4" style="color:var(--text-secondary);">Completa los datos técnicos de tu embarcación para calcular rutas precisas.</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div class="md:col-span-2">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nombre de la embarcación</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Nombre de la embarcación</label>
             <input [(ngModel)]="nuevoBarco.nombre" type="text" placeholder="Ej: San Pedro I"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Capacidad de bodega (TM)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Capacidad de bodega (TM)</label>
             <input [(ngModel)]="nuevoBarco.capacidad_bodega" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
-            <p class="text-[10px] text-slate-400 mt-1">Toneladas métricas máximas de carga</p>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
+            <p class="text-[9px] mt-0.5" style="color:var(--text-label);">Toneladas métricas máximas de carga</p>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Velocidad promedio (nudos)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Velocidad promedio (nudos)</label>
             <input [(ngModel)]="nuevoBarco.velocidad_promedio" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
-            <p class="text-[10px] text-slate-400 mt-1">1 nudo = 1.852 km/h</p>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
+            <p class="text-[9px] mt-0.5" style="color:var(--text-label);">1 nudo = 1.852 km/h</p>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Consumo de combustible (L/h)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Consumo de combustible (L/h)</label>
             <input [(ngModel)]="nuevoBarco.consumo_hora" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
-            <p class="text-[10px] text-slate-400 mt-1">Litros por hora a velocidad crucero</p>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
+            <p class="text-[9px] mt-0.5" style="color:var(--text-label);">Litros por hora a velocidad crucero</p>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Autonomía (horas)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Autonomía (horas)</label>
             <input [(ngModel)]="nuevoBarco.autonomia_horas" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
-            <p class="text-[10px] text-slate-400 mt-1">Horas de navegación con tanque lleno</p>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
+            <p class="text-[9px] mt-0.5" style="color:var(--text-label);">Horas de navegación con tanque lleno</p>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Material del casco</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Material del casco</label>
             <select [(ngModel)]="nuevoBarco.material_casco"
-                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+                    class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
               <option value="FIBRA">Fibra de vidrio</option>
               <option value="ACERO">Acero naval</option>
               <option value="MADERA">Madera</option>
@@ -91,48 +138,56 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo de motor</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Tipo de motor</label>
             <select [(ngModel)]="nuevoBarco.tipo_motor"
-                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+                    class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
               <option value="DIESEL">Diesel</option>
               <option value="GASOLINA">Gasolina</option>
               <option value="ELECTRICO">Eléctrico</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tripulación máxima</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Tripulación máxima</label>
             <input [(ngModel)]="nuevoBarco.tripulacion_max" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Año de fabricación</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Año de fabricación</label>
             <input [(ngModel)]="nuevoBarco.anio_fabricacion" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition-all"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
           </div>
         </div>
 
         <!-- Preview de autonomía -->
-        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5 flex gap-4">
+        <div class="rounded p-3 mb-4 flex gap-4" style="background:rgba(0,180,204,0.08);border:1px solid rgba(0,180,204,0.2);">
           <div class="text-center flex-1">
-            <p class="text-[10px] text-blue-400 uppercase font-bold">Radio estimado</p>
-            <p class="text-xl font-black text-blue-700">
+            <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--accent-cyan);">Radio estimado</p>
+            <p class="text-lg font-black data-value" style="color:var(--accent-cyan);">
               {{ ((nuevoBarco.velocidad_promedio * 1.852) * (nuevoBarco.autonomia_horas * 0.6)) | number:'1.0-0' }} km
             </p>
           </div>
           <div class="text-center flex-1">
-            <p class="text-[10px] text-blue-400 uppercase font-bold">Combustible total</p>
-            <p class="text-xl font-black text-blue-700">
+            <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--accent-cyan);">Combustible total</p>
+            <p class="text-lg font-black data-value" style="color:var(--accent-cyan);">
               {{ (nuevoBarco.autonomia_horas * nuevoBarco.consumo_hora) | number:'1.0-0' }} L
             </p>
           </div>
           <div class="text-center flex-1">
-            <p class="text-[10px] text-blue-400 uppercase font-bold">Capacidad</p>
-            <p class="text-xl font-black text-blue-700">{{ nuevoBarco.capacidad_bodega }} TM</p>
+            <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--accent-cyan);">Capacidad</p>
+            <p class="text-lg font-black data-value" style="color:var(--accent-cyan);">{{ nuevoBarco.capacidad_bodega }} TM</p>
           </div>
         </div>
 
         <button (click)="registrarBarco()"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-blue-200 transition-all">
+                class="w-full py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all"
+                style="background:var(--accent-cyan);color:#07111D;">
           Registrar Embarcación
         </button>
       </div>
@@ -140,93 +195,118 @@
       <!-- Cargando -->
       <div *ngIf="cargando" class="flex items-center justify-center h-40">
         <div class="text-center">
-          <div class="text-3xl mb-2">⚓</div>
-          <p class="text-slate-400 text-sm">Cargando flota...</p>
+          <svg class="w-8 h-8 mx-auto mb-2 animate-spin" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-opacity="0.2"/><path d="M12 3a9 9 0 0 1 9 9"/>
+          </svg>
+          <p class="text-[11px]" style="color:var(--text-secondary);">Cargando flota...</p>
         </div>
       </div>
 
       <!-- Lista vacía -->
       <div *ngIf="!cargando && embarcaciones.length === 0 && !mostrarFormulario"
-           class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-        <div class="text-5xl mb-4">🚢</div>
-        <p class="text-slate-600 font-bold text-lg mb-1">Sin embarcaciones registradas</p>
-        <p class="text-slate-400 text-sm mb-6">Registra tu primera embarcación para comenzar a calcular rutas óptimas.</p>
+           class="rounded p-10 text-center"
+           style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+        <svg class="w-12 h-12 mx-auto mb-4 opacity-20" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M3 17l4-8 4 4 4-6 4 8"/><path d="M2 20h20"/>
+        </svg>
+        <p class="font-bold text-sm mb-1" style="color:var(--text-primary);">Sin embarcaciones registradas</p>
+        <p class="text-[11px] mb-5" style="color:var(--text-secondary);">Registra tu primera embarcación para comenzar a calcular rutas óptimas.</p>
         <button (click)="mostrarFormulario = true"
-                class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-sm">
-          + Agregar mi primera embarcación
+                class="px-5 py-2 rounded text-xs font-bold uppercase tracking-wider"
+                style="background:var(--accent-cyan);color:#07111D;">
+          Agregar mi primera embarcación
         </button>
       </div>
 
       <!-- Grid de embarcaciones -->
       <div *ngIf="!cargando && embarcaciones.length > 0"
-           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+           class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
         <div *ngFor="let b of embarcaciones"
-             class="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all p-5">
-          <div class="flex items-start justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-xl">🚢</div>
+             class="rounded p-4 card-hover"
+             style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded flex items-center justify-center"
+                   style="background:rgba(0,180,204,0.1);border:1px solid rgba(0,180,204,0.2);">
+                <svg class="w-4 h-4" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+                  <path d="M3 17l4-8 4 4 4-6 4 8"/><path d="M2 20h20"/>
+                </svg>
+              </div>
               <div>
-                <p class="font-bold text-slate-800">{{ b.nombre }}</p>
-                <p class="text-xs text-slate-400">{{ b.id_embarcacion }}</p>
+                <p class="text-xs font-bold leading-tight" style="color:var(--text-primary);">{{ b.nombre }}</p>
+                <p class="text-[9px] data-value mt-0.5" style="color:var(--text-label);">{{ b.id_embarcacion }}</p>
               </div>
             </div>
-            <span class="text-xs font-bold px-3 py-1 rounded-full"
-                  [ngClass]="{
-                    'bg-green-100 text-green-700': b.estado === 'EN_PUERTO',
-                    'bg-blue-100 text-blue-700': b.estado === 'EN_MAR',
-                    'bg-red-100 text-red-700': b.estado === 'MANTENIMIENTO'
-                  }">
-              {{ b.estado === 'EN_PUERTO' ? '⚓ En puerto' : b.estado === 'EN_MAR' ? '🌊 En mar' : '🔧 Mantenimiento' }}
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider"
+                  [style]="b.estado === 'EN_PUERTO'
+                    ? 'background:rgba(0,153,106,0.15);color:var(--accent-green);border:1px solid rgba(0,153,106,0.3);'
+                    : b.estado === 'EN_MAR'
+                    ? 'background:rgba(0,180,204,0.15);color:var(--accent-cyan);border:1px solid rgba(0,180,204,0.3);'
+                    : 'background:rgba(184,48,32,0.15);color:var(--accent-red);border:1px solid rgba(184,48,32,0.3);'">
+              {{ b.estado === 'EN_PUERTO' ? 'En puerto' : b.estado === 'EN_MAR' ? 'En mar' : 'Mantenim.' }}
             </span>
           </div>
-          <div class="grid grid-cols-2 gap-2 mb-4">
-            <div class="bg-slate-50 rounded-lg p-2 text-center">
-              <p class="text-[10px] text-slate-400 uppercase font-bold">Bodega</p>
-              <p class="text-base font-black text-slate-700">{{ b.capacidad_bodega }} TM</p>
+          <div class="grid grid-cols-2 gap-1.5 mb-3">
+            <div class="rounded p-2 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--text-label);">Bodega</p>
+              <p class="text-sm font-black data-value" style="color:var(--text-data);">{{ b.capacidad_bodega }} TM</p>
             </div>
-            <div class="bg-slate-50 rounded-lg p-2 text-center">
-              <p class="text-[10px] text-slate-400 uppercase font-bold">Velocidad</p>
-              <p class="text-base font-black text-slate-700">{{ b.velocidad_promedio }} kt</p>
+            <div class="rounded p-2 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--text-label);">Velocidad</p>
+              <p class="text-sm font-black data-value" style="color:var(--text-data);">{{ b.velocidad_promedio }} kt</p>
             </div>
-            <div class="bg-slate-50 rounded-lg p-2 text-center">
-              <p class="text-[10px] text-slate-400 uppercase font-bold">Autonomía</p>
-              <p class="text-base font-black text-slate-700">{{ b.autonomia_horas }}h</p>
+            <div class="rounded p-2 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--text-label);">Autonomía</p>
+              <p class="text-sm font-black data-value" style="color:var(--text-data);">{{ b.autonomia_horas }}h</p>
             </div>
-            <div class="bg-slate-50 rounded-lg p-2 text-center">
-              <p class="text-[10px] text-slate-400 uppercase font-bold">Tripulación</p>
-              <p class="text-base font-black text-slate-700">{{ b.tripulacion_max }} pax</p>
+            <div class="rounded p-2 text-center" style="background:var(--bg-elevated);border:1px solid var(--border-mid);">
+              <p class="text-[9px] uppercase font-bold tracking-wider" style="color:var(--text-label);">Tripulación</p>
+              <p class="text-sm font-black data-value" style="color:var(--text-data);">{{ b.tripulacion_max }} pax</p>
             </div>
           </div>
-          <div class="text-xs text-slate-400 flex justify-between border-t border-slate-100 pt-3 mb-3">
+          <div class="text-[10px] flex justify-between pt-2 mb-2" style="color:var(--text-secondary);border-top:1px solid var(--border-mid);">
             <span>{{ b.material_casco }} · {{ b.tipo_motor }}</span>
-            <span>Año {{ b.anio_fabricacion }}</span>
+            <span class="data-value">Año {{ b.anio_fabricacion }}</span>
           </div>
 
           <!-- Estado dropdown -->
-          <div class="mb-3">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Estado</label>
+          <div class="mb-2.5">
+            <label class="block text-[9px] font-bold uppercase tracking-wider mb-1" style="color:var(--text-label);">Estado</label>
             <select (change)="cambiarEstado(b, $event)"
                     [value]="b.estado"
-                    class="w-full border border-slate-200 rounded-lg py-1.5 px-3 text-xs text-slate-600 outline-none focus:ring-2 focus:ring-blue-300">
-              <option value="EN_PUERTO">⚓ En puerto</option>
-              <option value="EN_MAR">🌊 En mar</option>
-              <option value="MANTENIMIENTO">🔧 Mantenimiento</option>
+                    class="w-full rounded py-1.5 px-2.5 text-xs outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
+              <option value="EN_PUERTO">En puerto</option>
+              <option value="EN_MAR">En mar</option>
+              <option value="MANTENIMIENTO">Mantenimiento</option>
             </select>
           </div>
 
           <!-- Botones de acción -->
-          <div class="flex gap-2">
+          <div class="flex gap-1.5">
             <button (click)="verHistorial(b)"
-                    class="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
-              <i class="fas fa-history"></i> Historial
+                    class="flex-1 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1"
+                    style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
+              </svg>
+              Historial
             </button>
             <button (click)="abrirEdicion(b)"
-                    class="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-700 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1">
-              <i class="fas fa-edit"></i> Editar
+                    class="flex-1 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1"
+                    style="background:rgba(0,180,204,0.1);color:var(--accent-cyan);border:1px solid rgba(0,180,204,0.25);">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+              Editar
             </button>
             <button (click)="eliminarBarco(b)"
-                    class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold transition-all">
-              <i class="fas fa-trash"></i>
+                    class="px-2.5 py-1.5 rounded text-[10px] font-bold transition-all"
+                    style="background:rgba(184,48,32,0.1);color:var(--accent-red);border:1px solid rgba(184,48,32,0.2);">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+              </svg>
             </button>
           </div>
         </div>
@@ -239,43 +319,56 @@
     <!-- ===================== MODAL: EDITAR EMBARCACIÓN ===================== -->
     <div *ngIf="editandoBarco"
          class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
-         style="background:rgba(0,0,0,0.5)">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg mx-4 my-6">
+         style="background:rgba(0,0,0,0.7)">
+      <div class="rounded p-5 w-full max-w-lg mx-4 my-6"
+           style="background:var(--bg-surface);border:1px solid var(--border-active);">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-slate-800">Editar: {{ editandoBarco.nombre }}</h3>
-          <button (click)="editandoBarco = null" class="text-slate-400 hover:text-slate-700 text-xl">✕</button>
+          <h3 class="text-sm font-bold" style="color:var(--text-primary);">Editar: {{ editandoBarco.nombre }}</h3>
+          <button (click)="editandoBarco = null" class="p-1 hover:opacity-70" style="color:var(--text-secondary);">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
           <div class="md:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nombre</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Nombre</label>
             <input [(ngModel)]="barcoEditado.nombre" type="text"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none transition-colors"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                   onfocus="this.style.borderColor='var(--border-active)'"
+                   onblur="this.style.borderColor='var(--border-mid)'"/>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bodega (TM)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Bodega (TM)</label>
             <input [(ngModel)]="barcoEditado.capacidad_bodega" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Velocidad (nudos)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Velocidad (nudos)</label>
             <input [(ngModel)]="barcoEditado.velocidad_promedio" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Consumo (L/h)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Consumo (L/h)</label>
             <input [(ngModel)]="barcoEditado.consumo_hora" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Autonomía (h)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Autonomía (h)</label>
             <input [(ngModel)]="barcoEditado.autonomia_horas" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Material casco</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Material casco</label>
             <select [(ngModel)]="barcoEditado.material_casco"
-                    class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+                    class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
               <option value="FIBRA">Fibra de vidrio</option>
               <option value="ACERO">Acero naval</option>
               <option value="MADERA">Madera</option>
@@ -283,33 +376,38 @@
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo motor</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Tipo motor</label>
             <select [(ngModel)]="barcoEditado.tipo_motor"
-                    class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none">
+                    class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
               <option value="DIESEL">Diesel</option>
               <option value="GASOLINA">Gasolina</option>
               <option value="ELECTRICO">Eléctrico</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tripulación máx.</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Tripulación máx.</label>
             <input [(ngModel)]="barcoEditado.tripulacion_max" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Año fabricación</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Año fabricación</label>
             <input [(ngModel)]="barcoEditado.anio_fabricacion" type="number"
-                   class="w-full border border-slate-200 rounded-xl py-2.5 px-3 text-slate-700 text-sm focus:ring-2 focus:ring-blue-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
         </div>
 
-        <div class="flex gap-3">
+        <div class="flex gap-2">
           <button (click)="editandoBarco = null"
-                  class="flex-1 border border-slate-200 text-slate-600 py-2.5 rounded-xl text-sm font-bold">
+                  class="flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider"
+                  style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);">
             Cancelar
           </button>
           <button (click)="guardarEdicion()"
-                  class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 transition-all">
+                  class="flex-1 py-2 rounded text-xs font-bold uppercase tracking-wider transition-all"
+                  style="background:var(--accent-cyan);color:#07111D;">
             Guardar cambios
           </button>
         </div>
@@ -320,47 +418,57 @@
     <!-- ===================== MODAL: HISTORIAL DE RUTAS ===================== -->
     <div *ngIf="historialModalBarco"
          class="fixed inset-0 z-50 flex items-center justify-center"
-         style="background:rgba(0,0,0,0.5)">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
-        <div class="flex items-center justify-between p-5 border-b border-slate-100">
+         style="background:rgba(0,0,0,0.7)">
+      <div class="rounded w-full max-w-2xl mx-4 overflow-hidden"
+           style="background:var(--bg-surface);border:1px solid var(--border-active);">
+        <div class="flex items-center justify-between p-4" style="border-bottom:1px solid var(--border-mid);">
           <div>
-            <h3 class="font-bold text-slate-800">Historial de rutas</h3>
-            <p class="text-xs text-slate-400">{{ historialModalBarco.nombre }}</p>
+            <h3 class="text-sm font-bold" style="color:var(--text-primary);">Historial de rutas</h3>
+            <p class="text-[10px]" style="color:var(--text-secondary);">{{ historialModalBarco.nombre }}</p>
           </div>
-          <button (click)="historialModalBarco = null" class="text-slate-400 hover:text-slate-700 text-xl">✕</button>
+          <button (click)="historialModalBarco = null" class="p-1 hover:opacity-70" style="color:var(--text-secondary);">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
 
         <div *ngIf="cargandoHistorial" class="p-10 text-center">
-          <div class="text-3xl mb-2 animate-pulse">⚓</div>
-          <p class="text-slate-400 text-sm">Cargando historial...</p>
+          <svg class="w-8 h-8 mx-auto mb-2 animate-spin" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-opacity="0.2"/><path d="M12 3a9 9 0 0 1 9 9"/>
+          </svg>
+          <p class="text-xs" style="color:var(--text-secondary);">Cargando historial...</p>
         </div>
 
         <div *ngIf="!cargandoHistorial && historialBarco.length === 0" class="p-10 text-center">
-          <p class="text-4xl mb-3">🗺️</p>
-          <p class="text-slate-500 font-bold">Sin rutas registradas para esta embarcación</p>
-          <p class="text-xs text-slate-400 mt-1">Las rutas calculadas desde el Mapa aparecerán aquí</p>
+          <svg class="w-10 h-10 mx-auto mb-3 opacity-20" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p class="text-sm font-bold mb-1" style="color:var(--text-primary);">Sin rutas registradas para esta embarcación</p>
+          <p class="text-[10px]" style="color:var(--text-secondary);">Las rutas calculadas desde el Mapa aparecerán aquí</p>
         </div>
 
         <div *ngIf="!cargandoHistorial && historialBarco.length > 0" class="overflow-y-auto max-h-96">
           <table class="w-full text-sm">
-            <thead class="bg-slate-50 border-b border-slate-200 sticky top-0">
+            <thead class="sticky top-0" style="background:var(--bg-elevated);border-bottom:1px solid var(--border-mid);">
               <tr>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Fecha</th>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Especie</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Distancia</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Carga est.</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Captura real</th>
+                <th class="p-3 text-left text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Fecha</th>
+                <th class="p-3 text-left text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Especie</th>
+                <th class="p-3 text-right text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Distancia</th>
+                <th class="p-3 text-right text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Carga est.</th>
+                <th class="p-3 text-right text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Captura real</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let r of historialBarco"
-                  class="border-b border-slate-50 hover:bg-blue-50 transition-colors">
-                <td class="p-3 text-slate-500 text-xs">{{ r.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td class="p-3 font-bold text-slate-700">{{ r.especie }}</td>
-                <td class="p-3 text-right text-slate-600">{{ r.distancia }} km</td>
-                <td class="p-3 text-right text-blue-600 font-bold">{{ r.carga }} TM</td>
-                <td class="p-3 text-right font-bold"
-                    [ngClass]="r.captura_real ? 'text-green-600' : 'text-slate-300'">
+                  class="transition-colors"
+                  style="border-bottom:1px solid var(--border-mid);">
+                <td class="p-3 text-[10px] data-value" style="color:var(--text-secondary);">{{ r.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="p-3 text-xs font-bold" style="color:var(--text-primary);">{{ r.especie }}</td>
+                <td class="p-3 text-right text-xs data-value" style="color:var(--text-secondary);">{{ r.distancia }} km</td>
+                <td class="p-3 text-right text-xs font-bold data-value" style="color:var(--accent-cyan);">{{ r.carga }} TM</td>
+                <td class="p-3 text-right text-xs font-bold data-value"
+                    [style]="r.captura_real ? 'color:var(--accent-green);' : 'color:var(--border-mid);'">
                   {{ r.captura_real ? (r.captura_real + ' TM') : '—' }}
                 </td>
               </tr>
@@ -368,9 +476,10 @@
           </table>
         </div>
 
-        <div class="p-4 border-t border-slate-100 flex justify-end">
+        <div class="p-3 flex justify-end" style="border-top:1px solid var(--border-mid);">
           <button (click)="historialModalBarco = null"
-                  class="bg-slate-100 hover:bg-slate-200 text-slate-600 px-5 py-2 rounded-xl text-sm font-bold transition-all">
+                  class="px-4 py-2 rounded text-xs font-bold uppercase tracking-wider transition-all"
+                  style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);">
             Cerrar
           </button>
         </div>
@@ -383,73 +492,86 @@
 
       <!-- Formulario nuevo mantenimiento -->
       <div *ngIf="mostrarFormMant"
-           class="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 mb-6">
-        <h2 class="text-lg font-bold text-slate-800 mb-1">Registrar mantenimiento</h2>
-        <p class="text-slate-400 text-xs mb-5">Lleva el control de los servicios realizados a tu flota</p>
+           class="rounded p-5 mb-4"
+           style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+        <h2 class="text-sm font-bold mb-0.5" style="color:var(--text-primary);">Registrar mantenimiento</h2>
+        <p class="text-[10px] mb-4" style="color:var(--text-secondary);">Lleva el control de los servicios realizados a tu flota</p>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
           <div class="md:col-span-2">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Embarcación</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Embarcación</label>
             <select [(ngModel)]="nuevoMant.id_embarcacion"
-                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none">
+                    class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
               <option value="">— Seleccionar embarcación —</option>
               <option *ngFor="let b of embarcaciones" [value]="b.id_embarcacion">{{ b.nombre }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Fecha de mantenimiento</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Fecha de mantenimiento</label>
             <input [(ngModel)]="nuevoMant.fecha" type="date"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Tipo</label>
             <select [(ngModel)]="nuevoMant.tipo"
-                    class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none">
+                    class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);">
               <option *ngFor="let t of tiposMantenimiento" [value]="t">{{ t }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Costo (S/.)</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Costo (S/.)</label>
             <input [(ngModel)]="nuevoMant.costo" type="number" min="0" step="0.01"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Próxima revisión</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Próxima revisión</label>
             <input [(ngModel)]="nuevoMant.proxima_revision" type="date"
-                   class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none"/>
-            <p class="text-[10px] text-slate-400 mt-1">Opcional — genera un recordatorio</p>
+                   class="w-full rounded py-2.5 px-3 text-sm outline-none"
+                   style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"/>
+            <p class="text-[9px] mt-0.5" style="color:var(--text-label);">Opcional — genera un recordatorio</p>
           </div>
           <div class="md:col-span-2">
-            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Descripción</label>
+            <label class="block text-[9px] font-bold uppercase tracking-widest mb-1" style="color:var(--text-label);">Descripción</label>
             <textarea [(ngModel)]="nuevoMant.descripcion" rows="3"
                       placeholder="Describe el trabajo realizado..."
-                      class="w-full border border-slate-200 rounded-xl py-3 px-4 text-slate-700 text-sm focus:ring-2 focus:ring-orange-400 outline-none resize-none"></textarea>
+                      class="w-full rounded py-2.5 px-3 text-sm outline-none resize-none"
+                      style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"></textarea>
           </div>
         </div>
 
         <button (click)="agregarMantenimiento()"
-                class="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-orange-100 transition-all">
+                class="w-full py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all"
+                style="background:var(--accent-amber);color:#07111D;">
           Guardar registro
         </button>
       </div>
 
       <!-- Recordatorios de próxima revisión -->
       <div *ngIf="proximasRevisiones().length > 0"
-           class="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
-        <p class="text-sm font-bold text-amber-800 mb-3">
-          <i class="fas fa-bell mr-2"></i>Próximas revisiones programadas
-        </p>
-        <div class="space-y-2">
+           class="rounded p-4 mb-4"
+           style="background:rgba(196,122,10,0.07);border:1px solid rgba(196,122,10,0.25);">
+        <div class="flex items-center gap-2 mb-3">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="var(--accent-amber)" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <p class="text-xs font-bold" style="color:var(--accent-amber);">Próximas revisiones programadas</p>
+        </div>
+        <div class="space-y-1.5">
           <div *ngFor="let m of proximasRevisiones()"
-               class="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-amber-100">
+               class="flex items-center justify-between rounded px-3 py-2"
+               style="background:var(--bg-surface);border:1px solid var(--border-mid);">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold px-2 py-0.5 rounded-full" [ngClass]="tipoColor(m.tipo)">{{ m.tipo }}</span>
-              <span class="text-sm text-slate-700 font-medium">{{ m.nombre_embarcacion }}</span>
+              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase" [ngClass]="tipoColor(m.tipo)">{{ m.tipo }}</span>
+              <span class="text-xs font-medium" style="color:var(--text-primary);">{{ m.nombre_embarcacion }}</span>
             </div>
             <div class="text-right">
-              <p class="text-xs text-slate-500">{{ m.proxima_revision | date:'dd/MM/yyyy' }}</p>
-              <p class="text-xs font-bold"
-                 [ngClass]="diasParaRevision(m.proxima_revision) <= 7 ? 'text-red-600' : 'text-amber-600'">
+              <p class="text-[10px] data-value" style="color:var(--text-secondary);">{{ m.proxima_revision | date:'dd/MM/yyyy' }}</p>
+              <p class="text-[9px] font-bold"
+                 [style]="diasParaRevision(m.proxima_revision) <= 7 ? 'color:var(--accent-red);' : 'color:var(--accent-amber);'">
                 {{ diasParaRevision(m.proxima_revision) <= 0
                    ? 'Vencido'
                    : 'En ' + diasParaRevision(m.proxima_revision) + ' días' }}
@@ -461,59 +583,67 @@
 
       <!-- Estado vacío de mantenimiento -->
       <div *ngIf="mantenimientos.length === 0 && !mostrarFormMant"
-           class="bg-white rounded-2xl border border-slate-200 p-12 text-center shadow-sm">
-        <div class="text-5xl mb-4">🔧</div>
-        <p class="text-slate-600 font-bold text-lg mb-1">Sin registros de mantenimiento</p>
-        <p class="text-slate-400 text-sm mb-6">Registra el primer mantenimiento para llevar un historial de tu flota</p>
+           class="rounded p-10 text-center"
+           style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+        <svg class="w-10 h-10 mx-auto mb-4 opacity-20" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+        </svg>
+        <p class="font-bold text-sm mb-1" style="color:var(--text-primary);">Sin registros de mantenimiento</p>
+        <p class="text-[11px] mb-5" style="color:var(--text-secondary);">Registra el primer mantenimiento para llevar un historial de tu flota</p>
         <button (click)="mostrarFormMant = true"
-                class="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold text-sm">
-          + Registrar primer mantenimiento
+                class="px-5 py-2 rounded text-xs font-bold uppercase tracking-wider"
+                style="background:var(--accent-amber);color:#07111D;">
+          Registrar primer mantenimiento
         </button>
       </div>
 
       <!-- Historial de mantenimientos -->
       <div *ngIf="mantenimientos.length > 0"
-           class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <p class="font-bold text-slate-700">Historial de mantenimientos</p>
-          <span class="text-xs text-slate-400">{{ mantenimientos.length }} registros</span>
+           class="rounded overflow-hidden"
+           style="background:var(--bg-surface);border:1px solid var(--border-mid);">
+        <div class="p-3 flex items-center justify-between" style="border-bottom:1px solid var(--border-mid);">
+          <p class="text-xs font-bold" style="color:var(--text-primary);">Historial de mantenimientos</p>
+          <span class="text-[10px] data-value" style="color:var(--text-secondary);">{{ mantenimientos.length }} registros</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-sm">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead style="background:var(--bg-elevated);border-bottom:1px solid var(--border-mid);">
               <tr>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Embarcación</th>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Tipo</th>
-                <th class="p-3 text-left text-xs font-bold text-slate-400 uppercase">Descripción</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Fecha</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Costo</th>
-                <th class="p-3 text-right text-xs font-bold text-slate-400 uppercase">Próx. revisión</th>
+                <th class="p-3 text-left text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Embarcación</th>
+                <th class="p-3 text-left text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Tipo</th>
+                <th class="p-3 text-left text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Descripción</th>
+                <th class="p-3 text-right text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Fecha</th>
+                <th class="p-3 text-right text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Costo</th>
+                <th class="p-3 text-right text-[9px] font-bold uppercase tracking-wider" style="color:var(--text-label);">Próx. revisión</th>
+                <th class="p-3"></th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let m of mantenimientos"
-                  class="border-b border-slate-50 hover:bg-orange-50 transition-colors">
-                <td class="p-3 font-bold text-slate-700">{{ m.nombre_embarcacion }}</td>
+                  class="transition-colors"
+                  style="border-bottom:1px solid var(--border-mid);">
+                <td class="p-3 text-xs font-bold" style="color:var(--text-primary);">{{ m.nombre_embarcacion }}</td>
                 <td class="p-3">
-                  <span class="text-xs px-2.5 py-1 rounded-full font-bold" [ngClass]="tipoColor(m.tipo)">{{ m.tipo }}</span>
+                  <span class="text-[9px] px-1.5 py-0.5 rounded-sm font-bold uppercase" [ngClass]="tipoColor(m.tipo)">{{ m.tipo }}</span>
                 </td>
-                <td class="p-3 text-slate-500 text-xs max-w-xs truncate">{{ m.descripcion }}</td>
-                <td class="p-3 text-right text-slate-500 text-xs">{{ m.fecha | date:'dd/MM/yyyy' }}</td>
-                <td class="p-3 text-right font-bold text-slate-700">
+                <td class="p-3 text-[10px] max-w-xs truncate" style="color:var(--text-secondary);">{{ m.descripcion }}</td>
+                <td class="p-3 text-right text-[10px] data-value" style="color:var(--text-secondary);">{{ m.fecha | date:'dd/MM/yyyy' }}</td>
+                <td class="p-3 text-right text-xs font-bold data-value" style="color:var(--text-primary);">
                   {{ m.costo > 0 ? ('S/. ' + (m.costo | number:'1.2-2')) : '—' }}
                 </td>
-                <td class="p-3 text-right text-xs">
+                <td class="p-3 text-right text-[10px]">
                   <span *ngIf="m.proxima_revision"
-                        [ngClass]="diasParaRevision(m.proxima_revision) <= 7 ? 'text-red-600 font-bold' : 'text-slate-500'">
+                        [style]="diasParaRevision(m.proxima_revision) <= 7 ? 'color:var(--accent-red);font-weight:700;' : 'color:var(--text-secondary);'">
                     {{ m.proxima_revision | date:'dd/MM/yyyy' }}
                   </span>
-                  <span *ngIf="!m.proxima_revision" class="text-slate-300">—</span>
+                  <span *ngIf="!m.proxima_revision" style="color:var(--border-mid);">—</span>
                 </td>
                 <td class="p-3 text-right">
                   <button (click)="eliminarMantenimiento(m.id)"
-                          class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded-lg transition-all text-xs"
+                          class="p-1.5 rounded transition-all"
+                          style="color:var(--accent-red);"
                           title="Eliminar registro">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/>
                       <path d="M9 6V4h6v2"/>
                     </svg>

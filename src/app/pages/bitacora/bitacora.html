@@ -1,0 +1,270 @@
+<div class="h-screen flex page-layout" style="background:var(--bg-base);overflow:hidden;">
+  <app-sidebar></app-sidebar>
+
+  <main class="flex-1 flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4 flex-shrink-0"
+         style="background:var(--bg-surface);border-bottom:1px solid var(--border-mid);">
+      <div>
+        <h1 class="text-base font-bold" style="color:var(--text-primary);">Bitácora de capturas</h1>
+        <p class="text-xs" style="color:var(--text-secondary);">Registro manual de tus capturas por salida</p>
+      </div>
+      <button (click)="mostrarForm.set(true)"
+              class="flex items-center gap-2 px-4 py-2 rounded text-xs font-bold btn-primary"
+              style="background:var(--accent-cyan);color:#fff;border:none;cursor:pointer;">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nueva entrada
+      </button>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+
+      <!-- Resumen KPIs -->
+      @if (resumen) {
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="panel p-4 animate-fade-in-up delay-1">
+            <p class="text-[9px] uppercase tracking-widest font-bold mb-1" style="color:var(--text-label);">Total capturado</p>
+            <p class="text-xl font-black data-value" style="color:var(--text-primary);">{{ resumen.total_kg | number:'1.0-0' }}</p>
+            <p class="text-[10px]" style="color:var(--text-secondary);">kilogramos</p>
+          </div>
+          <div class="panel p-4 animate-fade-in-up delay-2">
+            <p class="text-[9px] uppercase tracking-widest font-bold mb-1" style="color:var(--text-label);">Ingresos est.</p>
+            <p class="text-xl font-black data-value" style="color:var(--accent-green);">S/ {{ resumen.total_ingresos | number:'1.0-0' }}</p>
+            <p class="text-[10px]" style="color:var(--text-secondary);">soles</p>
+          </div>
+          <div class="panel p-4 animate-fade-in-up delay-3">
+            <p class="text-[9px] uppercase tracking-widest font-bold mb-1" style="color:var(--text-label);">Últimos 7 días</p>
+            <p class="text-xl font-black data-value" style="color:var(--accent-blue);">{{ resumen.ultimos_7_dias_kg | number:'1.0-0' }}</p>
+            <p class="text-[10px]" style="color:var(--text-secondary);">kg</p>
+          </div>
+          <div class="panel p-4 animate-fade-in-up delay-4">
+            <p class="text-[9px] uppercase tracking-widest font-bold mb-1" style="color:var(--text-label);">Registros</p>
+            <p class="text-xl font-black data-value" style="color:var(--text-primary);">{{ total }}</p>
+            <p class="text-[10px]" style="color:var(--text-secondary);">entradas</p>
+          </div>
+        </div>
+      }
+
+      <!-- Por especie -->
+      @if (resumen?.por_especie?.length) {
+        <div class="panel p-4 animate-fade-in-up delay-2">
+          <p class="text-[9px] uppercase tracking-widest font-bold mb-3" style="color:var(--text-label);">Por especie</p>
+          <div class="space-y-2">
+            @for (esp of resumen.por_especie; track esp.especie) {
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-medium w-24 truncate" style="color:var(--text-secondary);">{{ esp.especie }}</span>
+                <div class="flex-1 level-bar-track h-2">
+                  <div class="level-bar-fill h-2" style="background:var(--accent-cyan);"
+                       [style.width.%]="(esp.total_kg / resumen.total_kg * 100) || 0"></div>
+                </div>
+                <span class="text-xs font-bold data-value w-20 text-right" style="color:var(--text-primary);">{{ esp.total_kg | number:'1.0-0' }} kg</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Filtro -->
+      <div class="flex items-center gap-3 flex-wrap animate-fade-in-up">
+        <select [(ngModel)]="especieFiltro" (change)="aplicarFiltro()"
+                class="text-xs px-3 py-2 rounded" style="border:1px solid var(--border-mid);">
+          <option value="">Todas las especies</option>
+          @for (e of especies; track e) {
+            <option [value]="e">{{ e }}</option>
+          }
+        </select>
+        <span class="text-xs" style="color:var(--text-label);">{{ total }} entradas</span>
+      </div>
+
+      <!-- Mensaje ok -->
+      @if (mensajeOk) {
+        <div class="px-4 py-2.5 rounded text-xs font-medium animate-fade-in-up"
+             style="background:rgba(58,120,64,0.12);color:var(--accent-green);border:1px solid rgba(58,120,64,0.3);">
+          {{ mensajeOk }}
+        </div>
+      }
+
+      <!-- Skeleton loader -->
+      @if (cargando()) {
+        <div class="space-y-2">
+          @for (i of [1,2,3,4,5]; track i) {
+            <div class="skeleton h-14 rounded"></div>
+          }
+        </div>
+      }
+
+      <!-- Tabla -->
+      @if (!cargando() && entradas.length) {
+        <div class="panel overflow-hidden animate-fade-in-up">
+          <table class="w-full text-xs">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border-mid);">
+                <th class="text-left px-4 py-2.5 font-bold" style="color:var(--text-label);">Fecha</th>
+                <th class="text-left px-4 py-2.5 font-bold" style="color:var(--text-label);">Especie</th>
+                <th class="text-right px-4 py-2.5 font-bold" style="color:var(--text-label);">Kilos</th>
+                <th class="text-right px-4 py-2.5 font-bold" style="color:var(--text-label);">Ingreso</th>
+                <th class="text-left px-4 py-2.5 font-bold" style="color:var(--text-label);">Zona</th>
+                <th class="text-left px-4 py-2.5 font-bold" style="color:var(--text-label);">Mar</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (e of entradas; track e.id) {
+                <tr class="stagger-item animate-fade-in-up"
+                    style="border-bottom:1px solid var(--border-subtle);"
+                    onmouseenter="this.style.background='rgba(0,0,0,0.03)'"
+                    onmouseleave="this.style.background=''">
+                  <td class="px-4 py-2.5 data-value" style="color:var(--text-secondary);">
+                    {{ e.fecha | date:'dd/MM/yy' }}
+                  </td>
+                  <td class="px-4 py-2.5 font-medium" style="color:var(--text-primary);">{{ e.especie }}</td>
+                  <td class="px-4 py-2.5 text-right data-value font-bold" style="color:var(--text-data);">
+                    {{ e.kilos | number:'1.0-1' }}
+                  </td>
+                  <td class="px-4 py-2.5 text-right data-value" style="color:var(--accent-green);">
+                    @if (e.ingreso_estimado) { S/ {{ e.ingreso_estimado | number:'1.0-0' }} }
+                    @else { — }
+                  </td>
+                  <td class="px-4 py-2.5 truncate max-w-[120px]" style="color:var(--text-secondary);">
+                    {{ e.zona_nombre || '—' }}
+                  </td>
+                  <td class="px-4 py-2.5">
+                    @if (e.condicion_mar) {
+                      <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-sm"
+                            [style.color]="condicionColor(e.condicion_mar)"
+                            style="background:rgba(0,0,0,0.06);">{{ e.condicion_mar }}</span>
+                    } @else { — }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+      @if (!cargando() && !entradas.length) {
+        <div class="panel text-center py-12 animate-fade-in-up">
+          <svg class="w-8 h-8 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M9 17H7A5 5 0 017 7h2M15 7h2a5 5 0 010 10h-2M8 12h8"/>
+          </svg>
+          <p class="text-sm font-medium" style="color:var(--text-secondary);">Sin registros de captura</p>
+          <p class="text-xs mt-1" style="color:var(--text-label);">Agrega tu primera entrada con el botón "Nueva entrada"</p>
+        </div>
+      }
+
+      <!-- Paginación -->
+      @if (totalPaginas > 1) {
+        <div class="flex items-center justify-center gap-4 py-2">
+          <button (click)="cambiarPagina(-1)" [disabled]="pagina === 1"
+                  class="text-xs px-3 py-1.5 rounded"
+                  style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);"
+                  [style.opacity]="pagina === 1 ? '0.4' : '1'">
+            ← Anterior
+          </button>
+          <span class="text-xs data-value" style="color:var(--text-label);">{{ pagina }} / {{ totalPaginas }}</span>
+          <button (click)="cambiarPagina(1)" [disabled]="pagina >= totalPaginas"
+                  class="text-xs px-3 py-1.5 rounded"
+                  style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);"
+                  [style.opacity]="pagina >= totalPaginas ? '0.4' : '1'">
+            Siguiente →
+          </button>
+        </div>
+      }
+
+    </div>
+  </main>
+</div>
+
+<!-- Modal nueva entrada -->
+@if (mostrarForm()) {
+  <div class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
+       style="background:rgba(0,0,0,0.55);" (click)="mostrarForm.set(false)">
+    <div class="modal-content w-full max-w-md rounded-lg p-6"
+         style="background:var(--bg-card);border:1px solid var(--border-mid);"
+         (click)="$event.stopPropagation()">
+
+      <h2 class="text-sm font-bold mb-4" style="color:var(--text-primary);">Registrar captura</h2>
+
+      <div class="space-y-3">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Especie *</label>
+            <select [(ngModel)]="form.especie" class="w-full text-xs px-3 py-2 rounded">
+              @for (e of especies; track e) {
+                <option [value]="e">{{ e }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Kilos *</label>
+            <input type="number" [(ngModel)]="form.kilos" min="0" step="0.1"
+                   class="w-full text-xs px-3 py-2 rounded" placeholder="0.0"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Precio / kg (S/)</label>
+            <input type="number" [(ngModel)]="form.precio_kg" min="0" step="0.1"
+                   class="w-full text-xs px-3 py-2 rounded" placeholder="0.00"/>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Condición del mar</label>
+            <select [(ngModel)]="form.condicion_mar" class="w-full text-xs px-3 py-2 rounded">
+              <option value="">Sin especificar</option>
+              <option>CALMA</option>
+              <option>MODERADA</option>
+              <option>MAREJADA</option>
+              <option>TORMENTA</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Zona de captura</label>
+          <input type="text" [(ngModel)]="form.zona_nombre"
+                 class="w-full text-xs px-3 py-2 rounded" placeholder="Ej: Zona norte, Punta Bermejo..."/>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Embarcación</label>
+          <select [(ngModel)]="form.id_embarcacion" class="w-full text-xs px-3 py-2 rounded">
+            <option value="">Sin especificar</option>
+            @for (emb of embarcaciones; track emb.id_embarcacion) {
+              <option [value]="emb.id_embarcacion">{{ emb.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] font-bold uppercase tracking-wider block mb-1" style="color:var(--text-label);">Notas</label>
+          <textarea [(ngModel)]="form.notas" rows="2"
+                    class="w-full text-xs px-3 py-2 rounded resize-none"
+                    placeholder="Observaciones adicionales..."></textarea>
+        </div>
+
+        @if (mensajeError) {
+          <p class="text-xs" style="color:var(--accent-red);">{{ mensajeError }}</p>
+        }
+
+        <div class="flex gap-2 pt-1">
+          <button (click)="mostrarForm.set(false)"
+                  class="flex-1 text-xs font-medium py-2 rounded"
+                  style="background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);">
+            Cancelar
+          </button>
+          <button (click)="guardarEntrada()" [disabled]="enviando()"
+                  class="flex-1 text-xs font-bold py-2 rounded btn-primary"
+                  style="background:var(--accent-cyan);color:#fff;border:none;cursor:pointer;"
+                  [style.opacity]="enviando() ? '0.6' : '1'">
+            {{ enviando() ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

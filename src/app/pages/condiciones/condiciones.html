@@ -1,174 +1,202 @@
-<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+<div class="h-screen flex overflow-hidden page-layout" style="background:var(--bg-base);">
   <app-sidebar></app-sidebar>
 
   <main class="flex-1 overflow-y-auto">
 
-    <!-- Header -->
-    <div class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-10 shadow-sm">
-      <div class="flex items-center justify-between">
+    <!-- Header sticky -->
+    <div class="sticky top-0 z-10 px-5 py-3" style="background:var(--bg-surface);border-bottom:1px solid var(--border-mid);">
+      <div class="flex items-center justify-between mb-2.5">
         <div>
-          <h1 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <span class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <i class="fas fa-water text-white text-xs"></i>
-            </span>
-            Condiciones Oceanográficas
-          </h1>
-          <p class="text-slate-500 text-xs mt-0.5">Estado en tiempo real · 16 puertos pesqueros del Perú</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+              <path d="M2 12 C6 8 10 16 14 12 S18 8 22 12"/>
+              <path d="M2 17 C6 13 10 21 14 17 S18 13 22 17" stroke-opacity="0.5"/>
+              <path d="M2 7  C6 3  10 11 14 7  S18 3  22 7"  stroke-opacity="0.3"/>
+            </svg>
+            <h1 class="text-sm font-bold" style="color:var(--text-primary);">Oceanografía</h1>
+          </div>
+          <p class="text-[10px] mt-0.5" style="color:var(--text-secondary);">Estado en tiempo real · 16 puertos pesqueros del Perú</p>
         </div>
-        <div class="flex items-center gap-3">
-          <select [(ngModel)]="especieSeleccionada" (change)="cargarCondiciones()"
-                  class="border border-slate-200 rounded-xl py-2 px-3 text-sm text-slate-600 outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400 bg-slate-50">
-            <option *ngFor="let e of especies" [value]="e">🐠 {{ e }}</option>
-          </select>
-          <button (click)="cargarCondiciones()"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-blue-200 flex items-center gap-2 active:scale-[0.98]">
-            <i class="fas fa-rotate-right text-xs"></i>
-            Actualizar
-          </button>
-        </div>
+        <button (click)="cargarCondiciones()"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold transition-all"
+                style="background:rgba(0,180,204,0.1);border:1px solid rgba(0,180,204,0.3);color:var(--accent-cyan);">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <polyline points="1 4 1 10 7 10"/>
+            <path d="M3.51 15a9 9 0 1 0 .49-3.72"/>
+          </svg>
+          Actualizar
+        </button>
+      </div>
+
+      <!-- Tabs de especie -->
+      <div class="flex items-center gap-1 overflow-x-auto scroll-hidden">
+        <button *ngFor="let e of especies"
+                (click)="especieSeleccionada = e; cargarCondiciones()"
+                class="px-3 py-1 rounded text-xs font-bold whitespace-nowrap transition-all"
+                [style]="especieSeleccionada === e
+                  ? 'background:var(--accent-cyan);color:#07111D;'
+                  : 'background:var(--bg-elevated);color:var(--text-secondary);border:1px solid var(--border-mid);'">
+          {{ e }}
+        </button>
       </div>
     </div>
 
-    <div class="p-6">
+    <div class="p-4">
 
-      <!-- Resumen global -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-check text-green-600 text-xs"></i>
-            </div>
-            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Puertos seguros</p>
-          </div>
-          <p class="text-3xl font-black text-green-600 leading-none">{{ resumen.verdes }}</p>
-          <p class="text-xs text-slate-400 mt-1.5">nivel VERDE</p>
+      <!-- Chips resumen alertas -->
+      <div class="flex items-center gap-2 mb-4 flex-wrap">
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold"
+             style="background:rgba(184,48,32,0.1);border:1px solid rgba(184,48,32,0.25);color:var(--accent-red);">
+          <div class="status-led rojo"></div>
+          {{ resumen.rojos }} Críticos
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-7 h-7 bg-amber-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-triangle-exclamation text-amber-600 text-xs"></i>
-            </div>
-            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Precaución</p>
-          </div>
-          <p class="text-3xl font-black text-amber-500 leading-none">{{ resumen.amarillos }}</p>
-          <p class="text-xs text-slate-400 mt-1.5">nivel AMARILLO</p>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold"
+             style="background:rgba(196,122,10,0.1);border:1px solid rgba(196,122,10,0.25);color:var(--accent-amber);">
+          <div class="status-led amarillo"></div>
+          {{ resumen.amarillos }} Advertencias
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-7 h-7 bg-red-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-xmark text-red-600 text-xs"></i>
-            </div>
-            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Peligrosos</p>
-          </div>
-          <p class="text-3xl font-black text-red-600 leading-none">{{ resumen.rojos }}</p>
-          <p class="text-xs text-slate-400 mt-1.5">nivel ROJO</p>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold"
+             style="background:rgba(0,153,106,0.1);border:1px solid rgba(0,153,106,0.25);color:var(--accent-green);">
+          <div class="status-led verde"></div>
+          {{ resumen.verdes }} Favorables
         </div>
-        <div class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-7 h-7 bg-blue-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-trophy text-blue-600 text-xs"></i>
-            </div>
-            <p class="text-xs text-slate-400 font-semibold uppercase tracking-wide">Mejor FishScore</p>
-          </div>
-          <p class="text-3xl font-black text-blue-600 leading-none">{{ resumen.mejorFishScore }}</p>
-          <p class="text-xs text-slate-400 mt-1.5">sobre 100 puntos</p>
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold ml-auto"
+             style="background:rgba(0,180,204,0.1);border:1px solid rgba(0,180,204,0.25);color:var(--accent-cyan);">
+          <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Mejor: <span class="data-value ml-0.5">{{ resumen.mejorFishScore }} pts</span>
         </div>
       </div>
 
-      <!-- Barra de progreso -->
+      <!-- Barra de progreso carga -->
       <div *ngIf="cargandoTotal && puertos.length > 0"
-           class="bg-white rounded-2xl border border-slate-100 p-4 mb-5 shadow-sm">
+           class="rounded p-3.5 mb-4" style="background:var(--bg-surface);border:1px solid var(--border-mid);">
         <div class="flex items-center justify-between mb-2">
-          <p class="text-sm font-semibold text-slate-600 flex items-center gap-2">
-            <i class="fas fa-satellite-dish text-blue-500 animate-pulse text-xs"></i>
-            Consultando puertos...
-          </p>
-          <p class="text-xs text-slate-400 font-medium">{{ completados }} / {{ puertos.length }}</p>
+          <div class="flex items-center gap-2">
+            <svg class="w-3 h-3 animate-spin" style="color:var(--accent-cyan)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/>
+              <path d="M12 3a9 9 0 0 1 9 9"/>
+            </svg>
+            <p class="text-xs font-semibold" style="color:var(--text-primary);">Consultando satélites...</p>
+          </div>
+          <p class="text-[10px] data-value" style="color:var(--text-secondary);">{{ completados }} / {{ puertos.length }}</p>
         </div>
-        <div class="w-full bg-slate-100 rounded-full h-2">
-          <div class="bg-blue-500 h-2 rounded-full transition-all duration-500"
+        <div class="level-bar-track h-1">
+          <div class="level-bar-fill" style="background:var(--accent-cyan);"
                [style.width]="((completados / (puertos.length || 1)) * 100) + '%'"></div>
         </div>
       </div>
 
-      <!-- Tabla -->
-      <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-        <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-          <p class="font-bold text-slate-800 text-sm">
-            Condiciones por puerto —
-            <span class="text-blue-600">{{ especieSeleccionada }}</span>
-          </p>
-          <span class="text-xs text-slate-400 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full font-medium">
-            Ordenado por FishScore
-          </span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead class="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th class="py-3 px-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wide w-8">#</th>
-                <th class="py-3 px-4 text-left text-[10px] font-bold text-slate-400 uppercase tracking-wide">Puerto</th>
-                <th class="py-3 px-4 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wide">Alerta</th>
-                <th class="py-3 px-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wide">FishScore</th>
-                <th class="py-3 px-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wide">Olas</th>
-                <th class="py-3 px-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wide">Viento</th>
-                <th class="py-3 px-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wide">Temp. Mar</th>
-                <th class="py-3 px-4 text-right text-[10px] font-bold text-slate-400 uppercase tracking-wide">Clorofila</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let p of puertosOrdenados; let i = index"
-                  class="border-b border-slate-50 hover:bg-blue-50/50 transition-colors">
+      <!-- Grid de cards por puerto -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-4">
+        <div *ngFor="let p of puertosOrdenados; let i = index"
+             class="rounded p-4 card-hover"
+             style="background:var(--bg-surface);border:1px solid var(--border-mid);">
 
-                <td class="py-3 px-4 text-xs text-slate-400 font-bold">{{ i + 1 }}</td>
+          <!-- Header card -->
+          <div class="flex items-start justify-between mb-3">
+            <div class="min-w-0">
+              <p class="font-bold text-sm leading-tight" style="color:var(--text-primary);">{{ p.nombre }}</p>
+              <p class="text-[9px] mt-0.5 data-value" style="color:var(--text-label);">
+                {{ p.lat | number:'1.2-2' }}°S · {{ p.lon | number:'1.2-2' }}°W
+              </p>
+            </div>
 
-                <td class="py-3 px-4">
-                  <p class="font-bold text-slate-800 text-sm leading-tight">{{ p.nombre }}</p>
-                  <p class="text-[10px] text-slate-400">{{ p.lat | number:'1.2-2' }}°S {{ p.lon | number:'1.2-2' }}°W</p>
-                </td>
+            <!-- Badge nivel -->
+            <ng-container *ngIf="!p.cargando && !p.error && p.datos">
+              <span class="text-[10px] font-black px-2 py-0.5 rounded-sm flex-shrink-0 ml-2"
+                    [style]="p.datos.clima?.alerta?.nivel === 'VERDE'
+                      ? 'background:rgba(0,153,106,0.15);color:var(--accent-green);'
+                      : p.datos.clima?.alerta?.nivel === 'AMARILLO'
+                      ? 'background:rgba(196,122,10,0.15);color:var(--accent-amber);'
+                      : 'background:rgba(184,48,32,0.15);color:var(--accent-red);'">
+                {{ p.datos.clima?.alerta?.nivel === 'VERDE' ? 'BUENO' :
+                   p.datos.clima?.alerta?.nivel === 'AMARILLO' ? 'PRECAUCIÓN' : 'CRÍTICO' }}
+              </span>
+            </ng-container>
+          </div>
 
-                <!-- Cargando -->
-                <td *ngIf="p.cargando" class="py-3 px-4 text-center" colspan="6">
-                  <span class="text-xs text-slate-400 animate-pulse flex items-center justify-center gap-1.5">
-                    <i class="fas fa-circle-notch fa-spin text-blue-400 text-xs"></i>
-                    Consultando...
+          <!-- Cargando -->
+          <div *ngIf="p.cargando" class="flex items-center justify-center h-20">
+            <svg class="w-6 h-6 animate-spin" style="color:var(--accent-cyan)" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/>
+              <path d="M12 3a9 9 0 0 1 9 9"/>
+            </svg>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="p.error && !p.cargando" class="flex items-center justify-center h-20">
+            <p class="text-xs" style="color:var(--accent-red);">Sin datos disponibles</p>
+          </div>
+
+          <!-- Datos -->
+          <ng-container *ngIf="!p.cargando && !p.error && p.datos">
+            <div class="flex items-center gap-4">
+
+              <!-- FishScore gauge -->
+              <div class="flex-shrink-0 relative">
+                <svg viewBox="0 0 36 36" class="w-16 h-16" style="transform:rotate(-90deg);">
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke-width="3" style="stroke:var(--bg-elevated);"/>
+                  <circle cx="18" cy="18" r="15.9" fill="none" stroke-width="3" stroke-linecap="round"
+                          [attr.stroke]="p.datos.clima?.alerta?.nivel === 'VERDE' ? 'var(--accent-green)' :
+                                         p.datos.clima?.alerta?.nivel === 'AMARILLO' ? 'var(--accent-amber)' : 'var(--accent-red)'"
+                          [attr.stroke-dasharray]="(p.datos.fish_score_preliminar || 0) + ' 100'"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span class="text-base font-black leading-none data-value" style="color:var(--text-primary);">
+                    {{ p.datos.fish_score_preliminar }}
                   </span>
-                </td>
+                  <span class="text-[8px] font-bold uppercase" style="color:var(--text-label);">score</span>
+                </div>
+              </div>
 
-                <!-- Error -->
-                <td *ngIf="p.error && !p.cargando" class="py-3 px-4 text-center" colspan="6">
-                  <span class="text-xs text-red-400 font-medium">Sin datos disponibles</span>
-                </td>
+              <!-- Lecturas -->
+              <div class="flex-1 grid grid-cols-2 gap-y-2 gap-x-1">
+                <div>
+                  <p class="text-[9px] uppercase tracking-wider font-bold" style="color:var(--text-label);">Olas</p>
+                  <p class="text-base font-black leading-tight data-value" style="color:var(--text-data);">
+                    {{ p.datos.clima?.mar?.altura_olas_m }}<span class="text-[10px] font-normal" style="color:var(--text-secondary);">m</span>
+                  </p>
+                </div>
+                <div>
+                  <p class="text-[9px] uppercase tracking-wider font-bold" style="color:var(--text-label);">Viento</p>
+                  <p class="text-base font-black leading-tight data-value" style="color:var(--text-data);">
+                    {{ p.datos.clima?.viento?.velocidad_kmh }}<span class="text-[10px] font-normal" style="color:var(--text-secondary);">km/h</span>
+                  </p>
+                </div>
+                <div>
+                  <p class="text-[9px] uppercase tracking-wider font-bold" style="color:var(--text-label);">Temp.</p>
+                  <p class="text-base font-black leading-tight data-value" style="color:var(--accent-cyan);">
+                    {{ p.datos.oceanografia?.temperatura?.temperatura_c }}<span class="text-[10px] font-normal">°C</span>
+                  </p>
+                </div>
+                <div>
+                  <p class="text-[9px] uppercase tracking-wider font-bold" style="color:var(--text-label);">Cloro.</p>
+                  <p class="text-base font-black leading-tight data-value" style="color:var(--accent-green);">
+                    {{ p.datos.oceanografia?.clorofila?.clorofila_mg_m3 }}<span class="text-[10px] font-normal" style="color:var(--text-secondary);">mg</span>
+                  </p>
+                </div>
+              </div>
 
-                <!-- Datos -->
-                <ng-container *ngIf="!p.cargando && !p.error && p.datos">
-                  <td class="py-3 px-4 text-center">
-                    <span class="text-xs font-bold px-2.5 py-1 rounded-full border"
-                          [ngClass]="nivelClase(p.datos.clima?.alerta?.nivel)">
-                      {{ p.datos.clima?.alerta?.nivel === 'VERDE' ? '✅ VERDE' :
-                         p.datos.clima?.alerta?.nivel === 'AMARILLO' ? '⚠️ AMARILLO' : '⛔ ROJO' }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 text-right">
-                    <span class="text-lg font-black" [ngClass]="fishScoreClase(p.datos.fish_score_preliminar)">
-                      {{ p.datos.fish_score_preliminar }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 text-right text-slate-600 font-medium">{{ p.datos.clima?.mar?.altura_olas_m }} m</td>
-                  <td class="py-3 px-4 text-right text-slate-600 font-medium">{{ p.datos.clima?.viento?.velocidad_kmh }} km/h</td>
-                  <td class="py-3 px-4 text-right text-blue-600 font-bold">{{ p.datos.oceanografia?.temperatura?.temperatura_c }}°C</td>
-                  <td class="py-3 px-4 text-right text-green-600 font-bold">{{ p.datos.oceanografia?.clorofila?.clorofila_mg_m3 }} mg/m³</td>
-                </ng-container>
-              </tr>
-            </tbody>
-          </table>
+            </div>
+
+            <!-- Mensaje alerta -->
+            <div class="mt-3 pt-3" style="border-top:1px solid var(--border-subtle);">
+              <p class="text-[10px] leading-snug" style="color:var(--text-secondary);">{{ p.datos.clima?.alerta?.mensaje }}</p>
+            </div>
+          </ng-container>
+
         </div>
       </div>
 
       <!-- Leyenda -->
-      <div class="mt-4 text-xs text-slate-400 flex flex-wrap gap-4 px-1">
-        <span>🐠 <strong class="text-slate-500">FishScore</strong>: 0–100 · ≥70 óptimo · 45–69 moderado · &lt;45 bajo</span>
-        <span>📡 Datos: NASA ERDDAP + Open-Meteo Marine · Actualización automática cada 5 min</span>
+      <div class="text-[10px] px-1" style="color:var(--text-label);">
+        FishScore: 0–100 ·
+        <span style="color:var(--accent-green);">≥70 óptimo</span> ·
+        <span style="color:var(--accent-amber);">45–69 moderado</span> ·
+        <span style="color:var(--accent-red);">&lt;45 bajo</span> ·
+        Datos: NASA ERDDAP + Open-Meteo Marine
       </div>
 
     </div>

@@ -1,32 +1,38 @@
-<div class="h-screen flex overflow-hidden bg-slate-100 font-sans">
+<div class="h-screen flex overflow-hidden font-sans page-layout" style="background:var(--bg-base);">
   <app-sidebar></app-sidebar>
 
   <main class="flex-1 flex flex-col relative">
 
     <!-- Toolbar superior -->
-    <div class="bg-white border-b border-slate-200 px-4 py-3 flex items-center gap-4 flex-wrap z-10">
-      <h1 class="font-bold text-slate-800">🗺️ Mapa de Calor de Pesca</h1>
+    <div class="px-4 py-3 flex items-center gap-4 flex-wrap z-10"
+         style="background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);">
+      <h1 class="font-bold" style="color:var(--text-primary);">
+        <i class="fas fa-map text-sm mr-1" style="color:var(--accent-blue);"></i> Mapa de Calor de Pesca
+      </h1>
 
       <select [(ngModel)]="filtro.puerto_id" (ngModelChange)="aplicarFiltros()"
-              class="border border-slate-200 rounded-lg py-1.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+              class="rounded-lg py-1.5 px-3 text-sm outline-none"
+              style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);">
         <option *ngFor="let p of puertos" [value]="p.id">⚓ {{ p.nombre }}</option>
       </select>
 
       <select [(ngModel)]="filtro.especie" (ngModelChange)="aplicarFiltros()"
-              class="border border-slate-200 rounded-lg py-1.5 px-3 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+              class="rounded-lg py-1.5 px-3 text-sm outline-none"
+              style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);">
         <option *ngFor="let e of especies" [value]="e">🐠 {{ e }}</option>
       </select>
 
       <button (click)="cargarZonas()" [disabled]="cargando"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all">
+              class="text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all"
+              style="background:var(--accent-blue);">
         {{ cargando ? '⏳ Consultando satélites...' : '🔄 Actualizar' }}
       </button>
 
       <!-- Stats inline -->
-      <div *ngIf="estadisticas.total > 0" class="flex gap-4 ml-auto text-xs text-slate-500">
-        <span>Zonas evaluadas: <b class="text-slate-700">{{ estadisticas.total }}</b></span>
-        <span>Score promedio: <b class="text-slate-700">{{ estadisticas.promedio }}</b></span>
-        <span>Score máximo: <b class="text-green-600">{{ estadisticas.maximo }}</b></span>
+      <div *ngIf="estadisticas.total > 0" class="flex gap-4 ml-auto text-xs" style="color:var(--text-secondary);">
+        <span>Zonas evaluadas: <b style="color:var(--text-primary);">{{ estadisticas.total }}</b></span>
+        <span>Score promedio: <b style="color:var(--text-primary);">{{ estadisticas.promedio }}</b></span>
+        <span>Score máximo: <b style="color:var(--accent-green);">{{ estadisticas.maximo }}</b></span>
       </div>
     </div>
 
@@ -34,9 +40,10 @@
     <div id="mapa-calor-leaflet" class="flex-1 z-0"></div>
 
     <!-- Leyenda inferior -->
-    <div class="absolute bottom-4 left-4 z-40 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-slate-200 px-4 py-3">
-      <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">FishScore</p>
-      <div class="flex gap-3 text-[11px]">
+    <div class="absolute bottom-4 left-4 z-40 backdrop-blur rounded-xl shadow-lg px-4 py-3"
+         style="background:rgba(30,41,59,0.95);border:1px solid var(--border-subtle);">
+      <p class="text-[10px] font-bold uppercase mb-2" style="color:var(--text-secondary);">FishScore</p>
+      <div class="flex gap-3 text-[11px]" style="color:var(--text-primary);">
         <div class="flex items-center gap-1">
           <div class="w-3 h-3 rounded-full" style="background:#1D9E75"></div>
           <span>70+ Excelente</span>
@@ -46,7 +53,7 @@
           <span>35-69 Bueno</span>
         </div>
         <div class="flex items-center gap-1">
-          <div class="w-3 h-3 rounded-full" style="background:#E24B4A"></div>
+          <div class="w-3 h-3 rounded-full" style="background:#EF4444"></div>
           <span>&lt;35 Bajo</span>
         </div>
       </div>
@@ -54,18 +61,20 @@
 
     <!-- Sin zonas disponibles -->
     <div *ngIf="!cargando && zonas.length === 0"
-         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-yellow-200 px-6 py-4 text-center">
-      <p class="text-yellow-700 font-bold text-sm">⚠️ No se encontraron zonas de pesca para este puerto.</p>
-      <p class="text-slate-500 text-xs mt-1">Prueba ampliando la especie o seleccionando otro puerto.</p>
+         class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 backdrop-blur rounded-xl shadow-lg border border-amber-500/30 px-6 py-4 text-center"
+         style="background:rgba(30,41,59,0.95);">
+      <p class="text-amber-400 font-bold text-sm">⚠️ No se encontraron zonas de pesca para este puerto.</p>
+      <p class="text-xs mt-1" style="color:var(--text-secondary);">Prueba ampliando la especie o seleccionando otro puerto.</p>
     </div>
 
     <!-- Panel zona caliente -->
     <div *ngIf="estadisticas.zona_caliente"
-         class="absolute bottom-4 right-4 z-40 bg-white/95 backdrop-blur rounded-xl shadow-lg border border-green-200 p-4 w-56">
-      <p class="text-[10px] font-bold text-green-600 uppercase mb-2">🔥 Zona más caliente</p>
-      <p class="text-2xl font-black text-green-600 mb-1">{{ estadisticas.zona_caliente.fish_score }}</p>
-      <p class="text-xs text-slate-500">FishScore</p>
-      <div class="mt-2 text-xs text-slate-500 space-y-0.5">
+         class="absolute bottom-4 right-4 z-40 backdrop-blur rounded-xl shadow-lg p-4 w-56"
+         style="background:rgba(30,41,59,0.95);border:1px solid rgba(29,158,117,0.3);">
+      <p class="text-[10px] font-bold uppercase mb-2" style="color:var(--accent-green);">🔥 Zona más caliente</p>
+      <p class="text-2xl font-black mb-1" style="color:var(--accent-green);">{{ estadisticas.zona_caliente.fish_score }}</p>
+      <p class="text-xs" style="color:var(--text-secondary);">FishScore</p>
+      <div class="mt-2 text-xs space-y-0.5" style="color:var(--text-secondary);">
         <p>🌡️ {{ estadisticas.zona_caliente.temperatura ?? 'N/D' }}°C</p>
         <p>🟢 {{ estadisticas.zona_caliente.clorofila ?? 'N/D' }} mg/m³</p>
         <p>📍 {{ estadisticas.zona_caliente.lat }}, {{ estadisticas.zona_caliente.lon }}</p>

@@ -1,142 +1,178 @@
-<div class="h-screen flex font-sans overflow-hidden">
+<div class="min-h-screen flex flex-col lg:flex-row overflow-hidden" style="background:var(--bg-base);">
 
-  <!-- Left panel — branding (solo en desktop) -->
-  <div class="hidden lg:flex lg:w-[52%] bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex-col justify-between p-12 relative overflow-hidden">
+  <!-- Panel izquierdo — branding carta náutica (solo desktop) -->
+  <div class="hidden lg:flex lg:w-[46%] flex-col justify-between p-10 relative overflow-hidden"
+       style="background:linear-gradient(160deg,#1A0A04 0%,#2C1208 50%,#1A0C06 100%);">
 
-    <!-- Decoración de fondo -->
-    <div class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div class="absolute -top-32 -right-32 w-[500px] h-[500px] bg-blue-600/8 rounded-full blur-3xl"></div>
-      <div class="absolute -bottom-40 -left-32 w-[500px] h-[500px] bg-indigo-600/8 rounded-full blur-3xl"></div>
-      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-blue-500/4 rounded-full blur-3xl"></div>
-      <!-- Ondas decorativas -->
-      <svg class="absolute bottom-0 left-0 right-0 opacity-10" viewBox="0 0 1200 120" preserveAspectRatio="none" style="height:120px">
-        <path d="M0,60 C200,100 400,20 600,60 C800,100 1000,20 1200,60 L1200,120 L0,120 Z" fill="#3B82F6"/>
+    <!-- Retícula de carta náutica -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden opacity-8">
+      <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 600" preserveAspectRatio="none">
+        <line x1="0" y1="100" x2="400" y2="100" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="200" x2="400" y2="200" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="300" x2="400" y2="300" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="400" x2="400" y2="400" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="500" x2="400" y2="500" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="100" y1="0" x2="100" y2="600" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="200" y1="0" x2="200" y2="600" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="300" y1="0" x2="300" y2="600" stroke="#C4B48C" stroke-width="0.5"/>
       </svg>
     </div>
 
-    <!-- Logo y título -->
-    <div class="relative z-10">
-      <div class="flex items-center gap-3 mb-14">
-        <div class="w-11 h-11 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-900/50">
-          <i class="fas fa-fish text-white text-lg"></i>
-        </div>
-        <div>
-          <p class="text-white font-bold text-lg leading-tight tracking-tight">Ringensoft</p>
-          <p class="text-blue-400/60 text-[10px] tracking-widest uppercase">Logística Pesquera</p>
-        </div>
-      </div>
+    <!-- Círculos concéntricos decorativos -->
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
+      <svg viewBox="0 0 400 400" class="w-96 h-96">
+        <circle cx="200" cy="200" r="180" fill="none" stroke="#C4B48C" stroke-width="1"/>
+        <circle cx="200" cy="200" r="130" fill="none" stroke="#C4B48C" stroke-width="1"/>
+        <circle cx="200" cy="200" r="80"  fill="none" stroke="#C4B48C" stroke-width="1"/>
+        <circle cx="200" cy="200" r="30"  fill="none" stroke="#C4B48C" stroke-width="1"/>
+        <line x1="20" y1="200" x2="380" y2="200" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="200" y1="20" x2="200" y2="380" stroke="#C4B48C" stroke-width="0.5"/>
+      </svg>
+    </div>
 
-      <h1 class="text-[2.6rem] font-black text-white leading-[1.1] mb-5 tracking-tight">
-        Optimiza tus rutas<br>
-        con <span class="text-blue-400">datos satelitales</span><br>
-        en tiempo real
+    <!-- Logo -->
+    <div class="relative z-10 flex items-center gap-3">
+      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="#7A2020" stroke-width="1.5" stroke-linecap="round">
+        <path d="M3 18 L12 4 L21 18"/>
+        <path d="M7 18 L12 10 L17 18"/>
+        <line x1="3" y1="18" x2="21" y2="18" stroke-opacity="0.35"/>
+      </svg>
+      <div>
+        <p class="font-black text-base tracking-tight" style="color:#F5EDD8;">Fish<span style="color:#7A2020;">Route</span> <span class="text-xs font-bold" style="color:#7A2020;">PRO</span></p>
+        <p class="text-[9px] uppercase tracking-[0.2em]" style="color:#9A8860;">Sistema de navegación pesquera</p>
+      </div>
+    </div>
+
+    <!-- Título central -->
+    <div class="relative z-10">
+      <h1 class="text-4xl font-black leading-tight mb-5 tracking-tight" style="color:#F5EDD8;">
+        Optimiza tus rutas<br>con <span style="color:#7A2020;">datos satelitales</span><br>en tiempo real
       </h1>
-      <p class="text-slate-400 text-[15px] leading-relaxed max-w-sm">
-        Conecta NASA ERDDAP, Open-Meteo y tu flota para llevar siempre a tu barco al mejor cardumen del Pacífico peruano.
+      <p class="text-sm leading-relaxed max-w-sm" style="color:#B0A080;">
+        Conecta NASA ERDDAP, Open-Meteo y tu flota para encontrar siempre el mejor cardumen del Pacífico peruano.
       </p>
     </div>
 
-    <!-- Feature bullets -->
-    <div class="relative z-10 space-y-4">
-      <div class="flex items-center gap-3.5">
-        <div class="w-9 h-9 bg-blue-500/15 border border-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-satellite text-blue-400 text-xs"></i>
+    <!-- Feature list -->
+    <div class="relative z-10 space-y-3.5">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+             style="background:rgba(122,32,32,0.2);border:1px solid rgba(122,32,32,0.35);">
+          <svg class="w-4 h-4" fill="none" stroke="#7A2020" stroke-width="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="2"/>
+            <path d="M12 2a10 10 0 0 1 0 20M12 2a10 10 0 0 0 0 20" stroke-opacity="0.4"/>
+          </svg>
         </div>
         <div>
-          <p class="text-white text-sm font-semibold leading-tight">Datos satelitales NASA</p>
-          <p class="text-slate-500 text-xs">Temperatura del mar y clorofila cada 30 min</p>
+          <p class="text-xs font-semibold leading-tight" style="color:#F5EDD8;">Datos satelitales NASA / NOAA</p>
+          <p class="text-[10px]" style="color:#9A8860;">Temperatura del mar y clorofila en tiempo real</p>
         </div>
       </div>
-      <div class="flex items-center gap-3.5">
-        <div class="w-9 h-9 bg-teal-500/15 border border-teal-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-route text-teal-400 text-xs"></i>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+             style="background:rgba(58,120,64,0.2);border:1px solid rgba(58,120,64,0.35);">
+          <svg class="w-4 h-4" fill="none" stroke="#3A7840" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M3 12h18M3 6l5 6-5 6M21 6l-5 6 5 6"/>
+          </svg>
         </div>
         <div>
-          <p class="text-white text-sm font-semibold leading-tight">Rutas VRP optimizadas</p>
-          <p class="text-slate-500 text-xs">Algoritmo greedy + 2-opt, respeta autonomía del barco</p>
+          <p class="text-xs font-semibold leading-tight" style="color:#F5EDD8;">Optimización de rutas por IA</p>
+          <p class="text-[10px]" style="color:#9A8860;">Algoritmo VRP greedy + 2-opt, respeta autonomía</p>
         </div>
       </div>
-      <div class="flex items-center gap-3.5">
-        <div class="w-9 h-9 bg-green-500/15 border border-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-          <i class="fas fa-fish text-green-400 text-xs"></i>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0"
+             style="background:rgba(138,96,32,0.2);border:1px solid rgba(138,96,32,0.35);">
+          <svg class="w-4 h-4" fill="none" stroke="#8A6020" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
         </div>
         <div>
-          <p class="text-white text-sm font-semibold leading-tight">FishScore™ por zona</p>
-          <p class="text-slate-500 text-xs">Índice 0–100 de probabilidad de captura por especie</p>
+          <p class="text-xs font-semibold leading-tight" style="color:#F5EDD8;">Alertas meteorológicas en tiempo real</p>
+          <p class="text-[10px]" style="color:#9A8860;">Pronóstico 48h · ventanas seguras de navegación</p>
         </div>
       </div>
-      <p class="text-slate-700 text-xs pt-2 font-medium">&copy; 2025 Ringensoft Analytics · 16 puertos del Perú</p>
+      <p class="text-[10px] pt-2" style="color:#6A5838;">&copy; 2025 Ringensoft Analytics · 16 puertos del Perú</p>
     </div>
   </div>
 
-  <!-- Right panel — formulario -->
-  <div class="flex-1 flex items-center justify-center p-8 bg-white">
-    <div class="w-full max-w-[360px]">
+  <!-- Panel derecho — formulario -->
+  <div class="flex-1 flex items-center justify-center p-6 pt-16 lg:pt-6 min-h-screen lg:min-h-0" style="background:var(--bg-surface);">
+    <div class="w-full max-w-[340px]">
 
       <!-- Logo móvil -->
-      <div class="lg:hidden flex items-center gap-3 justify-center mb-10">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-          <i class="fas fa-fish text-white"></i>
-        </div>
-        <p class="font-bold text-slate-800 text-xl">Ringensoft</p>
+      <div class="lg:hidden flex items-center gap-3 justify-center mb-8">
+        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M3 18 L12 4 L21 18"/>
+          <path d="M7 18 L12 10 L17 18"/>
+          <line x1="3" y1="18" x2="21" y2="18" stroke-opacity="0.35"/>
+        </svg>
+        <p class="font-black text-base tracking-tight" style="color:var(--text-primary);">Fish<span style="color:var(--accent-cyan);">Route</span> <span class="text-xs font-bold" style="color:var(--accent-cyan);">PRO</span></p>
       </div>
 
-      <h2 class="text-2xl font-black text-slate-900 mb-1 tracking-tight">Iniciar sesión</h2>
-      <p class="text-slate-400 text-sm mb-8">Accede a tu panel de control pesquero</p>
+      <h2 class="text-xl font-black mb-1 tracking-tight" style="color:var(--text-primary);">Iniciar sesión</h2>
+      <p class="text-xs mb-6" style="color:var(--text-secondary);">Accede a tu panel de control pesquero</p>
 
       <!-- Error -->
       <div *ngIf="errorMsg"
-           class="mb-5 p-3.5 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm font-medium flex items-center gap-2.5">
-        <i class="fas fa-exclamation-circle text-red-400 shrink-0"></i>
+           class="mb-4 px-4 py-3 rounded text-xs font-medium flex items-center gap-2"
+           style="background:rgba(138,24,24,0.1);border:1px solid rgba(138,24,24,0.25);color:var(--accent-red);">
+        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
         {{ errorMsg }}
       </div>
 
-      <!-- Info (servidor iniciando) -->
+      <!-- Info servidor iniciando -->
       <div *ngIf="infoMsg"
-           class="mb-5 p-3.5 bg-blue-50 border border-blue-100 text-blue-700 rounded-xl text-sm font-medium flex items-center gap-2.5">
-        <i class="fas fa-info-circle text-blue-400 shrink-0"></i>
+           class="mb-4 px-4 py-3 rounded text-xs font-medium flex items-center gap-2"
+           style="background:rgba(42,80,112,0.1);border:1px solid rgba(42,80,112,0.25);color:var(--accent-blue);">
+        <svg class="w-3.5 h-3.5 shrink-0 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="9" stroke-opacity="0.25"/><path d="M12 3a9 9 0 0 1 9 9"/>
+        </svg>
         {{ infoMsg }}
       </div>
 
       <form (ngSubmit)="ingresar()" class="space-y-4">
 
         <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Usuario</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
-              <i class="fas fa-user text-sm"></i>
-            </span>
-            <input [(ngModel)]="usuario" name="usuario" type="text" placeholder="Tu usuario o ID de flota"
-                   class="w-full border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all bg-slate-50 focus:bg-white"
-                   required autocomplete="username">
-          </div>
+          <label class="block text-[9px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--text-label);">Usuario</label>
+          <input [(ngModel)]="usuario" name="usuario" type="text"
+                 placeholder="Tu nombre de usuario"
+                 class="w-full rounded py-3 px-3.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='var(--border-active)'"
+                 onblur="this.style.borderColor='var(--border-mid)'"
+                 required autocomplete="username">
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5">Contraseña</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
-              <i class="fas fa-lock text-sm"></i>
-            </span>
-            <input [(ngModel)]="password" name="password" type="password" placeholder="••••••••"
-                   class="w-full border border-slate-200 rounded-xl py-3 pl-10 pr-4 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition-all bg-slate-50 focus:bg-white"
-                   required autocomplete="current-password">
-          </div>
+          <label class="block text-[9px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--text-label);">Contraseña</label>
+          <input [(ngModel)]="password" name="password" type="password" placeholder="••••••••"
+                 class="w-full rounded py-3 px-3.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='var(--border-active)'"
+                 onblur="this.style.borderColor='var(--border-mid)'"
+                 required autocomplete="current-password">
         </div>
 
         <button [disabled]="cargando" type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 mt-1">
-          <i *ngIf="cargando" class="fas fa-spinner fa-spin"></i>
-          <span>{{ cargando ? (infoMsg ? 'Esperando servidor...' : 'Verificando...') : 'Ingresar al sistema' }}</span>
+                class="w-full font-bold py-3 px-4 rounded outline-none disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 transition-all btn-primary"
+                style="background:var(--accent-cyan);color:#F5EDD8;margin-top:0.25rem;">
+          <svg *ngIf="cargando" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9"/>
+          </svg>
+          <span>{{ cargando ? (infoMsg ? 'Esperando servidor...' : 'Verificando...') : 'Ingresar' }}</span>
         </button>
 
       </form>
 
-      <div class="text-center mt-6 pt-6 border-t border-slate-100">
-        <p class="text-sm text-slate-400">
-          ¿Primera vez aquí?&nbsp;
-          <a routerLink="/registro" class="text-blue-600 font-bold hover:text-blue-700">
-            Crea tu cuenta
+      <div class="text-center mt-6 pt-5" style="border-top:1px solid var(--border-subtle);">
+        <p class="text-xs" style="color:var(--text-secondary);">
+          ¿Eres nuevo en FishRoute?&nbsp;
+          <a routerLink="/registro" class="font-bold hover:underline" style="color:var(--accent-cyan);">
+            Crear cuenta gratis
           </a>
         </p>
       </div>

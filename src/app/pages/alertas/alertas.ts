@@ -1,5 +1,6 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
 import { AlertaBadgeService } from '../../services/alerta-badge.service';
@@ -16,7 +17,9 @@ export class AlertasComponent implements OnInit, OnDestroy {
   condicionesPorPuerto: any[] = [];
   cargando = true;
   ultimaActualizacion = '';
-  private intervalo: any;
+  ordenarPor: 'nivel' | 'fishscore' = 'nivel';
+  private intervalo: ReturnType<typeof setInterval> | undefined;
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(
     private api: ApiService,
@@ -34,33 +37,51 @@ export class AlertasComponent implements OnInit, OnDestroy {
   }
 
   cargarTodo() {
-    this.api.getPuertos().subscribe({
-      next: (data: any) => {
+    this.api.getPuertos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
         this.puertos = data.puertos;
         this.condicionesPorPuerto = [];
         let completados = 0;
+
         for (const puerto of this.puertos) {
-          this.api.getCondiciones(puerto.lat, puerto.lon, 'ANCHOVETA').subscribe({
-            next: (cond: any) => {
-              this.condicionesPorPuerto.push({ puerto, cond });
-              this.condicionesPorPuerto.sort((a, b) => {
-                const orden: any = { 'ROJO': 0, 'AMARILLO': 1, 'VERDE': 2 };
-                return orden[a.cond.clima?.alerta?.nivel] - orden[b.cond.clima?.alerta?.nivel];
-              });
-              completados++;
-              // Update alert badge when all ports have loaded
-              if (completados === this.puertos.length) {
-                this.alertaBadge.alertasRojas = this.condicionesPorPuerto
-                  .filter(p => p.cond.clima?.alerta?.nivel === 'ROJO').length;
+          this.api.getCondiciones(puerto.lat, puerto.lon, 'ANCHOVETA')
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: (cond: any) => {
+                this.condicionesPorPuerto.push({ puerto, cond });
+                this.ordenar();
+                completados++;
+                if (completados === this.puertos.length) {
+                  this.alertaBadge.alertasRojas = this.condicionesPorPuerto
+                    .filter(p => p.cond.clima?.alerta?.nivel === 'ROJO').length;
+                }
+                this.cargando = false;
+                this.ultimaActualizacion = new Date().toLocaleTimeString('es-PE');
+                this.cdr.detectChanges();
               }
-              this.cargando = false;
-              this.ultimaActualizacion = new Date().toLocaleTimeString('es-PE');
-              this.cdr.detectChanges();
-            }
-          });
+            });
         }
       }
     });
+  }
+
+  toggleOrden(modo: 'nivel' | 'fishscore') {
+    this.ordenarPor = modo;
+    this.ordenar();
+    this.cdr.detectChanges();
+  }
+
+  ordenar() {
+    if (this.ordenarPor === 'fishscore') {
+      this.condicionesPorPuerto.sort((a, b) =>
+        (b.cond.fish_score_preliminar ?? 0) - (a.cond.fish_score_preliminar ?? 0)
+      );
+    } else {
+      const orden: Record<string, number> = { ROJO: 0, AMARILLO: 1, VERDE: 2 };
+      this.condicionesPorPuerto.sort((a, b) =>
+        (orden[a.cond.clima?.alerta?.nivel] ?? 3) - (orden[b.cond.clima?.alerta?.nivel] ?? 3)
+      );
+    }
   }
 
   getIconoAlerta(nivel: string): string {

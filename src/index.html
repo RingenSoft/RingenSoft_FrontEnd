@@ -2,15 +2,29 @@
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Ringensoft — Optimización Pesquera</title>
+  <title>FishRoute Pro · Navegación pesquera inteligente</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐟</text></svg>">
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#1e40af">
+  <meta name="theme-color" content="#EDE5D0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="FishRoute Pro">
+
+  <!-- Aplicar tema antes de que cargue Angular (evita flash) -->
+  <script>
+    (function() {
+      var t = localStorage.getItem('tema');
+      if (t === 'oscuro') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        // Garantizar carta-náutica por defecto — limpiar cualquier tema oscuro guardado automáticamente
+        document.documentElement.removeAttribute('data-theme');
+        if (!t) localStorage.removeItem('tema'); // reset silencioso
+      }
+    })();
+  </script>
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,7 +73,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-900" style="font-family:'Inter',sans-serif;">
+<body style="font-family:'Inter',sans-serif;background:var(--bg-base,#EDE5D0);">
 <app-root></app-root>
 <script>
   if ('serviceWorker' in navigator) {

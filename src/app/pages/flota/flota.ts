@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
 
@@ -22,18 +23,17 @@ interface Mantenimiento {
   templateUrl: 'flota.html',
   styleUrl: 'flota.css'
 })
-export class FlotaComponent implements OnInit {
+export class FlotaComponent implements OnInit, OnDestroy {
 
   readonly ANIO_MIN = 1950;
   readonly ANIO_MAX = new Date().getFullYear();
 
-  // --- Tabs ---
   tabActiva: 'embarcaciones' | 'mantenimiento' = 'embarcaciones';
 
-  // --- Embarcaciones ---
   embarcaciones: any[] = [];
   cargando      = true;
   mensaje       = '';
+  errorMsg      = '';
   mostrarFormulario = false;
 
   nuevoBarco = {
@@ -48,16 +48,13 @@ export class FlotaComponent implements OnInit {
     anio_fabricacion:   2018
   };
 
-  // --- Editar embarcación ---
   editandoBarco: any = null;
   barcoEditado: any  = {};
 
-  // --- Historial por embarcación ---
-  historialModalBarco: any   = null;
-  historialBarco: any[]      = [];
-  cargandoHistorial          = false;
+  historialModalBarco: any = null;
+  historialBarco: any[]    = [];
+  cargandoHistorial        = false;
 
-  // --- Mantenimiento ---
   mantenimientos: Mantenimiento[] = [];
   mostrarFormMant = false;
 
@@ -72,11 +69,26 @@ export class FlotaComponent implements OnInit {
 
   tiposMantenimiento = ['PREVENTIVO', 'CORRECTIVO', 'MOTOR', 'CASCO', 'ELECTRONICA', 'COMBUSTIBLE', 'PINTURA'];
 
+  private readonly destroyRef = inject(DestroyRef);
+
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.cargarFlota();
     this.cargarMantenimientos();
+  }
+
+  ngOnDestroy() {}
+
+  private mostrarMensaje(texto: string, esError = false) {
+    if (esError) {
+      this.errorMsg = texto;
+      setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 4000);
+    } else {
+      this.mensaje = texto;
+      setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
+    }
+    this.cdr.detectChanges();
   }
 
   // ========================
@@ -86,17 +98,19 @@ export class FlotaComponent implements OnInit {
   cargarFlota() {
     this.cargando = true;
     this.cdr.detectChanges();
-    this.api.getEmbarcaciones().subscribe({
-      next: (data: any) => {
-        this.embarcaciones = data;
-        this.cargando = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.cargando = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.getEmbarcaciones()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.embarcaciones = data;
+          this.cargando = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.cargando = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   private validarBarco(barco: typeof this.nuevoBarco): string | null {
@@ -113,19 +127,19 @@ export class FlotaComponent implements OnInit {
 
   registrarBarco() {
     const error = this.validarBarco(this.nuevoBarco);
-    if (error) { alert(error); return; }
+    if (error) { this.mostrarMensaje(error, true); return; }
 
-    this.api.crearEmbarcacion(this.nuevoBarco).subscribe({
-      next: (res) => {
-        this.mensaje = `¡${res.nombre} registrado correctamente!`;
-        this.mostrarFormulario = false;
-        this.cargarFlota();
-        this.nuevoBarco = { nombre: '', capacidad_bodega: 15, velocidad_promedio: 10, consumo_hora: 20, autonomia_horas: 24, material_casco: 'FIBRA', tipo_motor: 'DIESEL', tripulacion_max: 6, anio_fabricacion: 2018 };
-        this.cdr.detectChanges();
-        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
-      },
-      error: () => alert('Error al registrar embarcación.')
-    });
+    this.api.crearEmbarcacion(this.nuevoBarco)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          this.mostrarFormulario = false;
+          this.nuevoBarco = { nombre: '', capacidad_bodega: 15, velocidad_promedio: 10, consumo_hora: 20, autonomia_horas: 24, material_casco: 'FIBRA', tipo_motor: 'DIESEL', tripulacion_max: 6, anio_fabricacion: 2018 };
+          this.cargarFlota();
+          this.mostrarMensaje(`¡${res.nombre} registrado correctamente!`);
+        },
+        error: () => this.mostrarMensaje('Error al registrar embarcación.', true)
+      });
   }
 
   abrirEdicion(barco: any) {
@@ -135,31 +149,31 @@ export class FlotaComponent implements OnInit {
 
   guardarEdicion() {
     const error = this.validarBarco(this.barcoEditado);
-    if (error) { alert(error); return; }
+    if (error) { this.mostrarMensaje(error, true); return; }
 
-    this.api.actualizarEmbarcacion(this.editandoBarco.id_embarcacion, this.barcoEditado).subscribe({
-      next: () => {
-        this.mensaje = `${this.barcoEditado.nombre} actualizado correctamente`;
-        this.editandoBarco = null;
-        this.cargarFlota();
-        this.cdr.detectChanges();
-        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
-      },
-      error: () => alert('Error al actualizar embarcación.')
-    });
+    this.api.actualizarEmbarcacion(this.editandoBarco.id_embarcacion, this.barcoEditado)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.editandoBarco = null;
+          this.cargarFlota();
+          this.mostrarMensaje(`${this.barcoEditado.nombre} actualizado correctamente`);
+        },
+        error: () => this.mostrarMensaje('Error al actualizar embarcación.', true)
+      });
   }
 
   eliminarBarco(barco: any) {
     if (!confirm(`¿Eliminar "${barco.nombre}"? Esta acción no se puede deshacer.`)) return;
-    this.api.eliminarEmbarcacion(barco.id_embarcacion).subscribe({
-      next: () => {
-        this.mensaje = `${barco.nombre} eliminado`;
-        this.cargarFlota();
-        this.cdr.detectChanges();
-        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 3000);
-      },
-      error: () => alert('Error al eliminar embarcación.')
-    });
+    this.api.eliminarEmbarcacion(barco.id_embarcacion)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.cargarFlota();
+          this.mostrarMensaje(`${barco.nombre} eliminado`);
+        },
+        error: () => this.mostrarMensaje('Error al eliminar embarcación.', true)
+      });
   }
 
   verHistorial(barco: any) {
@@ -168,47 +182,52 @@ export class FlotaComponent implements OnInit {
     this.cargandoHistorial   = true;
     this.cdr.detectChanges();
 
-    this.api.getHistorialEmbarcacion(barco.id_embarcacion).subscribe({
-      next: (data: any) => {
-        this.historialBarco    = data.rutas || [];
-        this.cargandoHistorial = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.cargandoHistorial = false;
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.getHistorialEmbarcacion(barco.id_embarcacion)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.historialBarco    = data.rutas || [];
+          this.cargandoHistorial = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.cargandoHistorial = false;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
-  cambiarEstado(barco: any, event: any) {
-    const nuevoEstado    = event.target.value;
+  cambiarEstado(barco: any, event: Event) {
+    const nuevoEstado    = (event.target as HTMLSelectElement).value;
     const estadoAnterior = barco.estado;
     barco.estado = nuevoEstado;
-    this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado).subscribe({
-      next: () => this.cdr.detectChanges(),
-      error: () => {
-        barco.estado = estadoAnterior;
-        alert('Error al cambiar estado.');
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.cambiarEstadoEmbarcacion(barco.id_embarcacion, nuevoEstado)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.cdr.detectChanges(),
+        error: () => {
+          barco.estado = estadoAnterior;
+          this.mostrarMensaje('Error al cambiar estado.', true);
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   optimizar(id: string, nombre: string) {
     this.mensaje = `Calculando ruta óptima para ${nombre}...`;
     this.cdr.detectChanges();
-    this.api.optimizarRuta({ id_embarcacion: id, id_puerto: 'CHIMBOTE' }).subscribe({
-      next: (res) => {
-        this.mensaje = `✅ Ruta generada: ${res.distancia_total_km} km`;
-        this.cdr.detectChanges();
-        setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 5000);
-      },
-      error: () => {
-        this.mensaje = '❌ Error de conexión.';
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.calcularRutaOptima({ id_embarcacion: id, id_puerto: 'CHIMBOTE' })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res: any) => {
+          this.mensaje = `Ruta generada: ${res.resultado?.distancia_total_km ?? '—'} km`;
+          this.cdr.detectChanges();
+          setTimeout(() => { this.mensaje = ''; this.cdr.detectChanges(); }, 5000);
+        },
+        error: () => {
+          this.mostrarMensaje('Error al calcular ruta.', true);
+        }
+      });
   }
 
   // ========================
@@ -216,18 +235,20 @@ export class FlotaComponent implements OnInit {
   // ========================
 
   cargarMantenimientos() {
-    this.api.getMantenimientos().subscribe({
-      next: (data: any[]) => {
-        this.mantenimientos = data;
-        this.cdr.detectChanges();
-      },
-      error: () => this.cdr.detectChanges()
-    });
+    this.api.getMantenimientos()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data) => {
+          this.mantenimientos = data;
+          this.cdr.detectChanges();
+        },
+        error: () => this.cdr.detectChanges()
+      });
   }
 
   agregarMantenimiento() {
-    if (!this.nuevoMant.id_embarcacion) { alert('Selecciona una embarcación'); return; }
-    if (!this.nuevoMant.descripcion.trim()) { alert('La descripción es obligatoria'); return; }
+    if (!this.nuevoMant.id_embarcacion) { this.mostrarMensaje('Selecciona una embarcación', true); return; }
+    if (!this.nuevoMant.descripcion.trim()) { this.mostrarMensaje('La descripción es obligatoria', true); return; }
 
     const barco = this.embarcaciones.find(b => b.id_embarcacion === this.nuevoMant.id_embarcacion);
     const payload = {
@@ -235,22 +256,26 @@ export class FlotaComponent implements OnInit {
       nombre_embarcacion: barco?.nombre ?? this.nuevoMant.id_embarcacion,
     };
 
-    this.api.crearMantenimiento(payload).subscribe({
-      next: () => {
-        this.nuevoMant = { id_embarcacion: '', fecha: new Date().toISOString().split('T')[0], tipo: 'PREVENTIVO', descripcion: '', costo: 0, proxima_revision: '' };
-        this.mostrarFormMant = false;
-        this.cargarMantenimientos();
-      },
-      error: () => alert('Error al registrar mantenimiento.')
-    });
+    this.api.crearMantenimiento(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.nuevoMant = { id_embarcacion: '', fecha: new Date().toISOString().split('T')[0], tipo: 'PREVENTIVO', descripcion: '', costo: 0, proxima_revision: '' };
+          this.mostrarFormMant = false;
+          this.cargarMantenimientos();
+        },
+        error: () => this.mostrarMensaje('Error al registrar mantenimiento.', true)
+      });
   }
 
   eliminarMantenimiento(id: any) {
     if (!confirm('¿Eliminar este registro de mantenimiento?')) return;
-    this.api.eliminarMantenimiento(Number(id)).subscribe({
-      next: () => this.cargarMantenimientos(),
-      error: () => alert('Error al eliminar.')
-    });
+    this.api.eliminarMantenimiento(Number(id))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.cargarMantenimientos(),
+        error: () => this.mostrarMensaje('Error al eliminar.', true)
+      });
   }
 
   proximasRevisiones(): Mantenimiento[] {

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FishRoute Pro — Carta Náutica</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-base:      #EDE5D0;
+  --bg-surface:   #E5DBC6;
+  --bg-elevated:  #D8CEAE;
+  --bg-card:      #EAE0CC;
+  --accent:       #7A2020;
+  --accent-green: #3A7840;
+  --accent-amber: #8A6020;
+  --text-1:       #1A1208;
+  --text-2:       #7A6848;
+  --text-3:       #9A8860;
+  --border-1:     #D4C8A4;
+  --border-2:     #C4B48C;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-1);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+}
+
+/* ═══ SIDEBAR ═══ */
+.sb {
+  width: 220px;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-2);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  animation: slideRight 0.4s cubic-bezier(.22,1,.36,1) both;
+}
+
+.sb-brand {
+  padding: 1.4rem 1.1rem 0.9rem;
+  border-bottom: 1px solid var(--border-2);
+  flex-shrink: 0;
+}
+.sb-brand-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.sb-logo { font-size: 0.88rem; font-weight: 900; letter-spacing: -0.02em; color: var(--text-1); }
+.sb-logo span { color: var(--accent); }
+.sb-pro {
+  font-size: 0.5rem; font-weight: 800; letter-spacing: 0.1em;
+  padding: 2px 6px; border-radius: 2px;
+  background: rgba(122,32,32,0.1); color: var(--accent);
+}
+.sb-tag { font-size: 0.48rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3); }
+
+nav { flex: 1; padding: 0.5rem 0.6rem; overflow-y: auto; }
+.nav-sec {
+  font-size: 0.47rem; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-3); padding: 0.8rem 0.5rem 0.25rem;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.38rem 0.55rem; border-radius: 3px; margin: 1px 0;
+  font-size: 0.72rem; font-weight: 500; color: var(--text-2);
+  text-decoration: none; cursor: default;
+  transition: background 0.15s, color 0.15s;
+  animation: fadeInUp 0.35s ease both;
+}
+.nav-item:hover { background: rgba(26,18,8,0.06); color: var(--text-1); }
+.nav-item.active { background: rgba(122,32,32,0.10); color: var(--accent); font-weight: 700; }
+.nav-item svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.nav-item:nth-child(1){animation-delay:0.04s}
+.nav-item:nth-child(2){animation-delay:0.08s}
+.nav-item:nth-child(3){animation-delay:0.12s}
+.nav-item:nth-child(4){animation-delay:0.16s}
+.nav-item:nth-child(5){animation-delay:0.20s}
+.nav-item:nth-child(6){animation-delay:0.24s}
+.nav-item:nth-child(7){animation-delay:0.28s}
+.nav-item:nth-child(8){animation-delay:0.32s}
+
+.sb-foot {
+  border-top: 1px solid var(--border-2);
+  flex-shrink: 0;
+}
+.profile-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.75rem 1.1rem; cursor: default;
+  transition: background 0.15s;
+}
+.profile-row:hover { background: rgba(26,18,8,0.05); }
+.avatar {
+  width: 30px; height: 30px; border-radius: 4px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 900;
+  background: rgba(122,32,32,0.1); color: var(--accent);
+  border: 1px solid rgba(122,32,32,0.25);
+}
+.uname { font-size: 0.68rem; font-weight: 700; color: var(--text-1); }
+.urole { font-size: 0.5rem; color: var(--text-2); margin-top: 1px; }
+.led {
+  width: 7px; height: 7px; border-radius: 50%; margin-left: auto; flex-shrink: 0;
+  background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green);
+  animation: ledPulse 2.5s ease-in-out infinite;
+}
+.logout-btn {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; padding: 0.5rem 1.1rem; border: none; background: none; cursor: default;
+  font-size: 0.65rem; font-weight: 500; color: var(--text-2);
+  border-top: 1px solid var(--border-1);
+  transition: background 0.15s, color 0.15s;
+}
+.logout-btn:hover { background: rgba(138,24,24,0.06); color: #8A1818; }
+.logout-btn svg { width: 13px; height: 13px; }
+
+/* ═══ MAIN ═══ */
+.main {
+  flex: 1; overflow-y: auto; padding: 1.4rem 1.6rem;
+  display: flex; flex-direction: column; gap: 1rem;
+  background: var(--bg-base);
+}
+
+/* Header */
+.hdr {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  animation: fadeInUp 0.3s ease both;
+}
+.pg-title { font-size: 1.15rem; font-weight: 800; color: var(--text-1); letter-spacing: -0.02em; }
+.pg-sub   { font-size: 0.6rem; color: var(--text-3); margin-top: 3px; }
+.cta-btn {
+  padding: 0.45rem 1.1rem; border-radius: 3px; border: none; cursor: default;
+  font-size: 0.65rem; font-weight: 800; letter-spacing: 0.04em;
+  background: var(--accent); color: #F8F0E8;
+  box-shadow: 0 2px 10px rgba(122,32,32,0.25);
+  transition: box-shadow 0.15s, transform 0.15s;
+  animation: scaleIn 0.3s ease 0.15s both;
+}
+.cta-btn:hover { box-shadow: 0 4px 16px rgba(122,32,32,0.35); transform: translateY(-1px); }
+
+/* Banner alerta */
+.banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0.55rem 0.9rem; border-radius: 3px;
+  background: rgba(122,32,32,0.07); border-left: 3px solid var(--accent);
+  font-size: 0.63rem; font-weight: 600; color: var(--accent);
+  animation: fadeInUp 0.35s ease 0.1s both;
+}
+.banner svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* KPIs */
+.kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.7rem; }
+.kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: 4px;
+  padding: 0.8rem 0.9rem;
+  animation: fadeInUp 0.4s ease both;
+  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+}
+.kpi:hover {
+  box-shadow: 0 4px 16px rgba(26,18,8,0.1);
+  transform: translateY(-2px);
+  border-color: var(--border-2);
+}
+.kpi:nth-child(1){animation-delay:0.12s}
+.kpi:nth-child(2){animation-delay:0.18s}
+.kpi:nth-child(3){animation-delay:0.24s}
+.kpi:nth-child(4){animation-delay:0.30s}
+.kpi-label { font-size: 0.5rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+.kpi-value { font-size: 1.6rem; font-weight: 900; margin-top: 4px; font-variant-numeric: tabular-nums; color: var(--text-1); }
+.kpi-sub   { font-size: 0.5rem; color: var(--text-3); margin-top: 2px; }
+.kpi-accent { color: var(--accent); }
+.kpi-green  { color: var(--accent-green); }
+.kpi-amber  { color: var(--accent-amber); }
+
+/* Separador de sección */
+.section-label {
+  font-size: 0.5rem; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-3); display: flex; align-items: center; gap: 0.6rem;
+  animation: fadeInUp 0.3s ease 0.2s both;
+}
+.section-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--border-1);
+  animation: lineGrow 0.5s ease 0.3s both; transform-origin: left;
+}
+
+/* Cards fila */
+.cards-row { display: grid; grid-template-columns: 2fr 1.4fr 1fr; gap: 0.7rem; }
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-1);
+  border-radius: 4px;
+  padding: 0.9rem 1rem;
+  animation: fadeInUp 0.4s ease both;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.card:hover { box-shadow: 0 4px 18px rgba(26,18,8,0.10); transform: translateY(-1px); }
+.card:nth-child(1){animation-delay:0.22s}
+.card:nth-child(2){animation-delay:0.28s}
+.card:nth-child(3){animation-delay:0.34s}
+.card-title { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); margin-bottom: 0.7rem; }
+
+/* Gráfico de barras */
+.chart { display: flex; align-items: flex-end; gap: 4px; height: 56px; }
+.bar { flex: 1; border-radius: 2px 2px 0 0; transform-origin: bottom; animation: growBar 0.7s cubic-bezier(.22,1,.36,1) both; }
+.bar:nth-child(1){animation-delay:0.25s}
+.bar:nth-child(2){animation-delay:0.30s}
+.bar:nth-child(3){animation-delay:0.35s}
+.bar:nth-child(4){animation-delay:0.40s}
+.bar:nth-child(5){animation-delay:0.45s}
+.bar:nth-child(6){animation-delay:0.50s}
+.bar:nth-child(7){animation-delay:0.55s}
+.bar:nth-child(8){animation-delay:0.60s}
+.chart-foot { font-size: 0.48rem; color: var(--text-3); margin-top: 6px; display: flex; justify-content: space-between; }
+
+/* Gauge circular */
+.gauge-wrap { display: flex; align-items: center; gap: 1rem; }
+.gauge-num  { font-size: 2rem; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
+.gauge-lbl  { font-size: 0.55rem; font-weight: 700; color: var(--text-3); margin-top: 2px; }
+.gauge-sub  { font-size: 0.48rem; color: var(--text-3); margin-top: 1px; }
+
+/* Lista de puertos */
+.port-list { display: flex; flex-direction: column; gap: 0; }
+.port-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0.38rem 0; border-bottom: 1px solid var(--border-1);
+  animation: fadeInUp 0.3s ease both;
+}
+.port-item:last-child { border-bottom: none; }
+.port-item:nth-child(1){animation-delay:0.28s}
+.port-item:nth-child(2){animation-delay:0.33s}
+.port-item:nth-child(3){animation-delay:0.38s}
+.port-item:nth-child(4){animation-delay:0.43s}
+.port-name  { font-size: 0.62rem; color: var(--text-1); font-weight: 500; }
+.port-score { font-size: 0.68rem; font-weight: 900; font-variant-numeric: tabular-nums; }
+.score-bar-wrap { width: 48px; height: 3px; background: var(--border-1); border-radius: 2px; margin: 0 8px; overflow: hidden; }
+.score-bar { height: 100%; border-radius: 2px; animation: lineGrow 0.6s ease both; transform-origin: left; }
+
+/* ═══ ANIMACIONES ═══ */
+@keyframes slideRight {
+  from { transform: translateX(-20px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes growBar {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes lineGrow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes ledPulse {
+  0%,100% { opacity: 1; box-shadow: 0 0 6px #3A7840; }
+  50% { opacity: 0.4; box-shadow: 0 0 2px #3A7840; }
+}
+@keyframes gaugeDraw {
+  from { stroke-dasharray: 0 100; }
+  to   { stroke-dasharray: 74 26; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-brand-row">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round">
+        <path d="M3 18 L12 4 L21 18"/><path d="M7 18 L12 10 L17 18"/>
+        <line x1="3" y1="18" x2="21" y2="18" stroke-opacity="0.35"/>
+      </svg>
+      <div class="sb-logo">Fish<span>Route</span></div>
+      <span class="sb-pro">PRO</span>
+    </div>
+    <div class="sb-tag">Sistema de navegación pesquera</div>
+  </div>
+
+  <nav>
+    <div class="nav-sec">Principal</div>
+    <div class="nav-item active">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Centro de mando
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Carta de rutas
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6.5" stroke-opacity=".45"/><circle cx="12" cy="12" r="10" stroke-opacity=".2"/></svg>
+      Mapa de calor
+    </div>
+
+    <div class="nav-sec">Operaciones</div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M3 17l4-10 5 3 5-3 4 10H3z"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+      Gestión de flota
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Planificador
+    </div>
+
+    <div class="nav-sec">Datos del mar</div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/></svg>
+      Alertas
+      <span style="margin-left:auto;font-size:0.48rem;font-weight:800;padding:1px 5px;border-radius:2px;background:rgba(138,24,24,0.12);color:#8A1818;">2</span>
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M2 12C5 9 7 15 12 12s5-3 10 0"/><path d="M2 17C5 14 7 20 12 17s5-3 10 0" stroke-opacity=".4"/></svg>
+      Oceanografía
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Reportes
+    </div>
+
+    <div class="nav-sec">Comunidad</div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Zona pescadores
+    </div>
+    <div class="nav-item">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Rankings
+    </div>
+  </nav>
+
+  <div class="sb-foot">
+    <div class="profile-row">
+      <div class="avatar">JR</div>
+      <div>
+        <div class="uname">J. Rojas</div>
+        <div class="urole">Patrón de pesca</div>
+      </div>
+      <div class="led"></div>
+    </div>
+    <button class="logout-btn">
+      <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Cerrar sesión
+    </button>
+  </div>
+</aside>
+
+<!-- ════ MAIN ════ -->
+<main class="main">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div>
+      <div class="pg-title">Centro de mando</div>
+      <div class="pg-sub">Martes 20 mayo 2026 · Puerto Callao · 08:14 hrs</div>
+    </div>
+    <button class="cta-btn">+ Nueva ruta</button>
+  </div>
+
+  <!-- Banner veda -->
+  <div class="banner">
+    <svg fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    Veda ANCHOVETA activa — Zona norte hasta el 30 de junio · Fuente: PRODUCE/IMARPE
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">Rutas hoy</div>
+      <div class="kpi-value">14</div>
+      <div class="kpi-sub">+3 vs ayer</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">FishScore prom.</div>
+      <div class="kpi-value kpi-accent">74</div>
+      <div class="kpi-sub">Condición moderada</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Embarcaciones</div>
+      <div class="kpi-value kpi-green">8</div>
+      <div class="kpi-sub">activas en mar</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Alertas</div>
+      <div class="kpi-value kpi-accent">2</div>
+      <div class="kpi-sub">críticas · 1 advertencia</div>
+    </div>
+  </div>
+
+  <!-- Sección -->
+  <div class="section-label">Análisis del día</div>
+
+  <!-- Cards -->
+  <div class="cards-row">
+
+    <!-- Pronóstico -->
+    <div class="card">
+      <div class="card-title">Pronóstico de condiciones — 12 horas</div>
+      <div class="chart">
+        <div class="bar" style="height:42%;background:#C4B48C;"></div>
+        <div class="bar" style="height:58%;background:#B09060;"></div>
+        <div class="bar" style="height:78%;background:#8A6020;"></div>
+        <div class="bar" style="height:52%;background:#B09060;"></div>
+        <div class="bar" style="height:68%;background:#A07840;"></div>
+        <div class="bar" style="height:92%;background:#7A2020;"></div>
+        <div class="bar" style="height:62%;background:#A07840;"></div>
+        <div class="bar" style="height:46%;background:#C4B48C;"></div>
+      </div>
+      <div class="chart-foot">
+        <span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span>
+        <span>16:00</span><span>18:00</span><span>20:00</span><span>22:00</span>
+      </div>
+      <div style="font-size:0.52rem;color:var(--text-3);margin-top:8px;">Olas 1.4–2.1 m · Viento 14 kts NNW · Temp. mar 18.4°C</div>
+    </div>
+
+    <!-- FishScore gauge -->
+    <div class="card">
+      <div class="card-title">FishScore promedio</div>
+      <div class="gauge-wrap">
+        <svg width="70" height="70" viewBox="0 0 36 36">
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--border-1)" stroke-width="3"/>
+          <circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--accent)" stroke-width="3"
+            stroke-linecap="round" transform="rotate(-90 18 18)"
+            style="animation: gaugeDraw 1.2s cubic-bezier(.22,1,.36,1) 0.3s both;"/>
+        </svg>
+        <div>
+          <div class="gauge-num">74</div>
+          <div class="gauge-lbl" style="color:var(--accent-amber);">Moderado</div>
+          <div class="gauge-sub">Puerto Callao</div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:0.5rem;color:var(--text-3);">
+        Clorofila 68 · SST 25°C · Olas 1.8 m
+      </div>
+    </div>
+
+    <!-- Puertos -->
+    <div class="card">
+      <div class="card-title">Puertos activos</div>
+      <div class="port-list">
+        <div class="port-item">
+          <span class="port-name">Callao</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:82%;background:var(--accent-green);animation-delay:0.3s"></div></div>
+          <span class="port-score" style="color:var(--accent-green);">82</span>
+        </div>
+        <div class="port-item">
+          <span class="port-name">Chimbote</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:74%;background:var(--accent-amber);animation-delay:0.35s"></div></div>
+          <span class="port-score" style="color:var(--accent-amber);">74</span>
+        </div>
+        <div class="port-item">
+          <span class="port-name">Ilo</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:71%;background:var(--accent-amber);animation-delay:0.40s"></div></div>
+          <span class="port-score" style="color:var(--accent-amber);">71</span>
+        </div>
+        <div class="port-item">
+          <span class="port-name">Pisco</span>
+          <div class="score-bar-wrap"><div class="score-bar" style="width:41%;background:var(--accent);animation-delay:0.45s"></div></div>
+          <span class="port-score" style="color:var(--accent);">41</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+</body>
+</html>

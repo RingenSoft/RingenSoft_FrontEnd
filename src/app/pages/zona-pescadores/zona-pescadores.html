@@ -1,28 +1,32 @@
-<div class="h-screen flex overflow-hidden bg-slate-900 font-sans">
+<div class="h-screen flex overflow-hidden font-sans page-layout" style="background:var(--bg-base);">
   <app-sidebar></app-sidebar>
 
   <main class="flex-1 flex flex-col overflow-hidden">
 
     <!-- Header -->
-    <div class="bg-slate-950 border-b border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
+    <div class="px-6 py-4 flex items-center justify-between flex-shrink-0"
+         style="background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);">
       <div>
-        <h1 class="text-xl font-black text-white tracking-tight flex items-center gap-2.5">
-          <span class="w-9 h-9 bg-teal-500/20 border border-teal-500/30 rounded-xl flex items-center justify-center text-lg">🌊</span>
+        <h1 class="text-xl font-black tracking-tight flex items-center gap-2.5" style="color:var(--text-primary);">
+          <span class="w-9 h-9 rounded-xl flex items-center justify-center text-lg"
+                style="background:rgba(29,158,117,0.15);border:1px solid rgba(29,158,117,0.3);">🌊</span>
           Zona de Pescadores
         </h1>
-        <p class="text-slate-500 text-xs mt-0.5">Comunidad pesquera · Avistamientos y chat en tiempo real</p>
+        <p class="text-xs mt-0.5" style="color:var(--text-secondary);">Comunidad pesquera · Avistamientos y chat en tiempo real</p>
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-1 bg-slate-800 rounded-xl p-1">
+      <div class="flex gap-1 rounded-xl p-1" style="background:var(--bg-elevated);">
         <button (click)="tab = 'avistamientos'"
                 class="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-                [ngClass]="tab === 'avistamientos' ? 'bg-teal-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'">
+                [ngClass]="tab === 'avistamientos' ? 'text-white shadow-md' : ''"
+                [style]="tab === 'avistamientos' ? 'background:var(--accent-green);' : 'color:var(--text-secondary);'">
           🐟 Avistamientos
         </button>
         <button (click)="tab = 'chat'; scrollChat()"
                 class="px-4 py-2 rounded-lg text-sm font-bold transition-all"
-                [ngClass]="tab === 'chat' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'">
+                [ngClass]="tab === 'chat' ? 'text-white shadow-md' : ''"
+                [style]="tab === 'chat' ? 'background:var(--accent-blue);' : 'color:var(--text-secondary);'">
           💬 Chat
         </button>
       </div>
@@ -45,31 +49,58 @@
 
       <!-- Formulario -->
       <div *ngIf="mostrarFormulario"
-           class="bg-slate-800 rounded-2xl border border-teal-500/30 shadow-xl p-5 mb-5 animate-slide-up">
-        <h3 class="text-white font-bold mb-4 flex items-center gap-2">
+           class="rounded-2xl shadow-xl p-5 mb-5 animate-slide-up"
+           style="background:var(--bg-surface);border:1px solid rgba(29,158,117,0.3);">
+        <h3 class="font-bold mb-4 flex items-center gap-2" style="color:var(--text-primary);">
           <span class="text-lg">🐟</span> Nuevo avistamiento
         </h3>
         <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
-            <label class="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1.5 block">Especie</label>
+            <label class="text-xs font-bold uppercase tracking-wide mb-1.5 block" style="color:var(--text-secondary);">Especie</label>
             <select [(ngModel)]="nuevoAvistamiento.especie"
-                    class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 rounded-xl px-3 py-2.5 text-white text-sm outline-none transition-colors">
+                    class="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);">
               <option *ngFor="let e of especies" [value]="e">{{ e }}</option>
             </select>
           </div>
           <div>
-            <label class="text-xs text-slate-400 font-bold uppercase tracking-wide mb-1.5 block">Zona</label>
+            <label class="text-xs font-bold uppercase tracking-wide mb-1.5 block" style="color:var(--text-secondary);">Zona</label>
             <select [(ngModel)]="nuevoAvistamiento.zona"
-                    class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 rounded-xl px-3 py-2.5 text-white text-sm outline-none transition-colors">
+                    class="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                    style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);">
               <option *ngFor="let p of puertos" [value]="p">{{ p }}</option>
             </select>
           </div>
         </div>
         <textarea [(ngModel)]="nuevoAvistamiento.descripcion" rows="3"
                   placeholder="Describe el avistamiento: densidad, temperatura del agua, visibilidad..."
-                  class="w-full bg-slate-900 border border-slate-600 focus:border-teal-500 rounded-xl px-3 py-2.5 text-white text-sm outline-none resize-none mb-3 transition-colors"></textarea>
+                  class="w-full rounded-xl px-3 py-2.5 text-sm outline-none resize-none mb-3 transition-colors"
+                  style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);"></textarea>
+
+        <!-- Subida de foto -->
+        <div class="mb-3">
+          <label class="text-xs font-bold uppercase tracking-wide mb-1.5 block" style="color:var(--text-secondary);">Foto (opcional, máx. 5 MB)</label>
+          <label class="flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-colors"
+                 style="background:var(--bg-elevated);border:1px dashed var(--border-subtle);">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="var(--accent-cyan)" stroke-width="1.75" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span class="text-xs flex-1" style="color:var(--text-secondary);">
+              {{ fotoSeleccionada ? fotoSeleccionada.name : 'Seleccionar imagen...' }}
+            </span>
+            <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden"
+                   (change)="onFotoSeleccionada($event)"/>
+          </label>
+          <!-- Preview -->
+          <img *ngIf="fotoPreview" [src]="fotoPreview" alt="preview"
+               class="mt-2 rounded-xl w-full object-cover" style="max-height:120px;"/>
+        </div>
+
+        <div *ngIf="errorMsg" class="text-xs py-2 px-3 rounded-xl mb-2" style="background:rgba(184,48,32,0.1);color:var(--accent-red);">{{ errorMsg }}</div>
         <button (click)="reportarAvistamiento()" [disabled]="enviando"
-                class="w-full bg-teal-600 hover:bg-teal-500 disabled:bg-slate-600 text-white py-2.5 rounded-xl font-bold text-sm transition-all btn-primary">
+                class="w-full text-white py-2.5 rounded-xl font-bold text-sm transition-all"
+                style="background:var(--accent-green);">
           {{ enviando ? 'Publicando...' : 'Publicar avistamiento' }}
         </button>
       </div>
@@ -89,7 +120,8 @@
       <!-- Feed -->
       <div class="space-y-3">
         <div *ngFor="let a of avistamientos; let i = index"
-             class="bg-slate-800 border border-slate-700 rounded-2xl p-5 card-hover animate-fade-in"
+             class="rounded-2xl p-5 card-hover animate-fade-in"
+             style="background:var(--bg-surface);border:1px solid var(--border-subtle);"
              [style.animation-delay]="(i * 0.04) + 's'">
 
           <div class="flex items-start justify-between mb-3">
@@ -110,9 +142,15 @@
             </span>
           </div>
 
-          <p class="text-slate-300 text-sm leading-relaxed mb-3">{{ a.descripcion }}</p>
+          <p class="text-sm leading-relaxed mb-3" style="color:var(--text-secondary);">{{ a.descripcion }}</p>
 
-          <div class="flex items-center justify-between pt-3 border-t border-slate-700">
+          <!-- Foto del avistamiento -->
+          <img *ngIf="a.foto_url" [src]="'https://ringensoft-backend.onrender.com' + a.foto_url"
+               alt="Foto avistamiento" class="w-full rounded-xl object-cover mb-3"
+               loading="lazy" decoding="async"
+               style="max-height:180px;"/>
+
+          <div class="flex items-center justify-between pt-3" style="border-top:1px solid var(--border-subtle);">
             <button (click)="votar(a)" [disabled]="yaVotado(a.id)"
                     class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all"
                     [ngClass]="yaVotado(a.id)
@@ -174,7 +212,7 @@
       </div>
 
       <!-- Input chat -->
-      <div class="border-t border-slate-800 bg-slate-950 px-4 py-3 flex-shrink-0">
+      <div class="px-4 py-3 flex-shrink-0" style="border-top:1px solid var(--border-subtle);background:var(--bg-surface);">
 
         <!-- Selector de tipo -->
         <div class="flex gap-1.5 mb-2">
@@ -192,7 +230,8 @@
           <input [(ngModel)]="textoMensaje"
                  (keydown.enter)="enviarMensaje()"
                  placeholder="Escribe un mensaje a la comunidad..."
-                 class="flex-1 bg-slate-800 border border-slate-700 focus:border-blue-500 rounded-xl px-4 py-2.5 text-white text-sm outline-none transition-colors placeholder:text-slate-500"/>
+                 class="flex-1 rounded-xl px-4 py-2.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-subtle);color:var(--text-primary);"/>
           <button (click)="enviarMensaje()" [disabled]="enviandoMensaje || !textoMensaje.trim()"
                   class="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm transition-all btn-primary disabled:opacity-50">
             {{ enviandoMensaje ? '...' : '↑' }}

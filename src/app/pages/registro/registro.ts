@@ -15,6 +15,7 @@ export class RegistroComponent {
   usuario: string = '';
   password: string = '';
   nombre: string = '';
+  telefono: string = '';
 
   mensaje: string = '';
   error: boolean = false;
@@ -24,18 +25,23 @@ export class RegistroComponent {
 
   registrar() {
     if (!this.usuario || !this.password || !this.nombre) {
-      this.mostrarError('Completa todos los campos');
+      this.mostrarError('Completa los campos obligatorios');
+      return;
+    }
+    if (this.password.length < 6) {
+      this.mostrarError('La contraseña debe tener al menos 6 caracteres');
       return;
     }
 
     this.cargando = true;
     this.mensaje = '';
 
-    const datos = {
+    const datos: any = {
       username: this.usuario,
       password: this.password,
-      nombre_completo: this.nombre
+      nombre_completo: this.nombre,
     };
+    if (this.telefono) datos.telefono = this.telefono;
 
     this.auth.registro(datos).subscribe({
       next: (res) => {

@@ -1,10 +1,12 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, switchMap } from 'rxjs/operators';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import { ESPECIES, colorPorScore } from '../../constants/app.constants';
 import * as L from 'leaflet';
 
 @Component({
@@ -27,7 +29,7 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
     puerto_id: 'CHIMBOTE',
     especie:   'ANCHOVETA',
   };
-  especies = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+  readonly especies = ESPECIES;
 
   estadisticas = {
     total: 0,
@@ -38,18 +40,18 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
 
   private filtroChange$ = new Subject<void>();
   private filtroSub?: Subscription;
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
-    this.api.getPuertos().subscribe({
-      next: (d: any) => {
+    this.api.getPuertos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (d) => {
         this.puertos = d.puertos;
         this.cdr.detectChanges();
       }
     });
 
-    // Debounce para evitar múltiples requests cuando el usuario cambia filtros rápido
     this.filtroSub = this.filtroChange$.pipe(
       debounceTime(400),
       switchMap(() => {
@@ -100,34 +102,33 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
     this.cargandoMapa = false;
   }
 
-  // Llamado desde la UI al cambiar filtros — pasa por debounce
   aplicarFiltros() {
     this.filtroChange$.next();
   }
 
-  // Carga inicial (sin debounce)
   cargarZonas() {
     this.cargando = true;
     this.capaZonas?.clearLayers();
     this.cdr.detectChanges();
 
-    this.api.getZonasCalor(this.filtro.puerto_id, this.filtro.especie).subscribe({
-      next: (data: any) => {
-        this.zonas    = data.zonas || [];
-        this.cargando = false;
-        this.calcularEstadisticas();
-        this.dibujarZonas(data.puerto);
-        this.cdr.detectChanges();
-      },
-      error: () => { this.cargando = false; this.cdr.detectChanges(); }
-    });
+    this.api.getZonasCalor(this.filtro.puerto_id, this.filtro.especie)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data: any) => {
+          this.zonas    = data.zonas || [];
+          this.cargando = false;
+          this.calcularEstadisticas();
+          this.dibujarZonas(data.puerto);
+          this.cdr.detectChanges();
+        },
+        error: () => { this.cargando = false; this.cdr.detectChanges(); }
+      });
   }
 
   dibujarZonas(puerto: any) {
     if (!this.capaZonas || !this.mapa) return;
     this.capaZonas.clearLayers();
 
-    // Marcador del puerto
     const iconoPuerto = L.divIcon({
       html: `<div style="background:#1A3C6B;color:white;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:bold;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">⚓ ${puerto.nombre}</div>`,
       className: '',
@@ -136,10 +137,9 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
       .addTo(this.capaZonas)
       .bindPopup(`<b>⚓ ${puerto.nombre}</b>`);
 
-    // Círculos de calor por zona
     this.zonas.forEach(zona => {
-      const color  = this.colorPorScore(zona.fish_score);
-      const radio  = 20000 + zona.fish_score * 800; // radio proporcional al score
+      const color = colorPorScore(zona.fish_score);
+      const radio = 20000 + zona.fish_score * 800;
 
       L.circle([zona.lat, zona.lon], {
         radius:      radio,
@@ -159,17 +159,14 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
           </div>
         `);
 
-      // Etiqueta con score
       const icono = L.divIcon({
         html: `<div style="background:${color};color:white;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:11px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3)">${zona.fish_score}</div>`,
         className: '',
         iconAnchor: [16, 16],
       });
-      L.marker([zona.lat, zona.lon], { icon: icono })
-        .addTo(this.capaZonas!);
+      L.marker([zona.lat, zona.lon], { icon: icono }).addTo(this.capaZonas!);
     });
 
-    // Centrar mapa siempre en el puerto, ajustar bounds si hay zonas
     if (this.zonas.length > 0) {
       const coords: L.LatLngExpression[] = this.zonas.map(z => [z.lat, z.lon]);
       coords.push([puerto.lat, puerto.lon]);
@@ -178,7 +175,7 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
         if (bounds.isValid()) {
           setTimeout(() => this.mapa.fitBounds(bounds, { padding: [60, 60] }), 100);
         }
-      } catch(e) {
+      } catch {
         setTimeout(() => this.mapa.setView([puerto.lat, puerto.lon], 7), 100);
       }
     } else {
@@ -190,18 +187,14 @@ export class MapaCalorComponent implements OnInit, OnDestroy {
     if (!this.zonas.length) return;
     const scores = this.zonas.map(z => z.fish_score);
     this.estadisticas = {
-      total:        this.zonas.length,
-      promedio:     Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
-      maximo:       Math.max(...scores),
+      total:         this.zonas.length,
+      promedio:      Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+      maximo:        Math.max(...scores),
       zona_caliente: this.zonas.reduce((a, b) => a.fish_score > b.fish_score ? a : b),
     };
   }
 
   colorPorScore(score: number): string {
-    if (score >= 70) return '#1D9E75';
-    if (score >= 50) return '#639922';
-    if (score >= 35) return '#F59E0B';
-    if (score >= 20) return '#E97316';
-    return '#E24B4A';
+    return colorPorScore(score);
   }
 }

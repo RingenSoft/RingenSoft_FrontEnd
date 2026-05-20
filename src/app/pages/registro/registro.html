@@ -1,68 +1,179 @@
-<div class="h-screen flex items-center justify-center bg-gradient-to-r from-blue-900 to-blue-700 font-sans">
-  <div class="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all hover:scale-[1.01] duration-300">
+<div class="min-h-screen flex flex-col lg:flex-row overflow-hidden" style="background:var(--bg-base);">
 
-    <!-- Header -->
-    <div class="flex justify-center mb-6">
-      <div class="bg-blue-50 p-4 rounded-full shadow-inner">
-        <i class="fas fa-user-plus text-3xl text-blue-600"></i>
+  <!-- Panel izquierdo — branding (solo desktop) -->
+  <div class="hidden lg:flex lg:w-[42%] flex-col justify-between p-10 relative overflow-hidden"
+       style="background:linear-gradient(160deg,#0A1E10 0%,#0F2E18 50%,#081A0C 100%);">
+
+    <!-- Retícula carta náutica -->
+    <div class="absolute inset-0 pointer-events-none overflow-hidden opacity-8">
+      <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 600" preserveAspectRatio="none">
+        <line x1="0" y1="100" x2="400" y2="100" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="200" x2="400" y2="200" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="300" x2="400" y2="300" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="0" y1="400" x2="400" y2="400" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="100" y1="0" x2="100" y2="600" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="200" y1="0" x2="200" y2="600" stroke="#C4B48C" stroke-width="0.5"/>
+        <line x1="300" y1="0" x2="300" y2="600" stroke="#C4B48C" stroke-width="0.5"/>
+      </svg>
+    </div>
+
+    <!-- Ondas oceánicas -->
+    <div class="absolute bottom-0 left-0 right-0 pointer-events-none">
+      <svg viewBox="0 0 800 250" preserveAspectRatio="none" class="w-full opacity-20" style="height:160px;">
+        <path d="M0,160 C100,100 200,180 300,140 C400,100 500,180 600,140 C700,100 750,160 800,140 L800,250 L0,250 Z"
+              fill="#3A7840"/>
+        <path d="M0,200 C120,150 240,210 360,180 C480,150 600,210 720,180 L800,190 L800,250 L0,250 Z"
+              fill="#2A5828" opacity="0.7"/>
+      </svg>
+    </div>
+
+    <!-- Logo -->
+    <div class="relative z-10 flex items-center gap-3">
+      <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="#3A7840" stroke-width="1.5" stroke-linecap="round">
+        <path d="M3 18 L12 4 L21 18"/>
+        <path d="M7 18 L12 10 L17 18"/>
+        <line x1="3" y1="18" x2="21" y2="18" stroke-opacity="0.35"/>
+      </svg>
+      <div>
+        <p class="font-black text-base tracking-tight" style="color:#F5EDD8;">Fish<span style="color:#3A7840;">Route</span> <span class="text-xs font-bold" style="color:#3A7840;">PRO</span></p>
+        <p class="text-[9px] uppercase tracking-[0.2em]" style="color:#7A9870;">Sistema de navegación pesquera</p>
       </div>
     </div>
-    <h2 class="text-2xl font-bold text-center text-gray-800 mb-1">Crear Cuenta</h2>
-    <p class="text-center text-gray-500 mb-6 text-xs">Únete a Ringensoft</p>
 
-    <!-- Mensajes -->
-    <div *ngIf="mensaje" [ngClass]="error ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'"
-         class="mb-4 p-3 rounded-lg text-xs font-bold text-center border animate-pulse">
-      {{ mensaje }}
+    <!-- Texto central -->
+    <div class="relative z-10">
+      <h1 class="text-4xl font-black leading-tight mb-4 tracking-tight" style="color:#F5EDD8;">
+        Únete a la<br>red de<br><span style="color:#3A7840;">pescadores</span>
+      </h1>
+      <p class="text-sm leading-relaxed max-w-xs" style="color:#9AB090;">
+        Más de 200 capitanes confían en FishRoute Pro para encontrar los mejores cardúmenes del Pacífico peruano.
+      </p>
     </div>
 
-    <form (ngSubmit)="registrar()">
-      <!-- Nombre Completo -->
-      <div class="mb-4">
-        <label class="block text-gray-600 text-xs font-bold mb-1 uppercase">Nombre Completo</label>
-        <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-id-card"></i>
-                    </span>
-          <input [(ngModel)]="nombre" name="nombre" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm" type="text" placeholder="Juan Pérez" required>
+    <!-- Beneficios -->
+    <div class="relative z-10 space-y-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(58,120,64,0.35);">
+          <svg class="w-3 h-3" fill="none" stroke="#3A7840" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
+        <p class="text-xs" style="color:#C0D8B0;">Ruta óptima calculada en segundos</p>
       </div>
-
-      <!-- Usuario -->
-      <div class="mb-4">
-        <label class="block text-gray-600 text-xs font-bold mb-1 uppercase">Usuario / ID Flota</label>
-        <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-user"></i>
-                    </span>
-          <input [(ngModel)]="usuario" name="usuario" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm" type="text" placeholder="juan.perez" required>
+      <div class="flex items-center gap-2.5">
+        <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(58,120,64,0.35);">
+          <svg class="w-3 h-3" fill="none" stroke="#3A7840" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
+        <p class="text-xs" style="color:#C0D8B0;">Alertas meteorológicas en tiempo real</p>
       </div>
-
-      <!-- Contraseña -->
-      <div class="mb-6">
-        <label class="block text-gray-600 text-xs font-bold mb-1 uppercase">Contraseña</label>
-        <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                        <i class="fas fa-lock"></i>
-                    </span>
-          <input [(ngModel)]="password" name="password" class="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 pl-10 pr-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-colors text-sm" type="password" placeholder="••••••••" required>
+      <div class="flex items-center gap-2.5">
+        <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:rgba(58,120,64,0.35);">
+          <svg class="w-3 h-3" fill="none" stroke="#3A7840" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
+        <p class="text-xs" style="color:#C0D8B0;">Comunidad pesquera activa · 16 puertos</p>
       </div>
-
-      <!-- Botón -->
-      <button [disabled]="cargando" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center" type="submit">
-        <span *ngIf="!cargando">Registrarse</span>
-        <span *ngIf="cargando"><i class="fas fa-spinner fa-spin mr-2"></i> Creando...</span>
-      </button>
-    </form>
-
-    <!-- Footer -->
-    <div class="text-center mt-6 border-t border-gray-100 pt-4">
-      <p class="text-xs text-gray-500">¿Ya tienes cuenta?</p>
-      <a routerLink="/login" class="text-sm font-bold text-blue-600 hover:text-blue-800 hover:underline transition-colors">
-        Inicia Sesión aquí
-      </a>
+      <p class="text-[10px] pt-2" style="color:#4A6840;">&copy; 2025 Ringensoft Analytics</p>
     </div>
   </div>
+
+  <!-- Panel derecho — formulario -->
+  <div class="flex-1 flex items-center justify-center p-6 pt-16 lg:pt-6 min-h-screen lg:min-h-0" style="background:var(--bg-surface);">
+    <div class="w-full max-w-[360px]">
+
+      <!-- Logo móvil -->
+      <div class="lg:hidden flex items-center gap-3 justify-center mb-8">
+        <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M3 18 L12 4 L21 18"/>
+          <path d="M7 18 L12 10 L17 18"/>
+          <line x1="3" y1="18" x2="21" y2="18" stroke-opacity="0.35"/>
+        </svg>
+        <p class="font-black text-base tracking-tight" style="color:var(--text-primary);">Fish<span style="color:var(--accent-cyan);">Route</span> <span class="text-xs font-bold" style="color:var(--accent-cyan);">PRO</span></p>
+      </div>
+
+      <h2 class="text-xl font-black mb-1 tracking-tight" style="color:var(--text-primary);">Crear cuenta</h2>
+      <p class="text-xs mb-5" style="color:var(--text-secondary);">Completa tus datos para comenzar</p>
+
+      <!-- Mensaje error/éxito -->
+      <div *ngIf="mensaje"
+           class="mb-4 px-4 py-3 rounded text-xs font-medium flex items-center gap-2"
+           [style]="error
+             ? 'background:rgba(138,24,24,0.1);border:1px solid rgba(138,24,24,0.25);color:var(--accent-red);'
+             : 'background:rgba(58,120,64,0.1);border:1px solid rgba(58,120,64,0.25);color:var(--accent-green);'">
+        {{ mensaje }}
+      </div>
+
+      <form (ngSubmit)="registrar()" class="space-y-3.5">
+
+        <!-- Nombre completo -->
+        <div>
+          <label class="block text-[9px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--text-label);">Nombre completo *</label>
+          <input [(ngModel)]="nombre" name="nombre" type="text"
+                 placeholder="Juan Pérez García"
+                 class="w-full rounded py-3 px-3.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='var(--border-active)'"
+                 onblur="this.style.borderColor='var(--border-mid)'"
+                 required autocomplete="name">
+        </div>
+
+        <!-- Usuario -->
+        <div>
+          <label class="block text-[9px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--text-label);">Nombre de usuario *</label>
+          <input [(ngModel)]="usuario" name="usuario" type="text"
+                 placeholder="juan.perez"
+                 class="w-full rounded py-3 px-3.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='var(--border-active)'"
+                 onblur="this.style.borderColor='var(--border-mid)'"
+                 required autocomplete="username">
+          <p class="text-[9px] mt-1" style="color:var(--text-label);">Solo letras, números y puntos. Sin espacios.</p>
+        </div>
+
+        <!-- Contraseña -->
+        <div>
+          <label class="block text-[9px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--text-label);">Contraseña *</label>
+          <input [(ngModel)]="password" name="password" type="password" placeholder="••••••••"
+                 class="w-full rounded py-3 px-3.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='var(--border-active)'"
+                 onblur="this.style.borderColor='var(--border-mid)'"
+                 required autocomplete="new-password" minlength="6">
+          <p class="text-[9px] mt-1" style="color:var(--text-label);">Mínimo 6 caracteres</p>
+        </div>
+
+        <!-- Teléfono -->
+        <div>
+          <label class="block text-[9px] font-bold uppercase tracking-widest mb-1.5" style="color:var(--text-label);">
+            Teléfono <span style="font-weight:400;">(opcional · para alertas SOS)</span>
+          </label>
+          <input [(ngModel)]="telefono" name="telefono" type="tel"
+                 placeholder="+51 999 000 000"
+                 class="w-full rounded py-3 px-3.5 text-sm outline-none transition-colors"
+                 style="background:var(--bg-elevated);border:1px solid var(--border-mid);color:var(--text-primary);"
+                 onfocus="this.style.borderColor='var(--border-active)'"
+                 onblur="this.style.borderColor='var(--border-mid)'"
+                 autocomplete="tel">
+        </div>
+
+        <button [disabled]="cargando" type="submit"
+                class="w-full font-bold py-3 px-4 rounded outline-none disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2 transition-all btn-primary"
+                style="background:var(--accent-green);color:#F5EDD8;margin-top:0.5rem;">
+          <svg *ngIf="cargando" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" stroke-opacity="0.3"/><path d="M12 3a9 9 0 0 1 9 9"/>
+          </svg>
+          <span>{{ cargando ? 'Creando cuenta...' : 'Crear cuenta' }}</span>
+        </button>
+
+      </form>
+
+      <div class="text-center mt-6 pt-5" style="border-top:1px solid var(--border-subtle);">
+        <p class="text-xs" style="color:var(--text-secondary);">
+          ¿Ya tienes cuenta?&nbsp;
+          <a routerLink="/login" class="font-bold hover:underline" style="color:var(--accent-cyan);">
+            Iniciar sesión
+          </a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+
 </div>

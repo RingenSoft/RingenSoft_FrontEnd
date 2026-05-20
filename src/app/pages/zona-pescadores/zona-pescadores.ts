@@ -1,8 +1,12 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild, ElementRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import { AuthService } from '../../services/auth';
+import { ESPECIES } from '../../constants/app.constants';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-zona-pescadores',
@@ -22,6 +26,7 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
   mostrarFormulario = false;
   cargando          = true;
   enviando          = false;
+  errorMsg          = '';
   private votados   = new Set<number>();
 
   puertos = [
@@ -30,13 +35,15 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
     'PISCO', 'ILO', 'MATARANI', 'MOLLENDO', 'QUILCA'
   ];
 
-  especies = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+  readonly especies = ESPECIES;
 
   nuevoAvistamiento = {
     especie:     'ANCHOVETA',
     zona:        'CHIMBOTE',
     descripcion: ''
   };
+  fotoSeleccionada: File | null = null;
+  fotoPreview: string | null = null;
 
   // --- Chat ---
   mensajes:       any[] = [];
@@ -45,7 +52,8 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
   textoMensaje    = '';
   tipoMensaje     = 'GENERAL';
   miNombre        = '';
-  private chatInterval: any;
+  private chatInterval: ReturnType<typeof setInterval> | undefined;
+  private ws?: WebSocket;
 
   tiposMensaje = [
     { id: 'GENERAL',   label: 'General',  emoji: '💬' },
@@ -54,27 +62,76 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
     { id: 'OFERTA',    label: 'Oferta',   emoji: '🤝' },
   ];
 
-  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
+  private readonly destroyRef = inject(DestroyRef);
+
+  constructor(
+    private api: ApiService,
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService,
+  ) {}
 
   ngOnInit() {
-    this.miNombre = localStorage.getItem('usuario') || 'Tú';
+    this.miNombre = this.authService.getUsuarioActual() || 'Tú';
     this.cargarAvistamientos();
     this.cargarMensajes();
-    this.chatInterval = setInterval(() => {
-      if (this.tab === 'chat') this.cargarMensajes(true);
-    }, 15000);
+    this.conectarWebSocket();
   }
 
   ngOnDestroy() {
     if (this.chatInterval) clearInterval(this.chatInterval);
+    this.ws?.close();
+  }
+
+  private conectarWebSocket() {
+    try {
+      const proto  = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const wsBase = environment.apiUrl.replace(/^https?/, proto).replace(/\/api\/v2$/, '');
+      const wsUrl  = `${wsBase}/api/v2/ws/chat`;
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.type === 'history') {
+          this.mensajes = data.mensajes;
+          this.cdr.detectChanges();
+          setTimeout(() => this.scrollChat(), 100);
+        } else if (data.type === 'mensaje') {
+          const existe = this.mensajes.some((m: any) => m.id === data.id);
+          if (!existe) {
+            this.mensajes.push(data);
+            this.cdr.detectChanges();
+            setTimeout(() => this.scrollChat(), 100);
+          }
+        }
+      };
+
+      this.ws.onerror = () => {
+        // Fallback a polling si WS no disponible
+        this.ws = undefined;
+        this.chatInterval = setInterval(() => {
+          if (this.tab === 'chat') this.cargarMensajes(true);
+        }, 15000);
+      };
+
+      // Ping keepalive cada 25 s
+      setInterval(() => {
+        if (this.ws?.readyState === WebSocket.OPEN) {
+          this.ws.send(JSON.stringify({ type: 'ping' }));
+        }
+      }, 25000);
+    } catch {
+      this.chatInterval = setInterval(() => {
+        if (this.tab === 'chat') this.cargarMensajes(true);
+      }, 15000);
+    }
   }
 
   // =================== Avistamientos ===================
 
   cargarAvistamientos() {
     this.cargando = true;
-    this.api.getAvistamientos().subscribe({
-      next: (data: any[]) => {
+    this.api.getAvistamientos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
         this.avistamientos = data;
         this.cargando      = false;
         this.cdr.detectChanges();
@@ -83,33 +140,64 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
     });
   }
 
+  onFotoSeleccionada(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const file  = input.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      this.errorMsg = 'La imagen no puede superar 5 MB';
+      setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 3000);
+      return;
+    }
+    this.fotoSeleccionada = file;
+    const reader = new FileReader();
+    reader.onload = (e) => { this.fotoPreview = e.target?.result as string; this.cdr.detectChanges(); };
+    reader.readAsDataURL(file);
+  }
+
   reportarAvistamiento() {
     if (!this.nuevoAvistamiento.descripcion.trim()) {
-      alert('La descripción es obligatoria');
+      this.errorMsg = 'La descripción es obligatoria';
+      setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 3000);
+      this.cdr.detectChanges();
       return;
     }
     this.enviando = true;
-    this.api.crearAvistamiento(this.nuevoAvistamiento).subscribe({
-      next: (nuevo: any) => {
-        this.avistamientos.unshift(nuevo);
-        this.nuevoAvistamiento = { especie: 'ANCHOVETA', zona: 'CHIMBOTE', descripcion: '' };
-        this.mostrarFormulario = false;
-        this.enviando          = false;
-        this.cdr.detectChanges();
-      },
-      error: () => { this.enviando = false; alert('Error al publicar avistamiento.'); }
-    });
+
+    const obs$ = this.fotoSeleccionada
+      ? this.api.crearAvistamientoConFoto(this.nuevoAvistamiento, this.fotoSeleccionada)
+      : this.api.crearAvistamiento(this.nuevoAvistamiento);
+
+    obs$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: (nuevo: any) => {
+          this.avistamientos.unshift(nuevo);
+          this.nuevoAvistamiento = { especie: 'ANCHOVETA', zona: 'CHIMBOTE', descripcion: '' };
+          this.fotoSeleccionada  = null;
+          this.fotoPreview       = null;
+          this.mostrarFormulario = false;
+          this.enviando          = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.enviando = false;
+          this.errorMsg = 'Error al publicar avistamiento.';
+          setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 3000);
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   votar(avistamiento: any) {
     if (this.votados.has(avistamiento.id)) return;
-    this.api.votarAvistamiento(avistamiento.id).subscribe({
-      next: (res: any) => {
-        avistamiento.votos = res.votos;
-        this.votados.add(avistamiento.id);
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.votarAvistamiento(avistamiento.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          avistamiento.votos = res.votos;
+          this.votados.add(avistamiento.id);
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   yaVotado(id: number): boolean { return this.votados.has(id); }
@@ -118,9 +206,9 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
 
   cargarMensajes(silencioso = false) {
     if (!silencioso) this.cargandoChat = true;
-    this.api.getMensajes().subscribe({
-      next: (data: any[]) => {
-        this.mensajes    = data;
+    this.api.getMensajes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
+        this.mensajes     = data;
         this.cargandoChat = false;
         this.cdr.detectChanges();
         setTimeout(() => this.scrollChat(), 100);
@@ -132,17 +220,19 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
   enviarMensaje() {
     if (!this.textoMensaje.trim()) return;
     this.enviandoMensaje = true;
-    this.api.enviarMensaje({ texto: this.textoMensaje, tipo: this.tipoMensaje }).subscribe({
-      next: (msg: any) => {
-        this.mensajes.push(msg);
-        this.textoMensaje    = '';
-        this.tipoMensaje     = 'GENERAL';
-        this.enviandoMensaje = false;
-        this.cdr.detectChanges();
-        setTimeout(() => this.scrollChat(), 100);
-      },
-      error: () => { this.enviandoMensaje = false; }
-    });
+    this.api.enviarMensaje({ texto: this.textoMensaje, tipo: this.tipoMensaje })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (msg: any) => {
+          this.mensajes.push(msg);
+          this.textoMensaje    = '';
+          this.tipoMensaje     = 'GENERAL';
+          this.enviandoMensaje = false;
+          this.cdr.detectChanges();
+          setTimeout(() => this.scrollChat(), 100);
+        },
+        error: () => { this.enviandoMensaje = false; this.cdr.detectChanges(); }
+      });
   }
 
   scrollChat() {
@@ -173,9 +263,9 @@ export class ZonaPescadoresComponent implements OnInit, OnDestroy {
   // =================== Shared ===================
 
   tiempoTranscurrido(fecha: string): string {
-    const diffMs  = new Date().getTime() - new Date(fecha).getTime();
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHrs = Math.floor(diffMin / 60);
+    const diffMs   = new Date().getTime() - new Date(fecha).getTime();
+    const diffMin  = Math.floor(diffMs / 60000);
+    const diffHrs  = Math.floor(diffMin / 60);
     const diffDias = Math.floor(diffHrs / 24);
     if (diffMin < 1)  return 'ahora';
     if (diffMin < 60) return `hace ${diffMin}m`;

@@ -1,8 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, DestroyRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ApiService } from '../../services/api.service';
 import { SidebarComponent } from '../../components/sidebar/sidebar';
+import { ESPECIES } from '../../constants/app.constants';
 
 @Component({
   selector: 'app-planificador',
@@ -10,7 +12,7 @@ import { SidebarComponent } from '../../components/sidebar/sidebar';
   imports: [CommonModule, SidebarComponent, FormsModule],
   templateUrl: './planificador.html',
 })
-export class PlanificadorComponent implements OnInit {
+export class PlanificadorComponent implements OnInit, OnDestroy {
 
   puertos:       any[] = [];
   embarcaciones: any[] = [];
@@ -18,6 +20,7 @@ export class PlanificadorComponent implements OnInit {
   cargando       = false;
   mostrarForm    = false;
   guardando      = false;
+  errorMsg       = '';
 
   // --- Comparador de rutas ---
   comparando       = false;
@@ -38,7 +41,13 @@ export class PlanificadorComponent implements OnInit {
 
   condicionesFecha: any = null;
   cargandoCondiciones   = false;
-  readonly especies     = ['ANCHOVETA', 'BONITO', 'CABALLA', 'JUREL'];
+  readonly especies     = ESPECIES;
+
+  // --- Mareas y vedas ---
+  mareas: any = null;
+  veda:   any = null;
+
+  private readonly destroyRef = inject(DestroyRef);
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
@@ -46,17 +55,19 @@ export class PlanificadorComponent implements OnInit {
     const manana = new Date();
     manana.setDate(manana.getDate() + 1);
     this.form.fecha_salida = manana.toISOString().split('T')[0];
+    // Verificar veda para la fecha inicial
+    setTimeout(() => this.cargarVeda(), 500);
 
-    this.api.getPuertos().subscribe({
-      next: (d: any) => {
+    this.api.getPuertos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (d) => {
         this.puertos = d.puertos;
         this.cdr.detectChanges();
         this.verificarCondiciones();
       }
     });
 
-    this.api.getEmbarcaciones().subscribe({
-      next: (d: any) => {
+    this.api.getEmbarcaciones().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (d) => {
         this.embarcaciones = d;
         if (d.length > 0) this.form.id_embarcacion = d[0].id_embarcacion;
         this.cdr.detectChanges();
@@ -66,10 +77,12 @@ export class PlanificadorComponent implements OnInit {
     this.cargarPlanes();
   }
 
+  ngOnDestroy() {}
+
   cargarPlanes() {
     this.cargando = true;
-    this.api.getPlanes().subscribe({
-      next: (data: any[]) => {
+    this.api.getPlanes().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (data) => {
         this.planes   = data.map(p => ({
           ...p,
           condiciones: p.condiciones_json ? this.tryParseJSON(p.condiciones_json) : null,
@@ -89,14 +102,30 @@ export class PlanificadorComponent implements OnInit {
     const puerto = this.puertos.find((p: any) => p.id === this.form.puerto_id);
     if (!puerto) return;
     this.cargandoCondiciones = true;
-    this.api.getCondiciones(puerto.lat, puerto.lon, this.form.especie).subscribe({
-      next: (d: any) => {
-        this.condicionesFecha    = d;
-        this.cargandoCondiciones = false;
-        this.cdr.detectChanges();
-      },
-      error: () => { this.cargandoCondiciones = false; this.cdr.detectChanges(); }
-    });
+    this.api.getCondiciones(puerto.lat, puerto.lon, this.form.especie)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (d: any) => {
+          this.condicionesFecha    = d;
+          this.cargandoCondiciones = false;
+          this.cdr.detectChanges();
+        },
+        error: () => { this.cargandoCondiciones = false; this.cdr.detectChanges(); }
+      });
+
+    // Cargar mareas del puerto seleccionado
+    this.api.getMareas(puerto.lat, puerto.lon)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (d: any) => { this.mareas = d; this.cdr.detectChanges(); }, error: () => {} });
+
+    // Verificar veda para la especie y fecha seleccionadas
+    this.cargarVeda();
+  }
+
+  cargarVeda() {
+    this.api.getVedas(this.form.especie, this.form.fecha_salida)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({ next: (d: any) => { this.veda = d?.verificacion ?? null; this.cdr.detectChanges(); }, error: () => {} });
   }
 
   // ---- Comparador de rutas ----
@@ -121,22 +150,24 @@ export class PlanificadorComponent implements OnInit {
       id_embarcacion:   this.form.id_embarcacion || null,
     };
 
-    this.api.calcularRutasComparadas(payload).subscribe({
-      next: (data: any) => {
-        this.comparando = false;
-        if (data.status === 'BLOQUEADO') {
-          this.errorComparador = `No se puede navegar — ${data.alerta?.mensaje ?? 'Condiciones peligrosas'}`;
-        } else {
-          this.rutasComparadas = data.rutas ?? [];
+    this.api.calcularRutasComparadas(payload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (data: any) => {
+          this.comparando = false;
+          if (data.status === 'BLOQUEADO') {
+            this.errorComparador = `No se puede navegar — ${data.alerta?.mensaje ?? 'Condiciones peligrosas'}`;
+          } else {
+            this.rutasComparadas = data.rutas ?? [];
+          }
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.comparando      = false;
+          this.errorComparador = 'Error al calcular rutas. Intenta de nuevo en unos momentos.';
+          this.cdr.detectChanges();
         }
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.comparando      = false;
-        this.errorComparador = 'Error al calcular rutas. Intenta de nuevo en unos momentos.';
-        this.cdr.detectChanges();
-      }
-    });
+      });
   }
 
   elegirRuta(ruta: any) {
@@ -149,22 +180,11 @@ export class PlanificadorComponent implements OnInit {
   }
 
   getModoLabel(modo: string): string {
-    if (modo === 'max_captura')      return 'Máxima Captura';
-    if (modo === 'min_combustible')  return 'Mínimo Combustible';
+    if (modo === 'max_captura')     return 'Máxima Captura';
+    if (modo === 'min_combustible') return 'Mínimo Combustible';
     return 'Equilibrada';
   }
 
-  getModoIcon(modo: string): string {
-    if (modo === 'max_captura')      return 'fa-fish';
-    if (modo === 'min_combustible')  return 'fa-gas-pump';
-    return 'fa-balance-scale';
-  }
-
-  getModoAccent(modo: string): string {
-    if (modo === 'max_captura')      return 'green';
-    if (modo === 'min_combustible')  return 'blue';
-    return 'purple';
-  }
 
   getMejorRuta(): any {
     if (!this.rutasComparadas?.length) return null;
@@ -172,11 +192,12 @@ export class PlanificadorComponent implements OnInit {
       (a.fish_score_promedio ?? 0) >= (b.fish_score_promedio ?? 0) ? a : b
     );
   }
-  // ---- fin comparador ----
 
   guardarPlan() {
     if (!this.form.nombre_viaje || !this.form.fecha_salida) {
-      alert('Completa nombre y fecha del viaje');
+      this.errorMsg = 'Completa nombre y fecha del viaje';
+      setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 3000);
+      this.cdr.detectChanges();
       return;
     }
     this.guardando = true;
@@ -184,7 +205,7 @@ export class PlanificadorComponent implements OnInit {
       ...this.form,
       condiciones_json: this.condicionesFecha ? JSON.stringify(this.condicionesFecha) : null,
     };
-    this.api.crearPlan(payload).subscribe({
+    this.api.crearPlan(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (nuevo: any) => {
         this.planes.unshift({
           ...nuevo,
@@ -195,13 +216,18 @@ export class PlanificadorComponent implements OnInit {
         this.rutaElegida = null;
         this.cdr.detectChanges();
       },
-      error: () => { this.guardando = false; alert('Error al guardar el plan.'); }
+      error: () => {
+        this.guardando = false;
+        this.errorMsg  = 'Error al guardar el plan.';
+        setTimeout(() => { this.errorMsg = ''; this.cdr.detectChanges(); }, 3000);
+        this.cdr.detectChanges();
+      }
     });
   }
 
   eliminarPlan(id: number) {
     if (!confirm('¿Eliminar este plan de viaje?')) return;
-    this.api.eliminarPlan(id).subscribe({
+    this.api.eliminarPlan(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.planes = this.planes.filter((p: any) => p.id !== id);
         this.cdr.detectChanges();
@@ -210,23 +236,14 @@ export class PlanificadorComponent implements OnInit {
   }
 
   cambiarEstadoPlan(plan: any, estado: string) {
-    this.api.actualizarEstadoPlan(plan.id, estado).subscribe({
-      next: () => {
-        plan.estado = estado;
-        this.cdr.detectChanges();
-      }
-    });
+    this.api.actualizarEstadoPlan(plan.id, estado)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          plan.estado = estado;
+          this.cdr.detectChanges();
+        }
+      });
   }
 
-  getColorEstado(estado: string): string {
-    if (estado === 'COMPLETADO') return 'bg-green-100 text-green-700';
-    if (estado === 'CANCELADO')  return 'bg-red-100 text-red-700';
-    return 'bg-blue-100 text-blue-700';
-  }
-
-  getColorAlerta(nivel: string): string {
-    if (nivel === 'ROJO')     return 'text-red-600';
-    if (nivel === 'AMARILLO') return 'text-yellow-600';
-    return 'text-green-600';
-  }
 }
